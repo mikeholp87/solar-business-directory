@@ -32,7 +32,7 @@ export default function HomePage() {
         <div className="container-page grid min-h-[680px] items-center gap-10 py-20 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="max-w-3xl text-white">
             <p className="mb-4 inline-flex rounded bg-white/12 px-3 py-1 text-sm font-bold backdrop-blur">BUS / MCS approved installer directory</p>
-            <h1 className="text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">Find Trusted BUS & MCS Approved Heat Pump Installers Near You</h1>
+            <h1 className="text-4xl font-black leading-tight text-black sm:text-5xl lg:text-6xl">Find Trusted BUS & MCS Approved Heat Pump Installers Near You</h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-white/86">Compare approved local installers and check whether you could qualify for up to £7,500 towards an air source heat pump through the Boiler Upgrade Scheme.</p>
             <form action="/directory" className="mt-8 flex max-w-2xl flex-col gap-3 rounded-lg bg-white p-2 sm:flex-row">
               <input name="q" placeholder="Enter postcode, town or county" className="border-0" />
