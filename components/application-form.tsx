@@ -1,20 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { territories } from "@/lib/data";
 
 export function ApplicationForm() {
   const [submitted, setSubmitted] = useState(false);
+  const router = useRouter();
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const response = await fetch("/api/applications", { method: "POST", body: new FormData(event.currentTarget) });
-    if (response.ok) setSubmitted(true);
+    if (response.ok) {
+      setSubmitted(true);
+      router.push("/apply/success");
+    }
   }
 
   if (submitted) {
     return (
-      <div className="rounded-lg border border-emerald-950/10 bg-emerald-50 p-6">
+      <div className="surface-card surface-card-success p-6">
         <h2 className="text-2xl font-black">Application received</h2>
         <p className="mt-2 text-ink/70">The admin team can now review accreditations, territory fit and commercial terms.</p>
       </div>
@@ -22,7 +27,12 @@ export function ApplicationForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-5 rounded-lg border border-emerald-950/10 bg-white p-6 shadow-soft">
+    <form onSubmit={onSubmit} className="surface-card grid gap-5 p-6">
+      <div>
+        <p className="eyebrow">Installer application</p>
+        <h2 className="mt-3 text-3xl font-black">Apply to join</h2>
+        <p className="mt-2 text-sm leading-6 text-ink/65">Share your accreditations, commercial model and preferred territories.</p>
+      </div>
       <div className="field-grid">
         <label>Company name<input name="company_name" required /></label>
         <label>Contact name<input name="contact_name" required /></label>
@@ -44,7 +54,7 @@ export function ApplicationForm() {
           {territories.map((territory) => (
             <label key={territory.id} className="flex grid-cols-none flex-row items-center gap-2 text-sm font-medium">
               <input className="size-4 w-auto" type="checkbox" name="preferred_territories" value={territory.id} /> {territory.name}
-              {territory.activeInstallerCount >= territory.maxInstallerSlots ? <span className="rounded bg-red-50 px-2 py-0.5 text-xs font-bold text-red-700">full</span> : null}
+              {territory.activeInstallerCount >= territory.maxInstallerSlots ? <span className="chip chip-warning">full</span> : null}
             </label>
           ))}
         </div>

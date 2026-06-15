@@ -185,6 +185,46 @@ create table public.reviews (
   created_at timestamptz not null default now()
 );
 
+create type territory_request_status as enum ('pending', 'approved', 'rejected');
+
+create table public.territory_requests (
+  id uuid primary key default gen_random_uuid(),
+  installer_id uuid not null references public.installers(id) on delete cascade,
+  territory_id uuid not null references public.territories(id) on delete cascade,
+  notes text,
+  status territory_request_status not null default 'pending',
+  requested_at timestamptz not null default now()
+);
+
+create type notification_channel as enum ('email', 'sms', 'in_app');
+create type notification_status as enum ('queued', 'sent', 'failed');
+
+create table public.notification_outbox (
+  id uuid primary key default gen_random_uuid(),
+  event_type text not null,
+  channel notification_channel not null default 'email',
+  recipient_email text,
+  recipient_role user_role,
+  subject text not null,
+  body text not null,
+  payload jsonb not null default '{}'::jsonb,
+  status notification_status not null default 'queued',
+  last_error text,
+  created_at timestamptz not null default now(),
+  sent_at timestamptz
+);
+
+create table public.audit_logs (
+  id uuid primary key default gen_random_uuid(),
+  actor_user_id uuid references public.users(id) on delete set null,
+  actor_role user_role,
+  action text not null,
+  entity_type text not null,
+  entity_id uuid,
+  payload jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -272,6 +312,9 @@ alter table public.leads enable row level security;
 alter table public.installer_applications enable row level security;
 alter table public.documents enable row level security;
 alter table public.reviews enable row level security;
+alter table public.territory_requests enable row level security;
+alter table public.notification_outbox enable row level security;
+alter table public.audit_logs enable row level security;
 
 create policy "public can read live territories" on public.territories for select using (true);
 create policy "admins manage territories" on public.territories for all using (public.is_admin()) with check (public.is_admin());
@@ -307,10 +350,24 @@ create policy "admins manage documents" on public.documents for all using (publi
 create policy "public can read approved reviews" on public.reviews for select using (approved = true);
 create policy "admins manage reviews" on public.reviews for all using (public.is_admin()) with check (public.is_admin());
 
+create policy "installers read own territory requests" on public.territory_requests for select using (
+  installer_id in (select id from public.installers where user_id = auth.uid())
+);
+create policy "installers create own territory requests" on public.territory_requests for insert with check (
+  installer_id in (select id from public.installers where user_id = auth.uid())
+);
+create policy "admins manage territory requests" on public.territory_requests for all using (public.is_admin()) with check (public.is_admin());
+
+create policy "admins manage notification outbox" on public.notification_outbox for all using (public.is_admin()) with check (public.is_admin());
+create policy "admins manage audit logs" on public.audit_logs for all using (public.is_admin()) with check (public.is_admin());
+
 grant usage on schema public to anon, authenticated;
 grant select on public.territories, public.installers, public.installer_territories, public.reviews to anon, authenticated;
 grant insert on public.leads, public.installer_applications to anon, authenticated;
 grant select, update, insert on public.documents to authenticated;
 grant select, update on public.leads to authenticated;
 grant select, update on public.installers to authenticated;
+grant select, insert on public.territory_requests to authenticated;
+grant select, insert, update on public.notification_outbox to service_role;
+grant select, insert on public.audit_logs to service_role;
 grant all on all tables in schema public to service_role;

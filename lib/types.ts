@@ -17,11 +17,13 @@ export type LeadStage =
 export type Territory = {
   id: string;
   name: string;
+  slug?: string;
   region: string;
   counties: string[];
   postcodePrefixes: string[];
   maxInstallerSlots: number;
   status: TerritoryStatus;
+  priority?: boolean;
   leadVolume: number;
   activeInstallerCount: number;
   notes?: string;
@@ -31,8 +33,18 @@ export type Installer = {
   id: string;
   companyName: string;
   slug: string;
+  contactName?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  companyNumber?: string;
+  vatNumber?: string;
   logoUrl: string;
   coverImageUrl: string;
+  mcsNumber?: string;
+  reccNumber?: string;
+  hiesNumber?: string;
+  trustmarkNumber?: string;
   territoryIds: string[];
   accreditations: {
     mcsNumber?: string;
@@ -42,6 +54,8 @@ export type Installer = {
     trustMarkNumber?: string;
     verified: boolean;
   };
+  busRegistered?: boolean;
+  accreditationsVerified?: boolean;
   services: string[];
   description: string;
   areasCovered: string[];
@@ -53,6 +67,8 @@ export type Installer = {
   subscriptionStatus: "trialing" | "active" | "past_due" | "offline_active" | "cancelled";
   leadPrice?: number;
   gallery: string[];
+  internalNotes?: string;
+  leadCount?: number;
 };
 
 export type Lead = {
@@ -62,8 +78,16 @@ export type Lead = {
   email: string;
   phone: string;
   postcode: string;
+  address?: string;
+  homeownerStatus?: boolean;
+  currentHeatingSource?: string;
+  monthlyBill?: string;
   propertyType: string;
+  bedrooms?: number;
   interests: string[];
+  consentContact?: boolean;
+  consentMarketing?: boolean;
+  gdprAcceptance?: boolean;
   stage: LeadStage;
   territoryId?: string;
   preferredInstallerId?: string;
@@ -73,12 +97,33 @@ export type Lead = {
   referralFeeDue: number;
   referralFeePaid: boolean;
   invoiceStatus: "not_invoiced" | "draft" | "sent" | "paid" | "overdue";
+  notes?: string;
   createdAt: string;
 };
 
 export type Review = {
+  id?: string;
   installerId: string;
   customerName: string;
   rating: number;
   reviewText: string;
+  approved?: boolean;
+};
+
+export type DocumentRecord = {
+  id: string;
+  installerId: string;
+  documentType: string;
+  fileUrl: string;
+  verified: boolean;
+  uploadedAt: string;
+};
+
+export type TerritoryRequest = {
+  id: string;
+  installerId: string;
+  territoryId: string;
+  notes?: string;
+  status: "pending" | "approved" | "rejected";
+  requestedAt: string;
 };

@@ -7,28 +7,28 @@ export function InstallerCard({ installer }: { installer: Installer }) {
   const coveredTerritories = territories.filter((territory) => installer.territoryIds.includes(territory.id));
 
   return (
-    <article className="rounded-lg border border-emerald-950/10 bg-white p-5 shadow-soft">
+    <article className="surface-card p-5">
       <div className="flex items-start gap-4">
-        <div className="grid size-14 shrink-0 place-items-center rounded-lg bg-skywash text-lg font-black text-fern">{installer.logoUrl}</div>
+        <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-skywash text-lg font-black text-fern shadow-soft">{installer.logoUrl}</div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-xl font-black">{installer.companyName}</h3>
-            {installer.accreditations.verified ? <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-1 text-xs font-bold text-fern"><BadgeCheck size={14} /> Verified</span> : null}
+            {installer.accreditations.verified ? <span className="chip chip-success"><BadgeCheck size={14} /> Verified</span> : null}
           </div>
           <p className="mt-2 text-sm leading-6 text-ink/70">{installer.description}</p>
         </div>
       </div>
-      <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-        <span className="flex items-center gap-2"><MapPin size={16} /> {coveredTerritories.map((item) => item.name).join(", ")}</span>
+      <div className="mt-4 grid gap-3 border-t border-ink/10 pt-4 text-sm sm:grid-cols-3">
+        <span className="flex items-start gap-2"><MapPin className="mt-0.5 shrink-0" size={16} /> <span>{coveredTerritories.map((item) => item.name).join(", ")}</span></span>
         <span className="flex items-center gap-2"><CalendarDays size={16} /> Survey in {installer.surveyTurnaroundDays} days</span>
         <span className="flex items-center gap-2"><Star size={16} /> {installer.rating.toFixed(1)} rating</span>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {installer.services.slice(0, 4).map((service) => (
-          <span key={service} className="rounded bg-stone-100 px-2.5 py-1 text-xs font-bold text-ink/75">{service}</span>
+          <span key={service} className="chip">{service}</span>
         ))}
       </div>
-      <div className="mt-5 flex flex-wrap gap-3">
+      <div className="mt-5 flex flex-wrap gap-3 border-t border-ink/10 pt-4">
         <Link className="button-primary" href={`/installers/${installer.slug}`}>Request Survey</Link>
         <Link className="button-secondary" href={`/installers/${installer.slug}`}>View Profile</Link>
       </div>

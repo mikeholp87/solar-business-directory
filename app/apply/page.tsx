@@ -8,10 +8,10 @@ export default function ApplyPage() {
     <main className="section-band">
       <div className="container-page grid gap-8 lg:grid-cols-[0.42fr_0.58fr]">
         <div>
-          <p className="font-bold text-fern">Installer onboarding</p>
+          <p className="eyebrow">Installer onboarding</p>
           <h1 className="mt-3 text-4xl font-black">Join the UKSD Approved Installer Directory</h1>
           <p className="mt-4 leading-7 text-ink/70">Secure territory-based exposure, receive qualified homeowner enquiries, and access reduced-cost lead opportunities.</p>
-          <div className="mt-6 rounded-lg border border-emerald-950/10 bg-white p-5">
+          <div className="surface-card mt-6 p-5">
             <h2 className="text-xl font-black">Commercial models supported</h2>
             <ul className="mt-3 grid gap-2 text-sm leading-6 text-ink/70">
               <li>Monthly residual directory listing.</li>

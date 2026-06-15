@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createServerSupabaseClient } from "@/lib/supabase";
+import { createInstallerApplication } from "@/lib/repositories/applications";
 
 const applicationSchema = z.object({
   company_name: z.string().min(2).max(140),
@@ -39,12 +39,7 @@ export async function POST(request: Request) {
     open_to_pay_per_install: formData.get("open_to_pay_per_install") === "true",
     status: "pending"
   };
-
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    const supabase = await createServerSupabaseClient();
-    const { error } = await supabase.from("installer_applications").insert(payload);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
+  const result = await createInstallerApplication(payload);
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

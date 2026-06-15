@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { siteUrl } from "@/lib/runtime";
 
 const tierPriceEnv: Record<string, string | undefined> = {
   starter: process.env.STRIPE_STARTER_PRICE_ID,
@@ -16,8 +17,8 @@ export async function POST(request: Request) {
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     line_items: [{ price, quantity: 1 }],
-    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/installer-dashboard?checkout=success`,
-    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/installer-dashboard?checkout=cancelled`,
+    success_url: `${siteUrl()}/billing/success`,
+    cancel_url: `${siteUrl()}/billing/cancel`,
     metadata: { installer_id: installerId ?? "" }
   });
 

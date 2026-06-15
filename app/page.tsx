@@ -4,11 +4,19 @@ import { ArrowRight, BadgePoundSterling, ClipboardCheck, MapPinned, UsersRound, 
 import { InstallerCard } from "@/components/installer-card";
 import { LeadForm } from "@/components/lead-form";
 import { TerritoryList } from "@/components/territory-list";
-import { installers, territories } from "@/lib/data";
+import { listInstallers } from "@/lib/repositories/installers";
+import { listTerritories } from "@/lib/repositories/territories";
 import { jsonLd } from "@/lib/seo";
+import { siteUrl } from "@/lib/runtime";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [installers, territories] = await Promise.all([listInstallers(), listTerritories()]);
   const featuredInstallers = installers.filter((installer) => installer.status === "active").slice(0, 3);
+  const proofPoints = [
+    ["3", "active listings per territory"],
+    ["MCS", "verified installer checks"],
+    ["BUS", "eligibility guidance"]
+  ];
   const benefits: Array<[LucideIcon, string, string]> = [
     [MapPinned, "Search by territory", "Use postcode, town, county or region to find available installers."],
     [ClipboardCheck, "Check qualification", "Capture property details, interest areas and contact consent."],
@@ -27,15 +35,23 @@ export default function HomePage() {
             priority
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-ink/92 via-ink/72 to-ink/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/88 via-ink/66 to-ink/18" />
         </div>
-        <div className="container-page grid min-h-[680px] items-center gap-10 py-20 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="max-w-3xl text-white">
-            <p className="mb-4 inline-flex rounded bg-white/12 px-3 py-1 text-sm font-bold backdrop-blur">BUS / MCS approved installer directory</p>
-            <h1 className="text-4xl font-black leading-tight text-black sm:text-5xl lg:text-6xl">Find Trusted BUS & MCS Approved Heat Pump Installers Near You</h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-white/86">Compare approved local installers and check whether you could qualify for up to £7,500 towards an air source heat pump through the Boiler Upgrade Scheme.</p>
-            <form action="/directory" className="mt-8 flex max-w-2xl flex-col gap-3 rounded-lg bg-white p-2 sm:flex-row">
-              <input name="q" placeholder="Enter postcode, town or county" className="border-0" />
+        <div className="container-page grid min-h-[760px] items-center gap-8 py-16 lg:grid-cols-[1.02fr_0.98fr] lg:py-20">
+          <div className="surface-card surface-card-cream max-w-3xl p-8 sm:p-10 lg:p-12">
+            <p className="eyebrow">Territory-led installer directory</p>
+            <h1 className="mt-5 text-4xl font-black leading-[0.95] text-black sm:text-5xl lg:text-6xl">Find trusted BUS and MCS approved heat pump installers near you</h1>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-ink/75">Compare approved local installers and check whether you could qualify for up to £7,500 towards an air source heat pump through the Boiler Upgrade Scheme.</p>
+            <div className="mt-7 grid gap-3 sm:grid-cols-3">
+              {proofPoints.map(([value, label]) => (
+                <div key={label} className="rounded-2xl border border-ink/10 bg-white/75 p-4">
+                  <p className="text-2xl font-black tracking-tight text-black">{value}</p>
+                  <p className="mt-1 text-sm leading-6 text-ink/65">{label}</p>
+                </div>
+              ))}
+            </div>
+            <form action="/directory" className="mt-8 flex max-w-2xl flex-col gap-3 rounded-[22px] border border-ink/10 bg-white/92 p-2 shadow-soft sm:flex-row">
+              <input name="q" placeholder="Enter postcode, town or county" className="border-0 bg-transparent" />
               <button className="button-primary shrink-0" type="submit">Find an Installer <ArrowRight size={18} /></button>
             </form>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -43,7 +59,9 @@ export default function HomePage() {
               <Link className="button-secondary" href="/heat-pump-installers/wales">Wales installer pages</Link>
             </div>
           </div>
-          <LeadForm compact />
+          <div className="lg:pl-4">
+            <LeadForm compact />
+          </div>
         </div>
       </section>
 
@@ -51,7 +69,7 @@ export default function HomePage() {
         <div className="container-page">
           <div className="grid gap-4 md:grid-cols-4">
             {benefits.map(([Icon, title, text]) => (
-              <div key={title} className="rounded-lg border border-emerald-950/10 bg-white p-5">
+              <div key={title} className="surface-card p-5">
                 <Icon className="text-fern" size={26} />
                 <h3 className="mt-4 text-lg font-black">{title as string}</h3>
                 <p className="mt-2 text-sm leading-6 text-ink/65">{text as string}</p>
@@ -96,7 +114,7 @@ export default function HomePage() {
           "@context": "https://schema.org",
           "@type": "Organization",
           name: "UKSD BUS Installer Directory",
-          url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+          url: siteUrl(),
           description: "Directory for approved BUS and MCS heat pump installers across UK territories."
         })}
       />

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { installers, territories } from "@/lib/data";
-import { assignLeadToInstaller } from "@/lib/lead-assignment";
-import { createServerSupabaseClient } from "@/lib/supabase";
+import { createLeadFromForm } from "@/lib/repositories/leads";
 
 const leadSchema = z.object({
   first_name: z.string().min(1).max(80),
@@ -26,41 +24,29 @@ export async function POST(request: Request) {
   const formData = await request.formData();
   const parsed = leadSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) return NextResponse.json({ error: "Invalid lead details" }, { status: 400 });
-
-  const assignment = assignLeadToInstaller({
-    postcode: parsed.data.postcode,
-    preferredInstallerId: parsed.data.preferred_installer_id || undefined,
-    territories,
-    installers
-  });
-
-  const payload = {
+  const result = await createLeadFromForm({
     first_name: parsed.data.first_name,
     last_name: parsed.data.last_name,
     email: parsed.data.email,
     phone: parsed.data.phone,
-    postcode: parsed.data.postcode.toUpperCase(),
+    postcode: parsed.data.postcode,
     address: parsed.data.address,
-    homeowner_status: parsed.data.homeowner_status === "yes",
+    homeowner_status: parsed.data.homeowner_status,
     current_heating_source: parsed.data.current_heating_source,
     monthly_bill: parsed.data.monthly_bill,
     property_type: parsed.data.property_type,
     bedrooms: parsed.data.bedrooms,
-    interests: formData.getAll("interests"),
+    interests: formData.getAll("interests").map(String),
     consent_contact: true,
     consent_marketing: formData.get("consent_marketing") === "true",
-    territory_id: assignment.territoryId,
+    gdpr_acceptance: true,
     preferred_installer_id: parsed.data.preferred_installer_id || null,
-    assigned_installer_id: assignment.assignedInstallerId,
-    source: parsed.data.preferred_installer_id ? "installer_profile" : "directory",
-    stage: "new_enquiry"
-  };
+    source: parsed.data.preferred_installer_id ? "installer_profile" : "directory"
+  });
 
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    const supabase = await createServerSupabaseClient();
-    const { error } = await supabase.from("leads").insert(payload);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error, assignment: result.assignment }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, assignment });
+  return NextResponse.json({ ok: true, assignment: result.assignment });
 }

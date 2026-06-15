@@ -2,23 +2,29 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { BadgeCheck, MapPin, Timer, Wrench } from "lucide-react";
 import { LeadForm } from "@/components/lead-form";
-import { installers, reviews, territories } from "@/lib/data";
+import { listInstallers } from "@/lib/repositories/installers";
+import { listReviewsForInstaller } from "@/lib/repositories/reviews";
+import { listTerritories } from "@/lib/repositories/territories";
 import { jsonLd, pageMetadata } from "@/lib/seo";
+import { siteUrl } from "@/lib/runtime";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const installers = await listInstallers();
   return installers.map((installer) => ({ slug: installer.slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const installers = await listInstallers();
   const installer = installers.find((item) => item.slug === params.slug);
   return pageMetadata(installer?.companyName ?? "Installer profile", `View ${installer?.companyName ?? "installer"} BUS and MCS heat pump profile.`, `/installers/${params.slug}`);
 }
 
-export default function InstallerProfilePage({ params }: { params: { slug: string } }) {
+export default async function InstallerProfilePage({ params }: { params: { slug: string } }) {
+  const [installers, territories] = await Promise.all([listInstallers(), listTerritories()]);
   const installer = installers.find((item) => item.slug === params.slug && item.status === "active");
   if (!installer) notFound();
   const coveredTerritories = territories.filter((territory) => installer.territoryIds.includes(territory.id));
-  const installerReviews = reviews.filter((review) => review.installerId === installer.id);
+  const installerReviews = await listReviewsForInstaller(installer.id);
 
   return (
     <main>
@@ -26,10 +32,15 @@ export default function InstallerProfilePage({ params }: { params: { slug: strin
         <Image src={installer.coverImageUrl} alt={`${installer.companyName} renewable energy installation`} fill priority className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink/88 via-ink/60 to-transparent" />
         <div className="container-page relative flex min-h-[420px] items-end py-12 text-white">
-          <div className="max-w-3xl">
-            <div className="grid size-16 place-items-center rounded-lg bg-white text-2xl font-black text-fern">{installer.logoUrl}</div>
-            <h1 className="mt-5 text-4xl font-black sm:text-5xl">{installer.companyName}</h1>
-            <p className="mt-4 text-lg leading-8 text-white/86">{installer.description}</p>
+          <div className="surface-card max-w-3xl bg-ink/72 p-6 backdrop-blur-md sm:p-8">
+            <div className="flex flex-wrap items-start gap-5">
+              <div className="grid size-16 place-items-center rounded-2xl bg-white text-2xl font-black text-fern shadow-soft">{installer.logoUrl}</div>
+              <div className="min-w-0 flex-1">
+                <p className="eyebrow border-white/20 bg-white/10 text-white/70">Installer profile</p>
+                <h1 className="mt-3 text-4xl font-black sm:text-5xl">{installer.companyName}</h1>
+                <p className="mt-4 text-lg leading-8 text-white/86">{installer.description}</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -37,7 +48,7 @@ export default function InstallerProfilePage({ params }: { params: { slug: strin
       <section className="section-band">
         <div className="container-page grid gap-8 lg:grid-cols-[0.64fr_0.36fr]">
           <div className="grid gap-6">
-            <div className="rounded-lg border border-emerald-950/10 bg-white p-6">
+            <div className="surface-card p-6">
               <h2 className="text-2xl font-black">Accreditations</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <p className="flex items-center gap-2"><BadgeCheck className="text-fern" size={18} /> MCS: {installer.accreditations.verified ? installer.accreditations.mcsNumber : "Verification pending"}</p>
@@ -48,7 +59,7 @@ export default function InstallerProfilePage({ params }: { params: { slug: strin
               </div>
             </div>
 
-            <div className="rounded-lg border border-emerald-950/10 bg-white p-6">
+            <div className="surface-card p-6">
               <h2 className="text-2xl font-black">Services and capacity</h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-3">
                 <p className="flex items-center gap-2"><MapPin className="text-fern" size={18} /> {coveredTerritories.map((item) => item.name).join(", ")}</p>
@@ -56,17 +67,17 @@ export default function InstallerProfilePage({ params }: { params: { slug: strin
                 <p className="flex items-center gap-2"><Wrench className="text-fern" size={18} /> {installer.monthlyInstallCapacity} installs per month</p>
               </div>
               <div className="mt-5 flex flex-wrap gap-2">
-                {installer.services.map((service) => <span key={service} className="rounded bg-stone-100 px-3 py-1 text-sm font-bold">{service}</span>)}
+                {installer.services.map((service) => <span key={service} className="chip">{service}</span>)}
               </div>
               <p className="mt-5 text-ink/70">Warranty: {installer.warranty}</p>
             </div>
 
-            <div className="rounded-lg border border-emerald-950/10 bg-white p-6">
+            <div className="surface-card p-6">
               <h2 className="text-2xl font-black">Areas covered</h2>
               <p className="mt-3 leading-7 text-ink/70">{installer.areasCovered.join(", ")}</p>
             </div>
 
-            <div className="rounded-lg border border-emerald-950/10 bg-white p-6">
+            <div className="surface-card p-6">
               <h2 className="text-2xl font-black">Reviews</h2>
               <div className="mt-4 grid gap-4">
                 {installerReviews.length > 0 ? installerReviews.map((review) => (
@@ -90,7 +101,7 @@ export default function InstallerProfilePage({ params }: { params: { slug: strin
           "@type": "LocalBusiness",
           name: installer.companyName,
           areaServed: coveredTerritories.map((territory) => territory.name),
-          url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/installers/${installer.slug}`,
+          url: `${siteUrl()}/installers/${installer.slug}`,
           aggregateRating: { "@type": "AggregateRating", ratingValue: installer.rating, reviewCount: Math.max(installerReviews.length, 1) }
         })}
       />
