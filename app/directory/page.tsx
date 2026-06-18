@@ -230,7 +230,7 @@ export default function DirectoryPage({
               <p className="eyebrow">Scraped MCS directory</p>
               <h1 className="mt-3 text-4xl font-black">Air Source Heat Pump Installers in England</h1>
               <p className="mt-4 max-w-3xl leading-7 text-ink/70">
-                Live scrape from {data.sourceUrl}, showing {data.totalCount.toLocaleString()} installers across {data.totalPages} source pages.
+                Browse the current MCS Air Source Heat Pump installer list for England.
               </p>
               <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold text-ink/65">
                 <span className="chip chip-soft">{data.query.technology}</span>
