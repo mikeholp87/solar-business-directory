@@ -1,74 +1,303 @@
+import Link from "next/link";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import type { ReactNode } from "react";
 import { Search } from "lucide-react";
-import { InstallerCard } from "@/components/installer-card";
 import { LeadForm } from "@/components/lead-form";
-import { serviceFilters } from "@/lib/data";
-import { matchTerritoryByPostcode } from "@/lib/lead-assignment";
-import { listInstallers } from "@/lib/repositories/installers";
-import { listTerritories } from "@/lib/repositories/territories";
 import { pageMetadata } from "@/lib/seo";
 
-export const metadata = pageMetadata("Find BUS & MCS Heat Pump Installers", "Search approved installers by postcode, town, county, region or territory.", "/directory");
+type McsInstaller = {
+  installerId: number | null;
+  companyName: string | null;
+  address: string | null;
+  regionsCovered: string[];
+  boilerUpgradeSchemeRegistered: boolean;
+  certificationBody: string | null;
+  certificationNumber: string | null;
+  website: string | null;
+  email: string | null;
+  phone: string | null;
+  sourcePage: number | null;
+};
 
-export default async function DirectoryPage({ searchParams }: { searchParams: { q?: string; filter?: string | string[]; sort?: string } }) {
-  const [installers, territories] = await Promise.all([listInstallers(), listTerritories()]);
-  const query = searchParams.q?.toLowerCase().trim() ?? "";
-  const filters = Array.isArray(searchParams.filter) ? searchParams.filter : searchParams.filter ? [searchParams.filter] : [];
-  const postcodeTerritory = query ? matchTerritoryByPostcode(query, territories) : undefined;
-  const results = installers
-    .filter((installer) => installer.status === "active")
-    .filter((installer) => {
-      if (!query) return true;
-      const territoryMatch = installer.territoryIds.includes(postcodeTerritory?.id ?? "");
-      const text = [installer.companyName, installer.description, ...installer.areasCovered, ...installer.territoryIds, ...installer.services].join(" ").toLowerCase();
-      return territoryMatch || text.includes(query);
-    })
-    .filter((installer) => {
-      if (filters.length === 0) return true;
-      return filters.every((filter) => {
-        const normalised = filter.toLowerCase();
-        if (normalised === "mcs accredited") return Boolean(installer.accreditations.mcsNumber);
-        if (normalised === "bus registered") return installer.accreditations.busRegistered;
-        if (normalised === "air source heat pumps") return installer.services.some((service) => service.toLowerCase().includes("air source"));
-        if (normalised === "solar available") return installer.services.some((service) => service.toLowerCase().includes("solar"));
-        if (normalised === "battery storage available") return installer.services.some((service) => service.toLowerCase().includes("battery"));
-        if (normalised === "finance available") return installer.services.some((service) => service.toLowerCase().includes("finance"));
-        if (normalised === "survey availability") return installer.surveyTurnaroundDays <= 7;
-        return true;
-      });
-    });
+type McsDirectoryData = {
+  sourceUrl: string;
+  query: {
+    technology: string;
+    region: string;
+  };
+  totalCount: number;
+  totalPages: number;
+  scrapedAt: string;
+  installers: McsInstaller[];
+};
+
+const PER_PAGE = 15;
+const DATA_PATH = resolve(process.cwd(), "data/mcscertified-air-source-heat-pump-england.json");
+
+export const metadata = pageMetadata(
+  "MCS Air Source Heat Pump Installers in England",
+  "Browse the scraped MCS directory for Air Source Heat Pump installers in England.",
+  "/directory"
+);
+
+function readDirectoryData() {
+  const raw = readFileSync(DATA_PATH, "utf8");
+  return JSON.parse(raw) as McsDirectoryData;
+}
+
+function parsePage(page: string | string[] | undefined) {
+  const value = Array.isArray(page) ? page[0] : page;
+  const parsed = Number.parseInt(value ?? "1", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function normalizeSearchParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
+function parseFlag(value: string | string[] | undefined) {
+  const normalised = normalizeSearchParam(value).toLowerCase();
+  return normalised === "1" || normalised === "true" || normalised === "on" || normalised === "yes";
+}
+
+function formatWebsite(url: string | null) {
+  if (!url) return null;
+  return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
+}
+
+function pageWindow(currentPage: number, totalPages: number) {
+  const pages = new Set<number>([1, totalPages]);
+  for (let page = currentPage - 2; page <= currentPage + 2; page += 1) {
+    if (page >= 1 && page <= totalPages) pages.add(page);
+  }
+  return Array.from(pages).sort((a, b) => a - b);
+}
+
+function Pagination({
+  currentPage,
+  totalPages,
+  query,
+  bus,
+  website,
+  email,
+}: {
+  currentPage: number;
+  totalPages: number;
+  query: string;
+  bus: boolean;
+  website: boolean;
+  email: boolean;
+}) {
+  if (totalPages <= 1) return null;
+
+  const pages = pageWindow(currentPage, totalPages);
+
+  return (
+    <nav aria-label="Pagination" className="surface-card mt-8 flex flex-wrap items-center justify-between gap-4 p-4">
+      <p className="text-sm font-bold text-ink/65">
+        Page {currentPage} of {totalPages}
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <PaginationLink page={currentPage - 1} disabled={currentPage <= 1} label="Previous" query={query} bus={bus} website={website} email={email} />
+        {pages.map((page, index) => {
+          const previousPage = pages[index - 1];
+          const gap = previousPage && page - previousPage > 1;
+          return (
+            <span key={page} className="flex items-center gap-2">
+              {gap ? <span className="px-2 text-sm font-bold text-ink/45">…</span> : null}
+              <PaginationLink page={page} active={page === currentPage} query={query} bus={bus} website={website} email={email} />
+            </span>
+          );
+        })}
+        <PaginationLink page={currentPage + 1} disabled={currentPage >= totalPages} label="Next" query={query} bus={bus} website={website} email={email} />
+      </div>
+    </nav>
+  );
+}
+
+function PaginationLink({
+  page,
+  active,
+  disabled,
+  label,
+  query,
+  bus,
+  website,
+  email,
+}: {
+  page: number;
+  active?: boolean;
+  disabled?: boolean;
+  label?: string;
+  query: string;
+  bus: boolean;
+  website: boolean;
+  email: boolean;
+}) {
+  const baseClass =
+    "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border px-3 text-sm font-bold transition";
+  const activeClass = "border-fern bg-fern text-white shadow-soft";
+  const inactiveClass = "border-stone-200 bg-white/90 text-ink hover:border-stone-300 hover:bg-white";
+  const disabledClass = "pointer-events-none border-stone-200 bg-white/60 text-ink/35";
+
+  const className = `${baseClass} ${disabled ? disabledClass : active ? activeClass : inactiveClass}`;
+  const href = buildDirectoryHref({ page, query, bus, website, email });
+
+  if (disabled) {
+    return <span className={className}>{label ?? page}</span>;
+  }
+
+  return <Link className={className} href={href} aria-current={active ? "page" : undefined}>{label ?? page}</Link>;
+}
+
+function ToggleFilter({ name, label, checked }: { name: "bus" | "website" | "email"; label: string; checked: boolean }) {
+  return (
+    <label className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-sm font-bold">
+      <input type="checkbox" name={name} value="1" defaultChecked={checked} className="size-4 w-auto" />
+      <span>{label}</span>
+    </label>
+  );
+}
+
+function buildDirectoryHref({
+  page,
+  query,
+  bus,
+  website,
+  email,
+}: {
+  page: number;
+  query: string;
+  bus: boolean;
+  website: boolean;
+  email: boolean;
+}) {
+  const params = new URLSearchParams();
+  if (page > 1) params.set("page", String(page));
+  if (query) params.set("q", query);
+  if (bus) params.set("bus", "1");
+  if (website) params.set("website", "1");
+  if (email) params.set("email", "1");
+  const queryString = params.toString();
+  return queryString ? `/directory?${queryString}` : "/directory";
+}
+
+export default function DirectoryPage({
+  searchParams,
+}: {
+  searchParams: { page?: string | string[]; q?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
+}) {
+  const data = readDirectoryData();
+  const currentPage = parsePage(searchParams.page);
+  const query = normalizeSearchParam(searchParams.q).toLowerCase();
+  const bus = parseFlag(searchParams.bus);
+  const website = parseFlag(searchParams.website);
+  const email = parseFlag(searchParams.email);
+  const filteredInstallers = data.installers.filter((installer) => {
+    const haystack = [
+      installer.companyName,
+      installer.address,
+      installer.certificationBody,
+      installer.certificationNumber,
+      installer.website,
+      installer.email,
+      installer.phone,
+      installer.regionsCovered.join(" "),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    if (query && !haystack.includes(query)) return false;
+    if (bus && !installer.boilerUpgradeSchemeRegistered) return false;
+    if (website && !installer.website) return false;
+    if (email && !installer.email) return false;
+    return true;
+  });
+  const totalPages = Math.max(1, Math.ceil(filteredInstallers.length / PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const start = (safePage - 1) * PER_PAGE;
+  const end = start + PER_PAGE;
+  const results = filteredInstallers.slice(start, end);
 
   return (
     <main className="section-band">
       <div className="container-page">
         <div className="grid gap-8 lg:grid-cols-[0.72fr_0.28fr]">
           <div>
-            <h1 className="text-4xl font-black">Directory Search</h1>
-            <p className="mt-3 max-w-2xl leading-7 text-ink/70">Search by postcode, town, county or territory, then request a survey from an approved installer.</p>
-            <form className="surface-card mt-6 grid gap-3 p-4 md:grid-cols-[1fr_auto]">
-              <label className="sr-only" htmlFor="directory-q">Search</label>
-              <input id="directory-q" name="q" defaultValue={searchParams.q} placeholder="Postcode, town, county or territory" />
-              <button className="button-primary" type="submit"><Search size={18} /> Search</button>
+            <div className="surface-card surface-card-cream p-8 sm:p-10">
+              <p className="eyebrow">Scraped MCS directory</p>
+              <h1 className="mt-3 text-4xl font-black">Air Source Heat Pump Installers in England</h1>
+              <p className="mt-4 max-w-3xl leading-7 text-ink/70">
+                Live scrape from {data.sourceUrl}, showing {data.totalCount.toLocaleString()} installers across {data.totalPages} source pages.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold text-ink/65">
+                <span className="chip chip-soft">{data.query.technology}</span>
+                <span className="chip chip-soft">{data.query.region}</span>
+                <span className="chip">{PER_PAGE} per page</span>
+              </div>
+            </div>
+
+            <form method="get" className="surface-card mt-6 grid gap-4 p-4">
+              <input type="hidden" name="page" value="1" />
+              <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+                <label className="sr-only" htmlFor="directory-q">Search installers</label>
+                <input
+                  id="directory-q"
+                  name="q"
+                  placeholder="Search company, address, certification number, region, email, phone..."
+                  defaultValue={normalizeSearchParam(searchParams.q)}
+                />
+                <button className="button-primary" type="submit">
+                  <Search size={18} />
+                  Search
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <ToggleFilter name="bus" label="BUS registered" checked={bus} />
+                <ToggleFilter name="website" label="Website listed" checked={website} />
+                <ToggleFilter name="email" label="Email listed" checked={email} />
+              </div>
             </form>
 
-            <div className="surface-card mt-5 grid gap-3 p-4 lg:grid-cols-[1fr_auto]">
-              <div className="flex flex-wrap gap-2">
-              {serviceFilters.map((filter) => (
-                <label key={filter} className="flex grid-cols-none flex-row items-center gap-2 rounded border border-stone-200 px-3 py-2 text-sm font-bold">
-                  <input className="size-4 w-auto" type="checkbox" name="filter" value={filter} defaultChecked={filters.includes(filter)} /> {filter}
-                </label>
+            <div className="mt-6 grid gap-5">
+              {results.map((installer) => (
+                <article key={installer.installerId ?? `${installer.companyName}-${installer.sourcePage}`} className="surface-card p-6">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <p className="eyebrow">Installer</p>
+                      <h2 className="mt-3 text-2xl font-black">{installer.companyName ?? "Unknown company"}</h2>
+                      <p className="mt-3 max-w-3xl leading-7 text-ink/70">{installer.address ?? "No address listed"}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {installer.boilerUpgradeSchemeRegistered ? <span className="chip chip-success">BUS registered</span> : <span className="chip chip-warning">Not BUS registered</span>}
+                      <span className="chip chip-soft">{installer.certificationBody ?? "Unknown body"}</span>
+                    </div>
+                  </div>
+
+                  <dl className="mt-6 grid gap-4 border-t border-ink/10 pt-5 sm:grid-cols-2 xl:grid-cols-3">
+                    <Field label="Certification number" value={installer.certificationNumber} />
+                    <Field
+                      label="Website"
+                      value={
+                        installer.website ? (
+                          <a href={formatWebsite(installer.website) ?? installer.website} target="_blank" rel="noreferrer">
+                            {formatWebsite(installer.website) ?? installer.website}
+                          </a>
+                        ) : null
+                      }
+                    />
+                    <Field label="Email" value={installer.email ? <a href={`mailto:${installer.email}`}>{installer.email}</a> : null} />
+                    <Field label="Phone" value={installer.phone ? <a href={`tel:${installer.phone}`}>{installer.phone}</a> : null} />
+                    <Field label="Source page" value={installer.sourcePage?.toString() ?? null} />
+                    <Field label="Regions covered" value={installer.regionsCovered.length > 0 ? installer.regionsCovered.join(", ") : null} />
+                  </dl>
+                </article>
               ))}
             </div>
-            <label className="min-w-52">Sort by<select name="sort" defaultValue={searchParams.sort ?? "recommended"}><option value="recommended">Recommended</option><option value="closest">Closest</option><option value="highest-rated">Highest rated</option><option value="earliest">Earliest availability</option></select></label>
-          </div>
 
-            <div className="mt-6 grid gap-5">
-              {results.length > 0 ? results.map((installer) => <InstallerCard key={installer.id} installer={installer} />) : (
-                <div className="surface-card p-6">
-                  <h2 className="text-xl font-black">No active installer found for that search yet.</h2>
-                  <p className="mt-2 text-ink/65">Submit an enquiry and UKSD can review territory availability manually.</p>
-                </div>
-              )}
-            </div>
+            <Pagination currentPage={safePage} totalPages={totalPages} query={normalizeSearchParam(searchParams.q)} bus={bus} website={website} email={email} />
           </div>
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <LeadForm compact />
@@ -76,5 +305,14 @@ export default async function DirectoryPage({ searchParams }: { searchParams: { 
         </div>
       </div>
     </main>
+  );
+}
+
+function Field({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div>
+      <dt className="text-xs font-black uppercase tracking-[0.18em] text-ink/50">{label}</dt>
+      <dd className="mt-2 text-sm leading-6 text-ink/80">{value ?? "Not listed"}</dd>
+    </div>
   );
 }
