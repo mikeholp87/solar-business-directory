@@ -259,6 +259,9 @@ export default function DirectoryPage({
                 <ToggleFilter name="website" label="Website listed" checked={website} />
                 <ToggleFilter name="email" label="Email listed" checked={email} />
               </div>
+              <p className="text-sm font-bold text-ink/65">
+                Showing {results.length} of {filteredInstallers.length.toLocaleString()} matching results
+              </p>
             </form>
 
             <div className="mt-6 grid gap-5">
