@@ -1,70 +1,23 @@
 import Link from "next/link";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import type { ReactNode } from "react";
 import { Search } from "lucide-react";
 import { LeadForm } from "@/components/lead-form";
+import {
+  formatWebsite,
+  getListingKey,
+  normalizeSearchParam,
+  parseFlag,
+  parsePage,
+  PER_PAGE,
+  readDirectoryData,
+} from "@/lib/mcs-directory";
 import { pageMetadata } from "@/lib/seo";
-
-type McsInstaller = {
-  installerId: number | null;
-  companyName: string | null;
-  address: string | null;
-  regionsCovered: string[];
-  boilerUpgradeSchemeRegistered: boolean;
-  certificationBody: string | null;
-  certificationNumber: string | null;
-  website: string | null;
-  email: string | null;
-  phone: string | null;
-  sourcePage: number | null;
-};
-
-type McsDirectoryData = {
-  sourceUrl: string;
-  query: {
-    technology: string;
-    region: string;
-  };
-  totalCount: number;
-  totalPages: number;
-  scrapedAt: string;
-  installers: McsInstaller[];
-};
-
-const PER_PAGE = 15;
-const DATA_PATH = resolve(process.cwd(), "data/mcscertified-air-source-heat-pump-england.json");
 
 export const metadata = pageMetadata(
   "MCS Air Source Heat Pump Installers in England",
   "Browse the scraped MCS directory for Air Source Heat Pump installers in England.",
   "/directory"
 );
-
-function readDirectoryData() {
-  const raw = readFileSync(DATA_PATH, "utf8");
-  return JSON.parse(raw) as McsDirectoryData;
-}
-
-function parsePage(page: string | string[] | undefined) {
-  const value = Array.isArray(page) ? page[0] : page;
-  const parsed = Number.parseInt(value ?? "1", 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
-}
-
-function normalizeSearchParam(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
-}
-
-function parseFlag(value: string | string[] | undefined) {
-  const normalised = normalizeSearchParam(value).toLowerCase();
-  return normalised === "1" || normalised === "true" || normalised === "on" || normalised === "yes";
-}
-
-function formatWebsite(url: string | null) {
-  if (!url) return null;
-  return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
-}
 
 function pageWindow(currentPage: number, totalPages: number) {
   const pages = new Set<number>([1, totalPages]);
@@ -78,6 +31,7 @@ function Pagination({
   currentPage,
   totalPages,
   query,
+  category,
   bus,
   website,
   email,
@@ -85,6 +39,7 @@ function Pagination({
   currentPage: number;
   totalPages: number;
   query: string;
+  category: string;
   bus: boolean;
   website: boolean;
   email: boolean;
@@ -99,18 +54,18 @@ function Pagination({
         Page {currentPage} of {totalPages}
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <PaginationLink page={currentPage - 1} disabled={currentPage <= 1} label="Previous" query={query} bus={bus} website={website} email={email} />
+        <PaginationLink page={currentPage - 1} disabled={currentPage <= 1} label="Previous" query={query} category={category} bus={bus} website={website} email={email} />
         {pages.map((page, index) => {
           const previousPage = pages[index - 1];
           const gap = previousPage && page - previousPage > 1;
           return (
             <span key={page} className="flex items-center gap-2">
               {gap ? <span className="px-2 text-sm font-bold text-ink/45">…</span> : null}
-              <PaginationLink page={page} active={page === currentPage} query={query} bus={bus} website={website} email={email} />
+              <PaginationLink page={page} active={page === currentPage} query={query} category={category} bus={bus} website={website} email={email} />
             </span>
           );
         })}
-        <PaginationLink page={currentPage + 1} disabled={currentPage >= totalPages} label="Next" query={query} bus={bus} website={website} email={email} />
+        <PaginationLink page={currentPage + 1} disabled={currentPage >= totalPages} label="Next" query={query} category={category} bus={bus} website={website} email={email} />
       </div>
     </nav>
   );
@@ -122,6 +77,7 @@ function PaginationLink({
   disabled,
   label,
   query,
+  category,
   bus,
   website,
   email,
@@ -131,6 +87,7 @@ function PaginationLink({
   disabled?: boolean;
   label?: string;
   query: string;
+  category: string;
   bus: boolean;
   website: boolean;
   email: boolean;
@@ -142,7 +99,7 @@ function PaginationLink({
   const disabledClass = "pointer-events-none border-stone-200 bg-white/60 text-ink/35";
 
   const className = `${baseClass} ${disabled ? disabledClass : active ? activeClass : inactiveClass}`;
-  const href = buildDirectoryHref({ page, query, bus, website, email });
+  const href = buildDirectoryHref({ page, query, category, bus, website, email });
 
   if (disabled) {
     return <span className={className}>{label ?? page}</span>;
@@ -163,12 +120,14 @@ function ToggleFilter({ name, label, checked }: { name: "bus" | "website" | "ema
 function buildDirectoryHref({
   page,
   query,
+  category,
   bus,
   website,
   email,
 }: {
   page: number;
   query: string;
+  category: string;
   bus: boolean;
   website: boolean;
   email: boolean;
@@ -176,6 +135,7 @@ function buildDirectoryHref({
   const params = new URLSearchParams();
   if (page > 1) params.set("page", String(page));
   if (query) params.set("q", query);
+  if (category) params.set("category", category);
   if (bus) params.set("bus", "1");
   if (website) params.set("website", "1");
   if (email) params.set("email", "1");
@@ -186,18 +146,21 @@ function buildDirectoryHref({
 export default function DirectoryPage({
   searchParams,
 }: {
-  searchParams: { page?: string | string[]; q?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
+  searchParams: { page?: string | string[]; q?: string | string[]; category?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
 }) {
   const data = readDirectoryData();
   const currentPage = parsePage(searchParams.page);
   const query = normalizeSearchParam(searchParams.q).toLowerCase();
+  const category = normalizeSearchParam(searchParams.category);
   const bus = parseFlag(searchParams.bus);
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
+  const categories = Array.from(new Set(data.installers.flatMap((installer) => installer.category))).sort((a, b) => a.localeCompare(b));
   const filteredInstallers = data.installers.filter((installer) => {
     const haystack = [
       installer.companyName,
       installer.address,
+      installer.category.join(" "),
       installer.certificationBody,
       installer.certificationNumber,
       installer.website,
@@ -210,6 +173,7 @@ export default function DirectoryPage({
       .toLowerCase();
 
     if (query && !haystack.includes(query)) return false;
+    if (category && !installer.category.includes(category)) return false;
     if (bus && !installer.boilerUpgradeSchemeRegistered) return false;
     if (website && !installer.website) return false;
     if (email && !installer.email) return false;
@@ -255,6 +219,17 @@ export default function DirectoryPage({
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
+                <label className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-sm font-bold">
+                  <span>Category</span>
+                  <select name="category" defaultValue={category} className="bg-transparent text-sm outline-none">
+                    <option value="">All categories</option>
+                    {categories.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </label>
                 <ToggleFilter name="bus" label="BUS registered" checked={bus} />
                 <ToggleFilter name="website" label="Website listed" checked={website} />
                 <ToggleFilter name="email" label="Email listed" checked={email} />
@@ -270,12 +245,26 @@ export default function DirectoryPage({
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="eyebrow">Installer</p>
-                      <h2 className="mt-3 text-2xl font-black">{installer.companyName ?? "Unknown company"}</h2>
+                      <h2 className="mt-3 text-2xl font-black">
+                        <Link href={`/directory/${getListingKey(installer)}`} className="hover:text-fern">
+                          {installer.companyName ?? "Unknown company"}
+                        </Link>
+                      </h2>
                       <p className="mt-3 max-w-3xl leading-7 text-ink/70">{installer.address ?? "No address listed"}</p>
+                      {installer.category.length > 0 ? (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {installer.category.map((item) => (
+                            <span key={item} className="chip chip-soft">
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {installer.boilerUpgradeSchemeRegistered ? <span className="chip chip-success">BUS registered</span> : <span className="chip chip-warning">Not BUS registered</span>}
                       <span className="chip chip-soft">{installer.certificationBody ?? "Unknown body"}</span>
+                      <span className="chip">Page {installer.sourcePage ?? "?"}</span>
                     </div>
                   </div>
 
@@ -296,11 +285,22 @@ export default function DirectoryPage({
                     <Field label="Source page" value={installer.sourcePage?.toString() ?? null} />
                     <Field label="Regions covered" value={installer.regionsCovered.length > 0 ? installer.regionsCovered.join(", ") : null} />
                   </dl>
+
+                  <div className="mt-6 flex flex-wrap gap-3 border-t border-ink/10 pt-5">
+                    <Link className="button-primary" href={`/directory/${getListingKey(installer)}`}>
+                      View details
+                    </Link>
+                    {installer.website ? (
+                      <a className="button-secondary" href={formatWebsite(installer.website) ?? installer.website} target="_blank" rel="noreferrer">
+                        Open website
+                      </a>
+                    ) : null}
+                  </div>
                 </article>
               ))}
             </div>
 
-            <Pagination currentPage={safePage} totalPages={totalPages} query={normalizeSearchParam(searchParams.q)} bus={bus} website={website} email={email} />
+            <Pagination currentPage={safePage} totalPages={totalPages} query={normalizeSearchParam(searchParams.q)} category={category} bus={bus} website={website} email={email} />
           </div>
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <LeadForm compact />
