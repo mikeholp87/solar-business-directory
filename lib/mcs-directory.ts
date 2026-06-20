@@ -41,7 +41,17 @@ export const DATA_PATH = resolve(process.cwd(), "data/mcscertified-air-source-he
 
 export function readDirectoryData() {
   const raw = readFileSync(DATA_PATH, "utf8");
-  return JSON.parse(raw) as McsDirectoryData;
+  const parsed = JSON.parse(raw) as McsDirectoryData;
+
+  return {
+    ...parsed,
+    installers: parsed.installers.map((installer) => ({
+      ...installer,
+      category: Array.isArray(installer.category) ? installer.category : [],
+      regionsCovered: Array.isArray(installer.regionsCovered) ? installer.regionsCovered : [],
+      addressParts: installer.addressParts ?? undefined,
+    })),
+  };
 }
 
 export function parsePage(page: string | string[] | undefined) {
