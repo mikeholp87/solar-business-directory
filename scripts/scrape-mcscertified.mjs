@@ -66,6 +66,29 @@ function normalizeWebsite(value) {
   }
 }
 
+function normalizePhone(value) {
+  if (!value) return null;
+  const trimmed = String(value).trim();
+  if (!trimmed) return null;
+  return trimmed.replace(/^tel:/i, '').replace(/\s+/g, '');
+}
+
+function parseAddressParts(address) {
+  const parts = String(address ?? '')
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    line1: parts[0] ?? null,
+    line2: parts[1] ?? null,
+    line3: parts.length >= 5 ? parts[2] : null,
+    county: parts.length >= 5 ? parts[4] : parts[3] ?? null,
+    postcode: parts.length >= 5 ? parts[3] : parts[2] ?? null,
+    country: 'Unspecified',
+  };
+}
+
 function formatAddress(item) {
   return [item.address_line_1, item.address_line_2, item.address_line_3, item.county, item.postcode]
     .map((part) => (part ? String(part).trim() : ''))
@@ -101,6 +124,10 @@ function normalizeInstaller(item, pageNumber) {
   };
 }
 
+function normalizeText(value) {
+  return value ? String(value).replace(/\s+/g, ' ').trim() : null;
+}
+
 async function dismissConsent(page) {
   const accept = page.getByRole('button', { name: /accept/i }).first();
   if (await accept.count().catch(() => 0)) {
@@ -110,6 +137,13 @@ async function dismissConsent(page) {
 
 async function clickElement(locator) {
   await locator.evaluate((element) => element.click());
+}
+
+async function applyInstallerFilters(page) {
+  await clickElement(page.locator('#technology_ashp'));
+  await clickElement(page.getByRole('button', { name: /select location/i }).first());
+  await clickElement(page.locator('#region_england'));
+  await clickElement(page.locator('#submit-location-filters'));
 }
 
 async function fetchJson(url) {
@@ -125,6 +159,47 @@ async function fetchJson(url) {
   return response.json();
 }
 
+function modalSelector(installerId) {
+  return `#modal-${installerId}`;
+}
+
+async function closeModal(page, installerId) {
+  const modal = page.locator(modalSelector(installerId));
+  await modal.locator('.modal-close').first().evaluate((element) => element.click()).catch(() => {});
+}
+
+async function extractInstallerFromModal(page, item) {
+  const modal = page.locator(modalSelector(item.installer_id));
+
+  return modal.evaluate((modalEl) => {
+    const clean = (value) => (value ? String(value).replace(/\s+/g, ' ').trim().replace(/,\s*$/, '') : null);
+    const text = clean(modalEl.innerText ?? modalEl.textContent ?? '');
+    const capture = (pattern) => clean(text?.match(pattern)?.[1] ?? null);
+
+    const certificationNumber = capture(/Certification Number:\s*([A-Z0-9-]+)/i);
+    const email = clean(modalEl.querySelector('a[href^=\"mailto:\"]')?.getAttribute('href')?.replace(/^mailto:/i, '') ?? null);
+    const phone = clean(modalEl.querySelector('a[href^=\"tel:\"]')?.getAttribute('href')?.replace(/^tel:/i, '') ?? null);
+    const website = clean(modalEl.querySelector('a[target=\"_blank\"][href^=\"http\"]')?.getAttribute('href') ?? null);
+
+    return {
+      companyName: clean(modalEl.querySelector('h2')?.textContent ?? null),
+      certificationNumber,
+      email,
+      phone,
+      website,
+      address: capture(/Address:\s*([\s\S]*?)\s*Regions covered:/i),
+      regionsCovered: capture(/Regions covered:\s*([\s\S]*?)\s*Boiler Upgrade Scheme Registered:/i)
+        ?.split(',')
+        .map((part) => clean(part))
+        .filter(Boolean) ?? [],
+      boilerUpgradeSchemeRegistered: capture(/Boiler Upgrade Scheme Registered:\s*([\s\S]*?)\s*Certification Body:/i),
+      certificationBody: clean(
+        modalEl.innerHTML.match(/<strong>Certification Body:<\/strong>[\s\S]*?<p>([\s\S]*?)<\/p>/i)?.[1] ?? null,
+      ),
+    };
+  });
+}
+
 async function main() {
   const { output, maxPages, headless, url } = parseArgs(process.argv.slice(2));
 
@@ -134,51 +209,61 @@ async function main() {
   try {
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     await dismissConsent(page);
-
-    // Drive the visible UI so the scraper follows the same flow a user would.
-    await clickElement(page.locator('#technology_ashp'));
-    await clickElement(page.getByRole('button', { name: /select location/i }).first());
-    await clickElement(page.locator('#region_england'));
-    await clickElement(page.locator('#submit-location-filters'));
-
-    const { ajaxurl, nonce } = await page.evaluate(() => window.mcsAjax ?? {});
-    if (!ajaxurl || !nonce) {
-      throw new Error('Could not read MCS AJAX settings from the page.');
-    }
-
-    const baseUrl = new URL(ajaxurl);
-    baseUrl.search = new URLSearchParams({
-      action: 'filter_installers',
-      nonce,
-      form_type: 'installers',
-      search: '',
-      'technology[]': 'technology_ashp',
-      'region[]': 'region_england',
-      per_page: String(DEFAULT_PER_PAGE),
-      page: '1',
-    }).toString();
-
-    const firstPayload = await fetchJson(baseUrl.toString());
-    const firstBatch = firstPayload?.data?.data ?? [];
-    const totalCount = Number(firstPayload?.data?.total_count ?? firstBatch.length);
-    const perPage = firstBatch.length || DEFAULT_PER_PAGE;
-    const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
-    const pageLimit = Number.isFinite(maxPages) ? Math.min(totalPages, maxPages) : totalPages;
+    await applyInstallerFilters(page);
+    await page.waitForTimeout(3000);
 
     const installers = [];
-    for (let pageNumber = 1; pageNumber <= pageLimit; pageNumber += 1) {
-      const pageUrl = new URL(baseUrl);
-      pageUrl.searchParams.set('page', String(pageNumber));
+    let pageNumber = 1;
 
-      const payload = pageNumber === 1 ? firstPayload : await fetchJson(pageUrl.toString());
-      const items = payload?.data?.data ?? [];
-      if (!items.length) break;
+    while (true) {
+      await page.waitForSelector('button.modal-toggle', { state: 'attached', timeout: 30000 });
+      const buttons = page.locator('button.modal-toggle');
+      const buttonCount = await buttons.count();
 
-      for (const item of items) {
-        installers.push(normalizeInstaller(item, pageNumber));
+      for (let index = 0; index < buttonCount; index += 1) {
+        const button = buttons.nth(index);
+        const installerId = Number(await button.getAttribute('data-id'));
+        const details = await extractInstallerFromModal(page, { installer_id: installerId });
+        installers.push({
+          installerId: Number.isFinite(installerId) ? installerId : null,
+          companyName: details.companyName ?? null,
+          address: details.address ?? null,
+          addressParts: parseAddressParts(details.address),
+          regionsCovered: details.regionsCovered ?? [],
+          boilerUpgradeSchemeRegistered: (details.boilerUpgradeSchemeRegistered ?? '').toLowerCase() === 'yes',
+          certificationBody: details.certificationBody ?? null,
+          certificationNumber: details.certificationNumber ?? null,
+          website: normalizeWebsite(details.website),
+          email: normalizeText(details.email),
+          phone: normalizePhone(details.phone),
+          sourcePage: pageNumber,
+        });
       }
 
-      console.log(`Scraped page ${pageNumber}/${pageLimit} (${items.length} installers)`);
+      console.log(`Scraped page ${pageNumber} (${buttonCount} installers)`);
+
+      if (Number.isFinite(maxPages) && pageNumber >= maxPages) {
+        break;
+      }
+
+      const nextLink = page.locator('#pagination a').filter({ hasText: /^Next$/ }).first();
+      if ((await nextLink.count().catch(() => 0)) === 0) {
+        break;
+      }
+
+      const firstInstallerId = await buttons.first().getAttribute('data-id');
+      await nextLink.evaluate((element) => element.click());
+      const advanced = await page.waitForFunction(
+        (previousId) => document.querySelector('button.modal-toggle')?.getAttribute('data-id') !== previousId,
+        firstInstallerId,
+        { timeout: 30000 },
+      ).then(() => true).catch(() => false);
+
+      if (!advanced) {
+        break;
+      }
+
+      pageNumber += 1;
     }
 
     const result = {
@@ -187,8 +272,8 @@ async function main() {
         technology: 'Air Source Heat Pump',
         region: 'England',
       },
-      totalCount,
-      totalPages,
+      totalCount: installers.length,
+      totalPages: pageNumber,
       scrapedAt: new Date().toISOString(),
       installers,
     };
