@@ -36,7 +36,8 @@ export type McsDirectoryData = {
   installers: McsInstaller[];
 };
 
-export const PER_PAGE = 15;
+export const DEFAULT_PER_PAGE = 15;
+export const PER_PAGE_OPTIONS = [15, 30, 45, 60, 75, 90] as const;
 export const DATA_PATH = resolve(process.cwd(), "data/mcscertified-air-source-heat-pump-england.json");
 
 export function readDirectoryData() {
@@ -67,6 +68,16 @@ export function normalizeSearchParam(value: string | string[] | undefined) {
 export function parseFlag(value: string | string[] | undefined) {
   const normalized = normalizeSearchParam(value).toLowerCase();
   return normalized === "1" || normalized === "true" || normalized === "on" || normalized === "yes";
+}
+
+export function parsePerPage(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(raw ?? String(DEFAULT_PER_PAGE), 10);
+  if (!Number.isFinite(parsed)) return DEFAULT_PER_PAGE;
+
+  const allowed = [...PER_PAGE_OPTIONS];
+  const closestAllowed = allowed.find((option) => option === parsed);
+  return closestAllowed ?? DEFAULT_PER_PAGE;
 }
 
 export function formatWebsite(url: string | null) {

@@ -5,10 +5,12 @@ import {
   formatWebsite,
   getListingKey,
   type McsInstaller,
+  DEFAULT_PER_PAGE,
   normalizeSearchParam,
   parseFlag,
   parsePage,
-  PER_PAGE,
+  parsePerPage,
+  PER_PAGE_OPTIONS,
   readDirectoryData,
 } from "@/lib/mcs-directory";
 import { pageMetadata } from "@/lib/seo";
@@ -53,6 +55,7 @@ function Pagination({
   query,
   type,
   sort,
+  perPage,
   bus,
   website,
   email,
@@ -62,6 +65,7 @@ function Pagination({
   query: string;
   type: string;
   sort: SortOption;
+  perPage: number;
   bus: boolean;
   website: boolean;
   email: boolean;
@@ -76,18 +80,18 @@ function Pagination({
         Page {currentPage} of {totalPages}
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <PaginationLink page={currentPage - 1} disabled={currentPage <= 1} label="Previous" query={query} type={type} sort={sort} bus={bus} website={website} email={email} />
+        <PaginationLink page={currentPage - 1} disabled={currentPage <= 1} label="Previous" query={query} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
         {pages.map((page, index) => {
           const previousPage = pages[index - 1];
           const gap = previousPage && page - previousPage > 1;
           return (
             <span key={page} className="flex items-center gap-2">
               {gap ? <span className="px-2 text-sm font-bold text-ink/45">…</span> : null}
-              <PaginationLink page={page} active={page === currentPage} query={query} type={type} sort={sort} bus={bus} website={website} email={email} />
+              <PaginationLink page={page} active={page === currentPage} query={query} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
             </span>
           );
         })}
-        <PaginationLink page={currentPage + 1} disabled={currentPage >= totalPages} label="Next" query={query} type={type} sort={sort} bus={bus} website={website} email={email} />
+        <PaginationLink page={currentPage + 1} disabled={currentPage >= totalPages} label="Next" query={query} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
       </div>
     </nav>
   );
@@ -101,6 +105,7 @@ function PaginationLink({
   query,
   type,
   sort,
+  perPage,
   bus,
   website,
   email,
@@ -112,6 +117,7 @@ function PaginationLink({
   query: string;
   type: string;
   sort: SortOption;
+  perPage: number;
   bus: boolean;
   website: boolean;
   email: boolean;
@@ -123,7 +129,7 @@ function PaginationLink({
   const disabledClass = "pointer-events-none border-stone-200 bg-white/60 text-ink/35";
 
   const className = `${baseClass} ${disabled ? disabledClass : active ? activeClass : inactiveClass}`;
-  const href = buildDirectoryHref({ page, query, type, sort, bus, website, email });
+  const href = buildDirectoryHref({ page, query, type, sort, perPage, bus, website, email });
 
   if (disabled) {
     return <span className={className}>{label ?? page}</span>;
@@ -146,6 +152,7 @@ function buildDirectoryHref({
   query,
   type,
   sort,
+  perPage,
   bus,
   website,
   email,
@@ -154,6 +161,7 @@ function buildDirectoryHref({
   query: string;
   type: string;
   sort: SortOption;
+  perPage: number;
   bus: boolean;
   website: boolean;
   email: boolean;
@@ -163,6 +171,7 @@ function buildDirectoryHref({
   if (query) params.set("q", query);
   if (type) params.set("type", type);
   if (sort !== "relevance") params.set("sort", sort);
+  if (perPage !== DEFAULT_PER_PAGE) params.set("perPage", String(perPage));
   if (bus) params.set("bus", "1");
   if (website) params.set("website", "1");
   if (email) params.set("email", "1");
@@ -173,13 +182,14 @@ function buildDirectoryHref({
 export default function DirectoryPage({
   searchParams,
 }: {
-  searchParams: { page?: string | string[]; q?: string | string[]; type?: string | string[]; category?: string | string[]; sort?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
+  searchParams: { page?: string | string[]; q?: string | string[]; type?: string | string[]; category?: string | string[]; sort?: string | string[]; perPage?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
 }) {
   const data = readDirectoryData();
   const currentPage = parsePage(searchParams.page);
   const query = normalizeSearchParam(searchParams.q).toLowerCase();
   const type = normalizeSearchParam(searchParams.type ?? searchParams.category);
   const sort = parseSort(normalizeSearchParam(searchParams.sort));
+  const perPage = parsePerPage(searchParams.perPage);
   const bus = parseFlag(searchParams.bus);
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
@@ -207,10 +217,10 @@ export default function DirectoryPage({
     if (email && !installer.email) return false;
     return true;
   }).sort((a, b) => sortInstallers(a, b, sort));
-  const totalPages = Math.max(1, Math.ceil(filteredInstallers.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(filteredInstallers.length / perPage));
   const safePage = Math.min(currentPage, totalPages);
-  const start = (safePage - 1) * PER_PAGE;
-  const end = start + PER_PAGE;
+  const start = (safePage - 1) * perPage;
+  const end = start + perPage;
   const results = filteredInstallers.slice(start, end);
 
   return (
@@ -227,7 +237,7 @@ export default function DirectoryPage({
               <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold text-ink/65">
                 <span className="chip chip-soft">{data.query.technology}</span>
                 <span className="chip chip-soft">{data.query.region}</span>
-                <span className="chip">{PER_PAGE} per page</span>
+                <span className="chip">{perPage} per page</span>
               </div>
             </div>
 
@@ -247,6 +257,16 @@ export default function DirectoryPage({
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
+                <label className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-sm font-bold">
+                  <span>Per page</span>
+                  <select name="perPage" defaultValue={perPage} className="bg-transparent text-sm outline-none">
+                    {PER_PAGE_OPTIONS.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </label>
                 <label className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-sm font-bold">
                   <span>Type</span>
                   <select name="type" defaultValue={type} className="bg-transparent text-sm outline-none">
@@ -336,7 +356,7 @@ export default function DirectoryPage({
               ))}
             </div>
 
-            <Pagination currentPage={safePage} totalPages={totalPages} query={normalizeSearchParam(searchParams.q)} type={type} sort={sort} bus={bus} website={website} email={email} />
+            <Pagination currentPage={safePage} totalPages={totalPages} query={normalizeSearchParam(searchParams.q)} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
           </div>
         </div>
       </div>
