@@ -5,6 +5,7 @@ import { LeadForm } from "@/components/lead-form";
 import {
   formatWebsite,
   getListingKey,
+  type McsInstaller,
   normalizeSearchParam,
   parseFlag,
   parsePage,
@@ -14,8 +15,8 @@ import {
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
-  "MCS Air Source Heat Pump Installers in England",
-  "Browse the scraped MCS directory for Air Source Heat Pump installers in England.",
+  "Search for an MCS certified installer for your renewable installation",
+  "Browse the scraped MCS directory and filter installers by company, region, certification number, and contact details.",
   "/directory"
 );
 
@@ -27,11 +28,32 @@ function pageWindow(currentPage: number, totalPages: number) {
   return Array.from(pages).sort((a, b) => a - b);
 }
 
+type SortOption = "relevance" | "name" | "type";
+
+function parseSort(value: string): SortOption {
+  return value === "name" || value === "type" ? value : "relevance";
+}
+
+function sortInstallers(a: McsInstaller, b: McsInstaller, sort: SortOption) {
+  if (sort === "name") {
+    return (a.companyName ?? "").localeCompare(b.companyName ?? "") || (a.address ?? "").localeCompare(b.address ?? "");
+  }
+
+  if (sort === "type") {
+    const aType = a.category.join(" / ");
+    const bType = b.category.join(" / ");
+    return aType.localeCompare(bType) || (a.companyName ?? "").localeCompare(b.companyName ?? "");
+  }
+
+  return 0;
+}
+
 function Pagination({
   currentPage,
   totalPages,
   query,
-  category,
+  type,
+  sort,
   bus,
   website,
   email,
@@ -39,7 +61,8 @@ function Pagination({
   currentPage: number;
   totalPages: number;
   query: string;
-  category: string;
+  type: string;
+  sort: SortOption;
   bus: boolean;
   website: boolean;
   email: boolean;
@@ -54,18 +77,18 @@ function Pagination({
         Page {currentPage} of {totalPages}
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <PaginationLink page={currentPage - 1} disabled={currentPage <= 1} label="Previous" query={query} category={category} bus={bus} website={website} email={email} />
+        <PaginationLink page={currentPage - 1} disabled={currentPage <= 1} label="Previous" query={query} type={type} sort={sort} bus={bus} website={website} email={email} />
         {pages.map((page, index) => {
           const previousPage = pages[index - 1];
           const gap = previousPage && page - previousPage > 1;
           return (
             <span key={page} className="flex items-center gap-2">
               {gap ? <span className="px-2 text-sm font-bold text-ink/45">…</span> : null}
-              <PaginationLink page={page} active={page === currentPage} query={query} category={category} bus={bus} website={website} email={email} />
+              <PaginationLink page={page} active={page === currentPage} query={query} type={type} sort={sort} bus={bus} website={website} email={email} />
             </span>
           );
         })}
-        <PaginationLink page={currentPage + 1} disabled={currentPage >= totalPages} label="Next" query={query} category={category} bus={bus} website={website} email={email} />
+        <PaginationLink page={currentPage + 1} disabled={currentPage >= totalPages} label="Next" query={query} type={type} sort={sort} bus={bus} website={website} email={email} />
       </div>
     </nav>
   );
@@ -77,7 +100,8 @@ function PaginationLink({
   disabled,
   label,
   query,
-  category,
+  type,
+  sort,
   bus,
   website,
   email,
@@ -87,7 +111,8 @@ function PaginationLink({
   disabled?: boolean;
   label?: string;
   query: string;
-  category: string;
+  type: string;
+  sort: SortOption;
   bus: boolean;
   website: boolean;
   email: boolean;
@@ -99,7 +124,7 @@ function PaginationLink({
   const disabledClass = "pointer-events-none border-stone-200 bg-white/60 text-ink/35";
 
   const className = `${baseClass} ${disabled ? disabledClass : active ? activeClass : inactiveClass}`;
-  const href = buildDirectoryHref({ page, query, category, bus, website, email });
+  const href = buildDirectoryHref({ page, query, type, sort, bus, website, email });
 
   if (disabled) {
     return <span className={className}>{label ?? page}</span>;
@@ -120,14 +145,16 @@ function ToggleFilter({ name, label, checked }: { name: "bus" | "website" | "ema
 function buildDirectoryHref({
   page,
   query,
-  category,
+  type,
+  sort,
   bus,
   website,
   email,
 }: {
   page: number;
   query: string;
-  category: string;
+  type: string;
+  sort: SortOption;
   bus: boolean;
   website: boolean;
   email: boolean;
@@ -135,7 +162,8 @@ function buildDirectoryHref({
   const params = new URLSearchParams();
   if (page > 1) params.set("page", String(page));
   if (query) params.set("q", query);
-  if (category) params.set("category", category);
+  if (type) params.set("type", type);
+  if (sort !== "relevance") params.set("sort", sort);
   if (bus) params.set("bus", "1");
   if (website) params.set("website", "1");
   if (email) params.set("email", "1");
@@ -146,16 +174,17 @@ function buildDirectoryHref({
 export default function DirectoryPage({
   searchParams,
 }: {
-  searchParams: { page?: string | string[]; q?: string | string[]; category?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
+  searchParams: { page?: string | string[]; q?: string | string[]; type?: string | string[]; category?: string | string[]; sort?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
 }) {
   const data = readDirectoryData();
   const currentPage = parsePage(searchParams.page);
   const query = normalizeSearchParam(searchParams.q).toLowerCase();
-  const category = normalizeSearchParam(searchParams.category);
+  const type = normalizeSearchParam(searchParams.type ?? searchParams.category);
+  const sort = parseSort(normalizeSearchParam(searchParams.sort));
   const bus = parseFlag(searchParams.bus);
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
-  const categories = Array.from(new Set(data.installers.flatMap((installer) => installer.category))).sort((a, b) => a.localeCompare(b));
+  const types = Array.from(new Set(data.installers.flatMap((installer) => installer.category))).sort((a, b) => a.localeCompare(b));
   const filteredInstallers = data.installers.filter((installer) => {
     const haystack = [
       installer.companyName,
@@ -173,12 +202,12 @@ export default function DirectoryPage({
       .toLowerCase();
 
     if (query && !haystack.includes(query)) return false;
-    if (category && !installer.category.includes(category)) return false;
+    if (type && !installer.category.includes(type)) return false;
     if (bus && !installer.boilerUpgradeSchemeRegistered) return false;
     if (website && !installer.website) return false;
     if (email && !installer.email) return false;
     return true;
-  });
+  }).sort((a, b) => sortInstallers(a, b, sort));
   const totalPages = Math.max(1, Math.ceil(filteredInstallers.length / PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
   const start = (safePage - 1) * PER_PAGE;
@@ -192,9 +221,9 @@ export default function DirectoryPage({
           <div>
             <div className="surface-card surface-card-cream p-8 sm:p-10">
               <p className="eyebrow">Scraped MCS directory</p>
-              <h1 className="mt-3 text-4xl font-black">Air Source Heat Pump Installers in England</h1>
+              <h1 className="mt-3 text-4xl font-black">Search for an MCS certified installer for your renewable installation</h1>
               <p className="mt-4 max-w-3xl leading-7 text-ink/70">
-                Browse the current MCS Air Source Heat Pump installer list for England.
+                Browse the current MCS directory and filter installers by company, region, certification number, and contact details.
               </p>
               <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold text-ink/65">
                 <span className="chip chip-soft">{data.query.technology}</span>
@@ -220,14 +249,22 @@ export default function DirectoryPage({
               </div>
               <div className="flex flex-wrap gap-2">
                 <label className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-sm font-bold">
-                  <span>Category</span>
-                  <select name="category" defaultValue={category} className="bg-transparent text-sm outline-none">
-                    <option value="">All categories</option>
-                    {categories.map((item) => (
+                  <span>Type</span>
+                  <select name="type" defaultValue={type} className="bg-transparent text-sm outline-none">
+                    <option value="">All types</option>
+                    {types.map((item) => (
                       <option key={item} value={item}>
                         {item}
                       </option>
                     ))}
+                  </select>
+                </label>
+                <label className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-sm font-bold">
+                  <span>Sort</span>
+                  <select name="sort" defaultValue={sort} className="bg-transparent text-sm outline-none">
+                    <option value="relevance">Relevance</option>
+                    <option value="name">Name</option>
+                    <option value="type">Type</option>
                   </select>
                 </label>
                 <ToggleFilter name="bus" label="BUS registered" checked={bus} />
@@ -300,7 +337,7 @@ export default function DirectoryPage({
               ))}
             </div>
 
-            <Pagination currentPage={safePage} totalPages={totalPages} query={normalizeSearchParam(searchParams.q)} category={category} bus={bus} website={website} email={email} />
+            <Pagination currentPage={safePage} totalPages={totalPages} query={normalizeSearchParam(searchParams.q)} type={type} sort={sort} bus={bus} website={website} email={email} />
           </div>
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <LeadForm compact />

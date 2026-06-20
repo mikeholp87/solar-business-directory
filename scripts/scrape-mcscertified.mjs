@@ -180,6 +180,9 @@ async function extractInstallerFromModal(page, item) {
     const email = clean(modalEl.querySelector('a[href^=\"mailto:\"]')?.getAttribute('href')?.replace(/^mailto:/i, '') ?? null);
     const phone = clean(modalEl.querySelector('a[href^=\"tel:\"]')?.getAttribute('href')?.replace(/^tel:/i, '') ?? null);
     const website = clean(modalEl.querySelector('a[target=\"_blank\"][href^=\"http\"]')?.getAttribute('href') ?? null);
+    const category = Array.from(modalEl.querySelectorAll('.modal-body .flex.flex-wrap.items-start.pt-10 ul li'))
+      .map((node) => clean(node.textContent ?? null))
+      .filter(Boolean);
 
     return {
       companyName: clean(modalEl.querySelector('h2')?.textContent ?? null),
@@ -187,6 +190,7 @@ async function extractInstallerFromModal(page, item) {
       email,
       phone,
       website,
+      category,
       address: capture(/Address:\s*([\s\S]*?)\s*Regions covered:/i),
       regionsCovered: capture(/Regions covered:\s*([\s\S]*?)\s*Boiler Upgrade Scheme Registered:/i)
         ?.split(',')
@@ -202,6 +206,7 @@ async function extractInstallerFromModal(page, item) {
 
 async function main() {
   const { output, maxPages, headless, url } = parseArgs(process.argv.slice(2));
+  const queryTechnology = 'Air Source Heat Pump';
 
   const browser = await chromium.launch({ headless });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1800 } });
@@ -229,6 +234,7 @@ async function main() {
           companyName: details.companyName ?? null,
           address: details.address ?? null,
           addressParts: parseAddressParts(details.address),
+          category: Array.from(new Set([queryTechnology, ...(details.category ?? [])])),
           regionsCovered: details.regionsCovered ?? [],
           boilerUpgradeSchemeRegistered: (details.boilerUpgradeSchemeRegistered ?? '').toLowerCase() === 'yes',
           certificationBody: details.certificationBody ?? null,
@@ -269,7 +275,7 @@ async function main() {
     const result = {
       sourceUrl: url,
       query: {
-        technology: 'Air Source Heat Pump',
+        technology: queryTechnology,
         region: 'England',
       },
       totalCount: installers.length,
