@@ -8,10 +8,10 @@ const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-display" });
 
 export const metadata: Metadata = {
   title: {
-    default: "UKSD BUS Installer Directory",
-    template: "%s | UKSD BUS Installer Directory"
+    default: "Renewable Directory",
+    template: "%s | Renewable Directory"
   },
-  description: "Search approved BUS and MCS air source heat pump installers by UK territory."
+  description: "Search renewable installers by territory, technology type, and certification details."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

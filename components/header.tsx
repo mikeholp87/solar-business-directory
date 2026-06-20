@@ -10,8 +10,8 @@ export function Header() {
             <ShieldCheck size={22} aria-hidden />
           </span>
           <span className="flex flex-col leading-none">
-            <span>UKSD BUS Installers</span>
-            <span className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-ink/55">Approved directory</span>
+            <span>Renewable Directory</span>
+            <span className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-ink/55">Installer search</span>
           </span>
         </Link>
         <nav className="flex flex-wrap items-center gap-2 text-sm font-bold">

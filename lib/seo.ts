@@ -11,7 +11,7 @@ export function pageMetadata(title: string, description: string, path = "/"): Me
       title,
       description,
       url: `${siteUrl}${path}`,
-      siteName: "UKSD BUS Installer Directory",
+      siteName: "Renewable Directory",
       type: "website"
     }
   };

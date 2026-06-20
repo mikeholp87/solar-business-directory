@@ -1,8 +1,8 @@
 export default function manifest() {
   return {
-    name: "UKSD BUS Installer Directory",
-    short_name: "UKSD",
-    description: "Directory for approved BUS and MCS heat pump installers across UK territories.",
+    name: "Renewable Directory",
+    short_name: "Renewable",
+    description: "Directory for renewable installers across UK territories.",
     start_url: "/",
     display: "standalone",
     background_color: "#f8f4ea",
