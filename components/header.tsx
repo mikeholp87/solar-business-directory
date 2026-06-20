@@ -16,7 +16,7 @@ export function Header() {
         </Link>
         <nav className="flex flex-wrap items-center gap-2 text-sm font-bold">
           <Link className="rounded-full px-3 py-2 hover:bg-white/75" href="/directory">Directory</Link>
-          <Link className="rounded-full px-3 py-2 hover:bg-white/75" href="/apply">Installer applications</Link>
+          <Link className="rounded-full px-3 py-2 hover:bg-white/75" href="/apply">Apply Now</Link>
           <Link className="rounded-full px-3 py-2 hover:bg-white/75" href="/installer-dashboard">Installer login</Link>
           <Link className="button-primary" href="/directory">Find an Installer</Link>
         </nav>

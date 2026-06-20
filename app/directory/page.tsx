@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Search } from "lucide-react";
-import { LeadForm } from "@/components/lead-form";
 import {
   formatWebsite,
   getListingKey,
@@ -217,7 +216,7 @@ export default function DirectoryPage({
   return (
     <main className="section-band">
       <div className="container-page">
-        <div className="grid gap-8 lg:grid-cols-[0.72fr_0.28fr]">
+        <div className="grid gap-8">
           <div>
             <div className="surface-card surface-card-cream p-8 sm:p-10">
               <p className="eyebrow">Scraped MCS directory</p>
@@ -339,9 +338,6 @@ export default function DirectoryPage({
 
             <Pagination currentPage={safePage} totalPages={totalPages} query={normalizeSearchParam(searchParams.q)} type={type} sort={sort} bus={bus} website={website} email={email} />
           </div>
-          <aside className="lg:sticky lg:top-24 lg:self-start">
-            <LeadForm compact />
-          </aside>
         </div>
       </div>
     </main>
