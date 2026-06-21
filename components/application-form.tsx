@@ -21,17 +21,17 @@ export function ApplicationForm() {
     return (
       <div className="surface-card surface-card-success p-6">
         <h2 className="text-2xl font-black">Application received</h2>
-        <p className="mt-2 text-ink/70">The admin team can now review accreditations, territory fit and commercial terms.</p>
+        <p className="mt-2 text-ink/70">The team can now review your accreditations, territory fit, and commercial terms.</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="surface-card grid gap-5 p-6">
+    <form onSubmit={onSubmit} className="editorial-rail grid gap-5 p-6 sm:p-8">
       <div>
         <p className="eyebrow">Installer application</p>
         <h2 className="mt-3 text-3xl font-black">Apply to join</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/65">Share your accreditations, commercial model and preferred territories.</p>
+        <p className="mt-2 text-sm leading-6 text-ink/65">Share your accreditations, commercial model, and preferred territories.</p>
       </div>
       <div className="field-grid">
         <label>Company name<input name="company_name" required /></label>
@@ -88,7 +88,9 @@ export function ApplicationForm() {
           </label>
         ))}
       </div>
-      <button className="button-primary" type="submit">Apply as Installer</button>
+      <button className="button-primary" type="submit">
+        Apply as Installer
+      </button>
     </form>
   );
 }

@@ -7,7 +7,7 @@ export function TerritoryList({ items }: { items: Territory[] }) {
       {items.map((territory) => {
         const status = getPublicTerritoryStatus(territory);
         return (
-          <div key={territory.id} className="surface-card p-4">
+          <div key={territory.id} className="index-card p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="font-black">{territory.name}</h3>
@@ -15,7 +15,9 @@ export function TerritoryList({ items }: { items: Territory[] }) {
               </div>
               <span className="chip chip-soft capitalize">{status.replace("_", " ")}</span>
             </div>
-            <p className="mt-3 text-sm text-ink/70">{territory.activeInstallerCount} of {territory.maxInstallerSlots} installer slots active</p>
+            <p className="mt-3 text-sm text-ink/70">
+              {territory.activeInstallerCount} of {territory.maxInstallerSlots} installer slots active
+            </p>
           </div>
         );
       })}

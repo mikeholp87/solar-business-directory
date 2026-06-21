@@ -66,7 +66,7 @@ export default function DirectoryListingPage({ params }: { params: { listingKey:
             <div className="relative border-b border-ink/10 p-8 sm:p-10 lg:border-b-0 lg:border-r">
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-solar via-fern to-clay" />
               <p className="eyebrow">Installer dossier</p>
-              <h1 className="mt-4 text-4xl font-black sm:text-5xl">{installer.companyName ?? "Unknown company"}</h1>
+              <h1 className="mt-4 text-4xl font-black leading-[0.96] sm:text-5xl">{installer.companyName ?? "Unknown company"}</h1>
               <p className="mt-4 max-w-3xl text-lg leading-8 text-ink/72">{installer.address ?? "No address listed"}</p>
 
               <div className="mt-7 flex flex-wrap gap-2">
@@ -131,7 +131,7 @@ export default function DirectoryListingPage({ params }: { params: { listingKey:
                   <p className="eyebrow">Full listing</p>
                   <h2 className="mt-3 text-2xl font-black">Everything scraped for this record</h2>
                 </div>
-                <span className="chip chip-soft">{installer.category.length} category tags</span>
+                <span className="chip chip-soft">{installer.category.length} type tags</span>
               </div>
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -183,7 +183,7 @@ export default function DirectoryListingPage({ params }: { params: { listingKey:
               </div>
               {installer.category.length > 0 ? (
                 <>
-                  <p className="mt-8 text-sm font-black uppercase tracking-[0.18em] text-ink/48">Category tags</p>
+                  <p className="mt-8 text-sm font-black uppercase tracking-[0.18em] text-ink/48">Type tags</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {installer.category.map((item) => (
                       <span key={item} className="chip">{item}</span>

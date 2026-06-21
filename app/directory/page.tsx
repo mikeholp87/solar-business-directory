@@ -1,16 +1,13 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { Search } from "lucide-react";
+import { DirectoryResultCard } from "@/components/directory-result-card";
+import { DirectoryToolbar, type DirectorySortOption } from "@/components/directory-toolbar";
 import {
-  formatWebsite,
-  getListingKey,
-  type McsInstaller,
   DEFAULT_PER_PAGE,
+  type McsInstaller,
   normalizeSearchParam,
   parseFlag,
   parsePage,
   parsePerPage,
-  PER_PAGE_OPTIONS,
   readDirectoryData,
 } from "@/lib/mcs-directory";
 import { pageMetadata } from "@/lib/seo";
@@ -29,13 +26,15 @@ function pageWindow(currentPage: number, totalPages: number) {
   return Array.from(pages).sort((a, b) => a - b);
 }
 
-type SortOption = "relevance" | "name" | "type";
-
-function parseSort(value: string): SortOption {
+function parseSort(value: string): DirectorySortOption {
   return value === "name" || value === "type" ? value : "relevance";
 }
 
-function sortInstallers(a: McsInstaller, b: McsInstaller, sort: SortOption) {
+function sortInstallers(
+  a: McsInstaller,
+  b: McsInstaller,
+  sort: DirectorySortOption
+) {
   if (sort === "name") {
     return (a.companyName ?? "").localeCompare(b.companyName ?? "") || (a.address ?? "").localeCompare(b.address ?? "");
   }
@@ -64,7 +63,7 @@ function Pagination({
   totalPages: number;
   query: string;
   type: string;
-  sort: SortOption;
+  sort: DirectorySortOption;
   perPage: number;
   bus: boolean;
   website: boolean;
@@ -75,7 +74,7 @@ function Pagination({
   const pages = pageWindow(currentPage, totalPages);
 
   return (
-    <nav aria-label="Pagination" className="surface-card mt-8 flex flex-wrap items-center justify-between gap-4 p-4">
+    <nav aria-label="Pagination" className="editorial-rail mt-2 flex flex-wrap items-center justify-between gap-4 p-4 sm:p-5">
       <p className="text-sm font-bold text-ink/65">
         Page {currentPage} of {totalPages}
       </p>
@@ -116,16 +115,15 @@ function PaginationLink({
   label?: string;
   query: string;
   type: string;
-  sort: SortOption;
+  sort: DirectorySortOption;
   perPage: number;
   bus: boolean;
   website: boolean;
   email: boolean;
 }) {
-  const baseClass =
-    "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border px-3 text-sm font-bold transition";
+  const baseClass = "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border px-3 text-sm font-bold transition";
   const activeClass = "border-fern bg-fern text-white shadow-soft";
-  const inactiveClass = "border-stone-200 bg-white/90 text-ink hover:border-stone-300 hover:bg-white";
+  const inactiveClass = "border-stone-200 bg-white/92 text-ink hover:border-stone-300 hover:bg-white";
   const disabledClass = "pointer-events-none border-stone-200 bg-white/60 text-ink/35";
 
   const className = `${baseClass} ${disabled ? disabledClass : active ? activeClass : inactiveClass}`;
@@ -135,15 +133,10 @@ function PaginationLink({
     return <span className={className}>{label ?? page}</span>;
   }
 
-  return <Link className={className} href={href} aria-current={active ? "page" : undefined}>{label ?? page}</Link>;
-}
-
-function ToggleFilter({ name, label, checked }: { name: "bus" | "website" | "email"; label: string; checked: boolean }) {
   return (
-    <label className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-sm font-bold">
-      <input type="checkbox" name={name} value="1" defaultChecked={checked} className="size-4 w-auto" />
-      <span>{label}</span>
-    </label>
+    <Link className={className} href={href} aria-current={active ? "page" : undefined}>
+      {label ?? page}
+    </Link>
   );
 }
 
@@ -160,7 +153,7 @@ function buildDirectoryHref({
   page: number;
   query: string;
   type: string;
-  sort: SortOption;
+  sort: DirectorySortOption;
   perPage: number;
   bus: boolean;
   website: boolean;
@@ -186,7 +179,8 @@ export default function DirectoryPage({
 }) {
   const data = readDirectoryData();
   const currentPage = parsePage(searchParams.page);
-  const query = normalizeSearchParam(searchParams.q).toLowerCase();
+  const searchInput = normalizeSearchParam(searchParams.q);
+  const query = searchInput.toLowerCase();
   const type = normalizeSearchParam(searchParams.type ?? searchParams.category);
   const sort = parseSort(normalizeSearchParam(searchParams.sort));
   const perPage = parsePerPage(searchParams.perPage);
@@ -194,29 +188,33 @@ export default function DirectoryPage({
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
   const types = Array.from(new Set(data.installers.flatMap((installer) => installer.category))).sort((a, b) => a.localeCompare(b));
-  const filteredInstallers = data.installers.filter((installer) => {
-    const haystack = [
-      installer.companyName,
-      installer.address,
-      installer.category.join(" "),
-      installer.certificationBody,
-      installer.certificationNumber,
-      installer.website,
-      installer.email,
-      installer.phone,
-      installer.regionsCovered.join(" "),
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
 
-    if (query && !haystack.includes(query)) return false;
-    if (type && !installer.category.includes(type)) return false;
-    if (bus && !installer.boilerUpgradeSchemeRegistered) return false;
-    if (website && !installer.website) return false;
-    if (email && !installer.email) return false;
-    return true;
-  }).sort((a, b) => sortInstallers(a, b, sort));
+  const filteredInstallers = data.installers
+    .filter((installer) => {
+      const haystack = [
+        installer.companyName,
+        installer.address,
+        installer.category.join(" "),
+        installer.certificationBody,
+        installer.certificationNumber,
+        installer.website,
+        installer.email,
+        installer.phone,
+        installer.regionsCovered.join(" "),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      if (query && !haystack.includes(query)) return false;
+      if (type && !installer.category.includes(type)) return false;
+      if (bus && !installer.boilerUpgradeSchemeRegistered) return false;
+      if (website && !installer.website) return false;
+      if (email && !installer.email) return false;
+      return true;
+    })
+    .sort((a, b) => sortInstallers(a, b, sort));
+
   const totalPages = Math.max(1, Math.ceil(filteredInstallers.length / perPage));
   const safePage = Math.min(currentPage, totalPages);
   const start = (safePage - 1) * perPage;
@@ -225,150 +223,59 @@ export default function DirectoryPage({
 
   return (
     <main className="section-band">
-      <div className="container-page">
-        <div className="grid gap-8">
-          <div>
-            <div className="surface-card surface-card-cream p-8 sm:p-10">
-              <p className="eyebrow">Scraped MCS directory</p>
-              <h1 className="mt-3 text-4xl font-black">Search for an MCS certified installer for your renewable installation</h1>
-              <p className="mt-4 max-w-3xl leading-7 text-ink/70">
-                Browse the current MCS directory and filter installers by company, region, certification number, and contact details.
+      <div className="container-page grid gap-8">
+        <section className="surface-card surface-card-cream p-8 sm:p-10">
+          <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
+            <div>
+              <p className="eyebrow">Renewable Directory index</p>
+              <h1 className="mt-4 text-4xl font-black leading-[0.96] sm:text-5xl">Search the installer index by territory, type, and record detail</h1>
+              <p className="mt-4 max-w-3xl text-lg leading-8 text-ink/72">
+                Browse the current MCS directory for {data.query.technology.toLowerCase()} installers in {data.query.region}. Filter by the details that matter: company, coverage, certification, and contact information.
               </p>
-              <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold text-ink/65">
-                <span className="chip chip-soft">{data.query.technology}</span>
-                <span className="chip chip-soft">{data.query.region}</span>
-                <span className="chip">{perPage} per page</span>
-              </div>
             </div>
-
-            <form method="get" className="surface-card mt-6 grid gap-4 p-4">
-              <input type="hidden" name="page" value="1" />
-              <div className="grid gap-3 md:grid-cols-[1fr_auto]">
-                <label className="sr-only" htmlFor="directory-q">Search installers</label>
-                <input
-                  id="directory-q"
-                  name="q"
-                  placeholder="Search company, address, certification number, region, email, phone..."
-                  defaultValue={normalizeSearchParam(searchParams.q)}
-                />
-                <button className="button-primary" type="submit">
-                  <Search size={18} />
-                  Search
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <label className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-sm font-bold">
-                  <span>Per page</span>
-                  <select name="perPage" defaultValue={perPage} className="bg-transparent text-sm outline-none">
-                    {PER_PAGE_OPTIONS.map((item) => (
-                      <option key={item} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-sm font-bold">
-                  <span>Type</span>
-                  <select name="type" defaultValue={type} className="bg-transparent text-sm outline-none">
-                    <option value="">All types</option>
-                    {types.map((item) => (
-                      <option key={item} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-3 py-2 text-sm font-bold">
-                  <span>Sort</span>
-                  <select name="sort" defaultValue={sort} className="bg-transparent text-sm outline-none">
-                    <option value="relevance">Relevance</option>
-                    <option value="name">Name</option>
-                    <option value="type">Type</option>
-                  </select>
-                </label>
-                <ToggleFilter name="bus" label="BUS registered" checked={bus} />
-                <ToggleFilter name="website" label="Website listed" checked={website} />
-                <ToggleFilter name="email" label="Email listed" checked={email} />
-              </div>
-              <p className="text-sm font-bold text-ink/65">
-                Showing {results.length} of {filteredInstallers.length.toLocaleString()} matching results
-              </p>
-            </form>
-
-            <div className="mt-6 grid gap-5">
-              {results.map((installer) => (
-                <article key={installer.installerId ?? `${installer.companyName}-${installer.sourcePage}`} className="surface-card p-6">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p className="eyebrow">Installer</p>
-                      <h2 className="mt-3 text-2xl font-black">
-                        <Link href={`/directory/${getListingKey(installer)}`} className="hover:text-fern">
-                          {installer.companyName ?? "Unknown company"}
-                        </Link>
-                      </h2>
-                      <p className="mt-3 max-w-3xl leading-7 text-ink/70">{installer.address ?? "No address listed"}</p>
-                      {installer.category.length > 0 ? (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {installer.category.map((item) => (
-                            <span key={item} className="chip chip-soft">
-                              {item}
-                            </span>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {installer.boilerUpgradeSchemeRegistered ? <span className="chip chip-success">BUS registered</span> : <span className="chip chip-warning">Not BUS registered</span>}
-                      <span className="chip chip-soft">{installer.certificationBody ?? "Unknown body"}</span>
-                      <span className="chip">Page {installer.sourcePage ?? "?"}</span>
-                    </div>
-                  </div>
-
-                  <dl className="mt-6 grid gap-4 border-t border-ink/10 pt-5 sm:grid-cols-2 xl:grid-cols-3">
-                    <Field label="Certification number" value={installer.certificationNumber} />
-                    <Field
-                      label="Website"
-                      value={
-                        installer.website ? (
-                          <a href={formatWebsite(installer.website) ?? installer.website} target="_blank" rel="noreferrer">
-                            {formatWebsite(installer.website) ?? installer.website}
-                          </a>
-                        ) : null
-                      }
-                    />
-                    <Field label="Email" value={installer.email ? <a href={`mailto:${installer.email}`}>{installer.email}</a> : null} />
-                    <Field label="Phone" value={installer.phone ? <a href={`tel:${installer.phone}`}>{installer.phone}</a> : null} />
-                    <Field label="Source page" value={installer.sourcePage?.toString() ?? null} />
-                    <Field label="Regions covered" value={installer.regionsCovered.length > 0 ? installer.regionsCovered.join(", ") : null} />
-                  </dl>
-
-                  <div className="mt-6 flex flex-wrap gap-3 border-t border-ink/10 pt-5">
-                    <Link className="button-primary" href={`/directory/${getListingKey(installer)}`}>
-                      View details
-                    </Link>
-                    {installer.website ? (
-                      <a className="button-secondary" href={formatWebsite(installer.website) ?? installer.website} target="_blank" rel="noreferrer">
-                        Open website
-                      </a>
-                    ) : null}
-                  </div>
-                </article>
-              ))}
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Stat label="Matching installers" value={filteredInstallers.length.toLocaleString("en-GB")} />
+              <Stat label="Types in view" value={types.length.toLocaleString("en-GB")} />
+              <Stat label="Rows per page" value={String(perPage)} />
             </div>
-
-            <Pagination currentPage={safePage} totalPages={totalPages} query={normalizeSearchParam(searchParams.q)} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
           </div>
+          <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold text-ink/64">
+            <span className="chip chip-soft">{data.query.technology}</span>
+            <span className="chip chip-soft">{data.query.region}</span>
+            <span className="chip">{data.totalCount.toLocaleString("en-GB")} source rows</span>
+          </div>
+        </section>
+
+        <DirectoryToolbar
+          query={searchInput}
+          type={type}
+          sort={sort}
+          perPage={perPage}
+          types={types}
+          bus={bus}
+          website={website}
+          email={email}
+          totalResults={filteredInstallers.length}
+          showingCount={results.length}
+        />
+
+        <div className="grid gap-5">
+          {results.map((installer) => (
+            <DirectoryResultCard key={installer.installerId ?? `${installer.companyName}-${installer.sourcePage}`} installer={installer} />
+          ))}
         </div>
+
+        <Pagination currentPage={safePage} totalPages={totalPages} query={searchInput} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
       </div>
     </main>
   );
 }
 
-function Field({ label, value }: { label: string; value: ReactNode }) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <dt className="text-xs font-black uppercase tracking-[0.18em] text-ink/50">{label}</dt>
-      <dd className="mt-2 text-sm leading-6 text-ink/80">{value ?? "Not listed"}</dd>
+    <div className="rounded-[20px] border border-ink/10 bg-white/78 p-4">
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-ink/48">{label}</p>
+      <p className="mt-2 text-2xl font-black tracking-tight text-ink">{value}</p>
     </div>
   );
 }

@@ -159,7 +159,7 @@ export const leads: Lead[] = Array.from({ length: 20 }).map((_, index) => {
     stage: stages[index % stages.length],
     territoryId: territory.id,
     assignedInstallerId: installer?.id,
-    source: "UKSD directory",
+    source: "Renewable Directory",
     campaign: index % 2 === 0 ? "BUS Wales search" : "Installer profile CTA",
     referralFeeDue: index % 5 === 0 ? 1250 : 0,
     referralFeePaid: false,
