@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { CheckCircle, type LucideIcon } from "lucide-react";
 import { HeroSearchForm } from "@/components/hero-search-form";
-import { InstallerCard } from "@/components/installer-card";
+import { DirectoryResultCard } from "@/components/directory-result-card";
 import { TerritoryList } from "@/components/territory-list";
-import { listInstallers } from "@/lib/repositories/installers";
 import { listTerritories } from "@/lib/repositories/territories";
+import { readDirectoryData } from "@/lib/mcs-directory";
 import { jsonLd } from "@/lib/seo";
 import { siteUrl } from "@/lib/runtime";
 
@@ -12,8 +12,8 @@ const categories = [
   { label: "Solar PV Installers", type: "Solar PV" },
   { label: "Battery Storage Installers", type: "Battery Storage" },
   { label: "Air Source Heat Pump Installers", type: "Air Source Heat Pump" },
-  { label: "EV Charger Installers", type: "EV Charger" },
-  { label: "Commercial Renewable Installers", type: "Commercial" },
+  { label: "Ground Source Heat Pump Installers", type: "Ground/Water Source Heat Pump" },
+  { label: "Biomass Installers", type: "Biomass" },
 ];
 
 const features: Array<{ title: string; text: string }> = [
@@ -25,8 +25,8 @@ const features: Array<{ title: string; text: string }> = [
 ];
 
 export default async function HomePage() {
-  const [installers, territories] = await Promise.all([listInstallers(), listTerritories()]);
-  const featuredInstallers = installers.filter((installer) => installer.status === "active").slice(0, 3);
+  const [directoryData, territories] = await Promise.all([readDirectoryData(), listTerritories()]);
+  const featuredInstallers = directoryData.installers.slice(0, 3);
 
   return (
     <main>
@@ -105,12 +105,12 @@ export default async function HomePage() {
         <section className="section-band">
           <div className="container-page">
             <div className="mb-8">
-              <p className="eyebrow">Featured listings</p>
-              <h2 className="mt-4 text-3xl font-bold text-navy">Compare trusted installers</h2>
+              <p className="eyebrow">Directory index</p>
+              <h2 className="mt-4 text-3xl font-bold text-navy">Browse the MCS installer index</h2>
             </div>
             <div className="grid gap-5">
               {featuredInstallers.map((installer) => (
-                <InstallerCard key={installer.id} installer={installer} />
+                <DirectoryResultCard key={installer.installerId ?? `${installer.companyName}-${installer.sourcePage}`} installer={installer} />
               ))}
             </div>
           </div>
