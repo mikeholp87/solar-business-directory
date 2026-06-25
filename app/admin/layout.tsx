@@ -27,6 +27,9 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
                 {label}
               </Link>
             ))}
+            <Link href="/auth/signout" className="button-secondary">
+              Sign out
+            </Link>
           </div>
         </div>
         {children}

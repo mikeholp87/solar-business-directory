@@ -24,7 +24,7 @@ export default async function InstallerTerritoriesPage() {
     <section className="grid gap-4">
       <div className="surface-card p-5">
         <h2 className="text-2xl font-black">Territories</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/65">See where you are currently live and request additional areas without automatically changing access.</p>
+        <p className="mt-2 text-sm leading-6 text-navy/65">See where you are currently live and request additional areas without automatically changing access.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -34,7 +34,7 @@ export default async function InstallerTerritoriesPage() {
             {allocatedTerritories.map((territory) => (
               <div key={territory.id} className="surface-card bg-white/72 p-4">
                 <p className="font-black">{territory.name}</p>
-                <p className="mt-1 text-sm text-ink/65">{territory.region} · {territory.counties.join(", ")}</p>
+                <p className="mt-1 text-sm text-navy/65">{territory.region} · {territory.counties.join(", ")}</p>
               </div>
             ))}
           </div>
@@ -60,14 +60,14 @@ export default async function InstallerTerritoriesPage() {
         <h3 className="text-xl font-black">Pending requests</h3>
         <div className="mt-4 grid gap-3">
           {territoryRequests.length === 0 ? (
-            <p className="text-sm text-ink/65">No territory requests yet.</p>
+            <p className="text-sm text-navy/65">No territory requests yet.</p>
           ) : territoryRequests.map((request) => (
             <div key={request.id} className="surface-card bg-white/72 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="font-black">{territories.find((territory) => territory.id === request.territoryId)?.name ?? request.territoryId}</p>
                 <span className="chip chip-soft capitalize">{request.status}</span>
               </div>
-              {request.notes ? <p className="mt-2 text-sm text-ink/65">{request.notes}</p> : null}
+              {request.notes ? <p className="mt-2 text-sm text-navy/65">{request.notes}</p> : null}
             </div>
           ))}
         </div>

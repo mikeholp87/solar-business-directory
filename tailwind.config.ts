@@ -5,15 +5,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#17211d",
-        moss: "#58715b",
-        fern: "#1f8a5c",
-        skywash: "#e8f3f8",
-        solar: "#f4b44b",
-        clay: "#b96f45"
+        navy: "#102A43",
+        accent: "#00A651",
+        "accent-hover": "#008C44",
+        "accent-active": "#007A3B",
+        "accent-light": "#E6F7EE",
+        surface: "#F5F7FA",
+        "surface-alt": "#EEF2F5",
+        muted: "#6B7280",
+        border: "#E5E7EB",
+      },
+      fontFamily: {
+        sans: ["var(--font-body)", "system-ui", "-apple-system", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
+      },
+      borderRadius: {
+        DEFAULT: "8px",
       },
       boxShadow: {
-        soft: "0 18px 60px rgba(23, 33, 29, 0.10)"
+        soft: "0 4px 12px rgba(16, 42, 67, 0.08)",
+        card: "0 1px 3px rgba(16, 42, 67, 0.06)",
+        "card-hover": "0 4px 12px rgba(16, 42, 67, 0.1)",
       }
     }
   },

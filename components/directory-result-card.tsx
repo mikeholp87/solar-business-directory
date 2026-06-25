@@ -13,11 +13,11 @@ export function DirectoryResultCard({ installer }: DirectoryResultCardProps) {
         <div className="min-w-0 max-w-3xl">
           <p className="eyebrow">Installer record</p>
           <h3 className="mt-3 text-2xl font-black">
-            <Link href={`/directory/${getListingKey(installer)}`} className="hover:text-fern">
+            <Link href={`/directory/${getListingKey(installer)}`} className="hover:text-accent">
               {installer.companyName ?? "Unknown company"}
             </Link>
           </h3>
-          <p className="mt-3 text-base leading-7 text-ink/72">{installer.address ?? "No address listed"}</p>
+          <p className="mt-3 text-base leading-7 text-navy/72">{installer.address ?? "No address listed"}</p>
           {installer.category.length > 0 ? (
             <div className="mt-4 flex flex-wrap gap-2">
               {installer.category.slice(0, 4).map((item) => (
@@ -40,7 +40,7 @@ export function DirectoryResultCard({ installer }: DirectoryResultCardProps) {
         </div>
       </div>
 
-      <dl className="mt-6 grid gap-4 border-t border-ink/10 pt-5 sm:grid-cols-2 xl:grid-cols-3">
+      <dl className="mt-6 grid gap-4 border-t border-navy/10 pt-5 sm:grid-cols-2 xl:grid-cols-3">
         <Field label="Certification number" value={installer.certificationNumber} />
         <Field
           label="Website"
@@ -58,7 +58,7 @@ export function DirectoryResultCard({ installer }: DirectoryResultCardProps) {
         <Field label="Regions covered" value={installer.regionsCovered.length > 0 ? installer.regionsCovered.join(", ") : null} />
       </dl>
 
-      <div className="mt-6 flex flex-wrap gap-3 border-t border-ink/10 pt-5">
+      <div className="mt-6 flex flex-wrap gap-3 border-t border-navy/10 pt-5">
         <Link className="button-primary" href={`/directory/${getListingKey(installer)}`}>
           View details
         </Link>
@@ -75,8 +75,8 @@ export function DirectoryResultCard({ installer }: DirectoryResultCardProps) {
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
-      <dt className="text-xs font-black uppercase tracking-[0.18em] text-ink/48">{label}</dt>
-      <dd className="mt-2 text-sm leading-6 text-ink/82">{value ?? "Not listed"}</dd>
+      <dt className="text-xs font-black uppercase tracking-[0.18em] text-navy/48">{label}</dt>
+      <dd className="mt-2 text-sm leading-6 text-navy/82">{value ?? "Not listed"}</dd>
     </div>
   );
 }

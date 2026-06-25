@@ -23,12 +23,12 @@ export default async function AdminApplicationsPage() {
     <section className="grid gap-4">
       <div className="surface-card p-5">
         <h2 className="text-2xl font-black">Installer Applications</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/65">Approve or reject installer applications after checking accreditations and territory fit.</p>
+        <p className="mt-2 text-sm leading-6 text-navy/65">Approve or reject installer applications after checking accreditations and territory fit.</p>
       </div>
 
       {applications.length === 0 ? (
         <div className="surface-card p-5">
-          <p className="text-ink/70">No installer applications were found.</p>
+          <p className="text-navy/70">No installer applications were found.</p>
         </div>
       ) : (
         applications.map((application) => (
@@ -37,7 +37,7 @@ export default async function AdminApplicationsPage() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <h3 className="text-xl font-black">{application.company_name}</h3>
-                <p className="mt-1 text-sm text-ink/65">{application.contact_name} · {application.email} · {application.phone}</p>
+                <p className="mt-1 text-sm text-navy/65">{application.contact_name} · {application.email} · {application.phone}</p>
               </div>
               <span className="chip chip-soft capitalize">{application.status}</span>
             </div>

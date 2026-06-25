@@ -25,7 +25,7 @@ export default async function AdminPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-black">Overview</h2>
-            <p className="mt-2 text-sm leading-6 text-ink/65">Use the tabs above to manage installers, territories, applications, leads and reviews.</p>
+            <p className="mt-2 text-sm leading-6 text-navy/65">Use the tabs above to manage installers, territories, applications, leads and reviews.</p>
           </div>
           <Link className="button-secondary" href="/admin/export"><Download size={18} /> Export leads CSV</Link>
         </div>
@@ -34,8 +34,8 @@ export default async function AdminPage() {
       <div className="grid gap-4 md:grid-cols-4">
         {stats.map(([Icon, label, value]) => (
           <div key={label} className="surface-card p-5">
-            <Icon className="text-fern" size={24} />
-            <p className="mt-4 text-sm font-bold text-ink/55">{label}</p>
+            <Icon className="text-accent" size={24} />
+            <p className="mt-4 text-sm font-bold text-navy/55">{label}</p>
             <p className="mt-1 text-3xl font-black">{value}</p>
           </div>
         ))}
@@ -44,7 +44,7 @@ export default async function AdminPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="surface-card p-5">
           <h2 className="text-2xl font-black">Installer Management</h2>
-          <div className="mt-4 overflow-hidden rounded-2xl border border-ink/10 bg-white/72">
+          <div className="mt-4 overflow-hidden rounded-2xl border border-navy/10 bg-white/72">
             <table className="data-table w-full min-w-[680px] text-left text-sm">
               <thead>
                 <tr>
@@ -77,7 +77,7 @@ export default async function AdminPage() {
                 <div key={territory.id} className="surface-card bg-white/72 flex items-center justify-between gap-4 p-3">
                   <div>
                     <p className="font-bold">{territory.name}</p>
-                    <p className="text-sm text-ink/60">{territory.activeInstallerCount}/{territory.maxInstallerSlots} active installers · {territory.leadVolume} leads</p>
+                    <p className="text-sm text-navy/60">{territory.activeInstallerCount}/{territory.maxInstallerSlots} active installers · {territory.leadVolume} leads</p>
                 </div>
                 <span className="chip chip-soft capitalize">{territory.status}</span>
               </div>
@@ -91,7 +91,7 @@ export default async function AdminPage() {
         <div className="mt-4 flex flex-wrap gap-2">
           {leadStages.map((stage) => <span key={stage} className="chip">{stage}</span>)}
         </div>
-        <div className="mt-4 overflow-hidden rounded-2xl border border-ink/10 bg-white/72">
+        <div className="mt-4 overflow-hidden rounded-2xl border border-navy/10 bg-white/72">
           <table className="data-table w-full min-w-[840px] text-left text-sm">
             <thead>
               <tr>
@@ -117,7 +117,7 @@ export default async function AdminPage() {
             </tbody>
           </table>
         </div>
-        <p className="mt-4 text-sm text-ink/60">Commercial tracking is admin-only and includes lead cost, pay-per-install fees, VAT and invoice status.</p>
+        <p className="mt-4 text-sm text-navy/60">Commercial tracking is admin-only and includes lead cost, pay-per-install fees, VAT and invoice status.</p>
       </section>
     </section>
   );

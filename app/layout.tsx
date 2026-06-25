@@ -1,23 +1,22 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/header";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-body" });
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-display" });
+const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-body" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Renewable Directory",
-    template: "%s | Renewable Directory"
+    default: "The Renewable Directory",
+    template: "%s | The Renewable Directory"
   },
-  description: "Search renewable installers by territory, technology type, and certification details."
+  description: "Find trusted solar PV, battery storage, heat pump, and EV charger installers across the UK. Compare MCS-certified installers, request quotes, and connect with specialists."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en-GB">
-      <body className={`${inter.variable} ${fraunces.variable}`}>
+      <body className={montserrat.variable}>
         <Header />
         {children}
       </body>

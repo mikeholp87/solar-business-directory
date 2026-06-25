@@ -33,14 +33,14 @@ export default async function LocationPage({ params }: { params: { location: str
     <main className="section-band">
       <div className="container-page grid gap-8 lg:grid-cols-[0.72fr_0.28fr]">
         <div className="grid gap-6">
-          <nav className="text-sm font-bold text-ink/60">
+          <nav className="text-sm font-bold text-navy/60">
             <Link href="/">Home</Link> / <Link href="/directory">Directory</Link> / {page.label}
           </nav>
 
           <section className="surface-card surface-card-cream p-8 sm:p-10">
             <p className="eyebrow">Location index</p>
             <h1 className="mt-3 text-4xl font-black leading-[0.96] sm:text-5xl">Renewable installers in {page.label}</h1>
-            <p className="mt-4 max-w-3xl text-lg leading-8 text-ink/72">{page.intro}</p>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-navy/72">{page.intro}</p>
             <div className="mt-6 flex flex-wrap gap-2">
               {matchedTerritories.map((territory) => (
                 <span key={territory.id} className="chip chip-soft">
@@ -73,9 +73,9 @@ export default async function LocationPage({ params }: { params: { location: str
             <h2 className="mt-3 text-2xl font-black">Questions people ask before they enquire</h2>
             <div className="mt-4 grid gap-4">
               {faqs.map(([question, answer]) => (
-                <details key={question} className="rounded-[20px] border border-stone-200 bg-white/78 p-4">
+                <details key={question} className="rounded-[20px] border border-border bg-white p-4">
                   <summary className="cursor-pointer font-bold">{question}</summary>
-                  <p className="mt-2 text-ink/70">{answer}</p>
+                  <p className="mt-2 text-navy/70">{answer}</p>
                 </details>
               ))}
             </div>

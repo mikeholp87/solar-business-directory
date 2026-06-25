@@ -28,7 +28,7 @@ export default async function InstallerProfilePage() {
     <section className="grid gap-4">
       <div className="surface-card p-5">
         <h2 className="text-2xl font-black">Profile</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/65">Keep your public profile accurate so homeowners see the right contact and service details.</p>
+        <p className="mt-2 text-sm leading-6 text-navy/65">Keep your public profile accurate so homeowners see the right contact and service details.</p>
       </div>
 
       <form action={saveProfileAction} className="surface-card grid gap-4 p-5">

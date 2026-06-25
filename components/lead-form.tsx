@@ -26,7 +26,7 @@ export function LeadForm({ preferredInstallerId, compact }: LeadFormProps) {
     return (
       <div className="surface-card surface-card-success p-5">
         <h3 className="text-xl font-black">Thanks, your enquiry has been received.</h3>
-        <p className="mt-2 text-sm text-ink/70">Renewable Directory will review your details and match the enquiry to the relevant territory or installer.</p>
+        <p className="mt-2 text-sm text-navy/70">Renewable Directory will review your details and match the enquiry to the relevant territory or installer.</p>
       </div>
     );
   }
@@ -37,7 +37,7 @@ export function LeadForm({ preferredInstallerId, compact }: LeadFormProps) {
       <div>
         <p className="eyebrow">Homeowner enquiry</p>
         <h2 className={compact ? "mt-3 text-2xl font-black" : "mt-3 text-3xl font-black"}>Request a survey</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/65">Check installer availability and whether the Boiler Upgrade Scheme may be relevant for your home.</p>
+        <p className="mt-2 text-sm leading-6 text-navy/65">Check installer availability and whether the Boiler Upgrade Scheme may be relevant for your home.</p>
       </div>
       <div className="field-grid">
         <label>First name<input name="first_name" required /></label>
@@ -65,7 +65,7 @@ export function LeadForm({ preferredInstallerId, compact }: LeadFormProps) {
       <label className="flex grid-cols-none flex-row items-start gap-2 text-sm font-medium"><input className="mt-1 size-4 w-auto" type="checkbox" name="consent_marketing" value="true" /> I agree to receive relevant renewable energy updates.</label>
       <label className="flex grid-cols-none flex-row items-start gap-2 text-sm font-medium"><input className="mt-1 size-4 w-auto" type="checkbox" name="gdpr_acceptance" value="true" required /> I accept the privacy notice and understand installers are independent businesses.</label>
       <button className="button-primary" type="submit">Check BUS eligibility</button>
-      <p className="text-xs leading-5 text-ink/55">Funding eligibility is subject to survey, property suitability, and current scheme criteria. Renewable Directory may receive a referral or marketing fee.</p>
+      <p className="text-xs leading-5 text-navy/55">Funding eligibility is subject to survey, property suitability, and current scheme criteria. Renewable Directory may receive a referral or marketing fee.</p>
     </form>
   );
 }

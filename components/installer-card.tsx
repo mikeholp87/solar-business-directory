@@ -9,7 +9,7 @@ export function InstallerCard({ installer }: { installer: Installer }) {
   return (
     <article className="index-card p-5 sm:p-6">
       <div className="flex items-start gap-4">
-        <div className="grid size-14 shrink-0 place-items-center rounded-[18px] border border-ink/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(245,239,228,0.92))] text-lg font-black text-fern shadow-[0_10px_26px_rgba(23,33,29,0.08)]">
+        <div className="grid size-14 shrink-0 place-items-center rounded-[18px] border border-navy/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(245,239,228,0.92))] text-lg font-black text-accent shadow-[0_10px_26px_rgba(23,33,29,0.08)]">
           {installer.logoUrl}
         </div>
         <div className="min-w-0 flex-1">
@@ -22,16 +22,16 @@ export function InstallerCard({ installer }: { installer: Installer }) {
               </span>
             ) : null}
           </div>
-          <p className="mt-2 text-sm leading-6 text-ink/70">{installer.description}</p>
+          <p className="mt-2 text-sm leading-6 text-navy/70">{installer.description}</p>
         </div>
       </div>
-      <div className="mt-5 grid gap-3 border-t border-ink/10 pt-4 text-sm sm:grid-cols-3">
+      <div className="mt-5 grid gap-3 border-t border-navy/10 pt-4 text-sm sm:grid-cols-3">
         <span className="flex items-start gap-2">
-          <MapPin className="mt-0.5 shrink-0 text-fern" size={16} />
+          <MapPin className="mt-0.5 shrink-0 text-accent" size={16} />
           <span>{coveredTerritories.map((item) => item.name).join(", ")}</span>
         </span>
         <span className="flex items-center gap-2">
-          <CalendarDays className="text-fern" size={16} />
+          <CalendarDays className="text-accent" size={16} />
           Survey in {installer.surveyTurnaroundDays} days
         </span>
         <span className="flex items-center gap-2">
@@ -46,7 +46,7 @@ export function InstallerCard({ installer }: { installer: Installer }) {
           </span>
         ))}
       </div>
-      <div className="mt-5 flex flex-wrap gap-3 border-t border-ink/10 pt-4">
+      <div className="mt-5 flex flex-wrap gap-3 border-t border-navy/10 pt-4">
         <Link className="button-primary" href={`/installers/${installer.slug}`}>
           Request Survey
         </Link>

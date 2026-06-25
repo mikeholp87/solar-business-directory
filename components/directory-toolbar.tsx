@@ -36,12 +36,12 @@ export function DirectoryToolbar({
         <div>
           <p className="eyebrow">Refine the index</p>
           <h2 className="mt-3 text-2xl font-black">Search installers, then narrow by type and coverage</h2>
-          <p className="mt-2 text-sm leading-6 text-ink/66">
+          <p className="mt-2 text-sm leading-6 text-navy/66">
             Showing {showingCount.toLocaleString("en-GB")} of {totalResults.toLocaleString("en-GB")} installers in the directory.
           </p>
         </div>
         <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
-          <label className="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/88 px-3 py-2 text-sm font-bold">
+          <label className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/88 px-3 py-2 text-sm font-bold">
             <span>Per page</span>
             <select name="perPage" defaultValue={perPage} className="bg-transparent text-sm outline-none">
               {PER_PAGE_OPTIONS.map((item) => (
@@ -71,7 +71,7 @@ export function DirectoryToolbar({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <label className="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/88 px-3 py-2 text-sm font-bold">
+          <label className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/88 px-3 py-2 text-sm font-bold">
             <span>Type</span>
             <select name="type" defaultValue={type} className="bg-transparent text-sm outline-none">
               <option value="">All types</option>
@@ -83,7 +83,7 @@ export function DirectoryToolbar({
             </select>
           </label>
 
-          <label className="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/88 px-3 py-2 text-sm font-bold">
+          <label className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/88 px-3 py-2 text-sm font-bold">
             <span>Sort</span>
             <select name="sort" defaultValue={sort} className="bg-transparent text-sm outline-none">
               <option value="relevance">Relevance</option>
@@ -92,15 +92,15 @@ export function DirectoryToolbar({
             </select>
           </label>
 
-          <label className="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/88 px-3 py-2 text-sm font-bold">
+          <label className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/88 px-3 py-2 text-sm font-bold">
             <input type="checkbox" name="bus" value="1" defaultChecked={bus} className="size-4 w-auto" />
             <span>BUS registered</span>
           </label>
-          <label className="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/88 px-3 py-2 text-sm font-bold">
+          <label className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/88 px-3 py-2 text-sm font-bold">
             <input type="checkbox" name="website" value="1" defaultChecked={website} className="size-4 w-auto" />
             <span>Website listed</span>
           </label>
-          <label className="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/88 px-3 py-2 text-sm font-bold">
+          <label className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/88 px-3 py-2 text-sm font-bold">
             <input type="checkbox" name="email" value="1" defaultChecked={email} className="size-4 w-auto" />
             <span>Email listed</span>
           </label>

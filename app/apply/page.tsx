@@ -11,7 +11,7 @@ export default function ApplyPage() {
           <section className="surface-card surface-card-cream p-8 sm:p-10">
             <p className="eyebrow">Installer onboarding</p>
             <h1 className="mt-3 text-4xl font-black leading-[0.96]">Join Renewable Directory as an installer</h1>
-            <p className="mt-4 leading-7 text-ink/70">
+            <p className="mt-4 leading-7 text-navy/70">
               Secure territory-based exposure, receive qualified homeowner enquiries, and present your accreditation and coverage inside a premium public directory.
             </p>
           </section>
@@ -19,7 +19,7 @@ export default function ApplyPage() {
           <section className="surface-card-dossier p-6">
             <p className="eyebrow">Commercial models</p>
             <h2 className="mt-3 text-2xl font-black">Choose the relationship that fits your business</h2>
-            <ul className="mt-4 grid gap-3 text-sm leading-6 text-ink/70">
+            <ul className="mt-4 grid gap-3 text-sm leading-6 text-navy/70">
               <li>Monthly residual directory listing.</li>
               <li>Reduced-cost pay-per-lead for approved members.</li>
               <li>Hybrid pay-per-install tracking: £250 + VAT on BUS acceptance and £1,000 + VAT on completion.</li>

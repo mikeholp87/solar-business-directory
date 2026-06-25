@@ -30,11 +30,11 @@ export default async function InstallerProfilePage({ params }: { params: { slug:
     <main>
       <section className="relative min-h-[420px] overflow-hidden">
         <Image src={installer.coverImageUrl} alt={`${installer.companyName} renewable energy installation`} fill priority className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink/88 via-ink/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy/88 via-navy/60 to-transparent" />
         <div className="container-page relative flex min-h-[420px] items-end py-12 text-white">
-          <div className="surface-card max-w-3xl bg-ink/72 p-6 backdrop-blur-md sm:p-8">
+          <div className="surface-card max-w-3xl bg-navy/72 p-6 backdrop-blur-md sm:p-8">
             <div className="flex flex-wrap items-start gap-5">
-              <div className="grid size-16 place-items-center rounded-2xl bg-white text-2xl font-black text-fern shadow-soft">{installer.logoUrl}</div>
+              <div className="grid size-16 place-items-center rounded-2xl bg-white text-2xl font-black text-accent shadow-soft">{installer.logoUrl}</div>
               <div className="min-w-0 flex-1">
                 <p className="eyebrow border-white/20 bg-white/10 text-white/70">Installer profile</p>
                 <h1 className="mt-3 text-4xl font-black sm:text-5xl">{installer.companyName}</h1>
@@ -51,8 +51,8 @@ export default async function InstallerProfilePage({ params }: { params: { slug:
             <div className="surface-card p-6">
               <h2 className="text-2xl font-black">Accreditations</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <p className="flex items-center gap-2"><BadgeCheck className="text-fern" size={18} /> MCS: {installer.accreditations.verified ? installer.accreditations.mcsNumber : "Verification pending"}</p>
-                <p className="flex items-center gap-2"><BadgeCheck className="text-fern" size={18} /> BUS registered: {installer.accreditations.busRegistered ? "Yes" : "Pending"}</p>
+                <p className="flex items-center gap-2"><BadgeCheck className="text-accent" size={18} /> MCS: {installer.accreditations.verified ? installer.accreditations.mcsNumber : "Verification pending"}</p>
+                <p className="flex items-center gap-2"><BadgeCheck className="text-accent" size={18} /> BUS registered: {installer.accreditations.busRegistered ? "Yes" : "Pending"}</p>
                 {installer.accreditations.reccNumber ? <p>RECC: {installer.accreditations.reccNumber}</p> : null}
                 {installer.accreditations.trustMarkNumber ? <p>TrustMark: {installer.accreditations.trustMarkNumber}</p> : null}
                 {installer.accreditations.hiesNumber ? <p>HIES: {installer.accreditations.hiesNumber}</p> : null}
@@ -62,30 +62,30 @@ export default async function InstallerProfilePage({ params }: { params: { slug:
             <div className="surface-card p-6">
               <h2 className="text-2xl font-black">Services and capacity</h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                <p className="flex items-center gap-2"><MapPin className="text-fern" size={18} /> {coveredTerritories.map((item) => item.name).join(", ")}</p>
-                <p className="flex items-center gap-2"><Timer className="text-fern" size={18} /> {installer.surveyTurnaroundDays} day survey turnaround</p>
-                <p className="flex items-center gap-2"><Wrench className="text-fern" size={18} /> {installer.monthlyInstallCapacity} installs per month</p>
+                <p className="flex items-center gap-2"><MapPin className="text-accent" size={18} /> {coveredTerritories.map((item) => item.name).join(", ")}</p>
+                <p className="flex items-center gap-2"><Timer className="text-accent" size={18} /> {installer.surveyTurnaroundDays} day survey turnaround</p>
+                <p className="flex items-center gap-2"><Wrench className="text-accent" size={18} /> {installer.monthlyInstallCapacity} installs per month</p>
               </div>
               <div className="mt-5 flex flex-wrap gap-2">
                 {installer.services.map((service) => <span key={service} className="chip">{service}</span>)}
               </div>
-              <p className="mt-5 text-ink/70">Warranty: {installer.warranty}</p>
+              <p className="mt-5 text-navy/70">Warranty: {installer.warranty}</p>
             </div>
 
             <div className="surface-card p-6">
               <h2 className="text-2xl font-black">Areas covered</h2>
-              <p className="mt-3 leading-7 text-ink/70">{installer.areasCovered.join(", ")}</p>
+              <p className="mt-3 leading-7 text-navy/70">{installer.areasCovered.join(", ")}</p>
             </div>
 
             <div className="surface-card p-6">
               <h2 className="text-2xl font-black">Reviews</h2>
               <div className="mt-4 grid gap-4">
                 {installerReviews.length > 0 ? installerReviews.map((review) => (
-                  <blockquote key={review.customerName} className="border-l-4 border-solar pl-4">
+                  <blockquote key={review.customerName} className="border-l-4 border-accent pl-4">
                     <p className="font-bold">{review.rating}/5 from {review.customerName}</p>
-                    <p className="mt-1 text-ink/70">{review.reviewText}</p>
+                    <p className="mt-1 text-navy/70">{review.reviewText}</p>
                   </blockquote>
-                )) : <p className="text-ink/65">Reviews are awaiting approval.</p>}
+                )) : <p className="text-navy/65">Reviews are awaiting approval.</p>}
               </div>
             </div>
           </div>

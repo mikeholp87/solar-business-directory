@@ -8,14 +8,14 @@ export default async function InstallerDashboardPage() {
     <section className="grid gap-8">
       <div className="surface-card p-5">
         <h2 className="text-2xl font-black">{installer.companyName}</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/65">Edit profile content, view assigned leads and request additional territories.</p>
+        <p className="mt-2 text-sm leading-6 text-navy/65">Edit profile content, view assigned leads and request additional territories.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="surface-card p-5"><ReceiptText className="text-fern" /><p className="mt-3 text-sm font-bold text-ink/55">Subscription</p><p className="mt-1 text-xl font-black">{installer.subscriptionStatus}</p></div>
-        <div className="surface-card p-5"><MapPinned className="text-fern" /><p className="mt-3 text-sm font-bold text-ink/55">Territories</p><p className="mt-1 text-xl font-black">{allocatedTerritories.length}</p></div>
-        <div className="surface-card p-5"><Plus className="text-fern" /><p className="mt-3 text-sm font-bold text-ink/55">Assigned leads</p><p className="mt-1 text-xl font-black">{assignedLeads.length}</p></div>
-        <div className="surface-card p-5"><FileUp className="text-fern" /><p className="mt-3 text-sm font-bold text-ink/55">Agreed lead price</p><p className="mt-1 text-xl font-black">£{installer.leadPrice}</p></div>
+        <div className="surface-card p-5"><ReceiptText className="text-accent" /><p className="mt-3 text-sm font-bold text-navy/55">Subscription</p><p className="mt-1 text-xl font-black">{installer.subscriptionStatus}</p></div>
+        <div className="surface-card p-5"><MapPinned className="text-accent" /><p className="mt-3 text-sm font-bold text-navy/55">Territories</p><p className="mt-1 text-xl font-black">{allocatedTerritories.length}</p></div>
+        <div className="surface-card p-5"><Plus className="text-accent" /><p className="mt-3 text-sm font-bold text-navy/55">Assigned leads</p><p className="mt-1 text-xl font-black">{assignedLeads.length}</p></div>
+        <div className="surface-card p-5"><FileUp className="text-accent" /><p className="mt-3 text-sm font-bold text-navy/55">Agreed lead price</p><p className="mt-1 text-xl font-black">£{installer.leadPrice}</p></div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[0.42fr_0.58fr]">
@@ -39,7 +39,7 @@ export default async function InstallerDashboardPage() {
                   <p className="font-black">{lead.firstName} {lead.lastName}</p>
                   <span className="chip chip-soft capitalize">{lead.stage.replaceAll("_", " ")}</span>
                 </div>
-                <p className="mt-2 text-sm text-ink/65">{lead.postcode} · {lead.propertyType} · {lead.interests.join(", ")}</p>
+                <p className="mt-2 text-sm text-navy/65">{lead.postcode} · {lead.propertyType} · {lead.interests.join(", ")}</p>
                 <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
                   <label>Update status<select defaultValue={lead.stage}><option value="contacted">Contacted</option><option value="qualified">Qualified</option><option value="survey_booked">Survey booked</option><option value="quote_issued">Quote issued</option></select></label>
                   <button className="button-secondary self-end" type="button">Add note</button>

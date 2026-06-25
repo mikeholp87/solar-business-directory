@@ -21,7 +21,7 @@ export function ApplicationForm() {
     return (
       <div className="surface-card surface-card-success p-6">
         <h2 className="text-2xl font-black">Application received</h2>
-        <p className="mt-2 text-ink/70">The team can now review your accreditations, territory fit, and commercial terms.</p>
+        <p className="mt-2 text-navy/70">The team can now review your accreditations, territory fit, and commercial terms.</p>
       </div>
     );
   }
@@ -31,7 +31,7 @@ export function ApplicationForm() {
       <div>
         <p className="eyebrow">Installer application</p>
         <h2 className="mt-3 text-3xl font-black">Apply to join</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/65">Share your accreditations, commercial model, and preferred territories.</p>
+        <p className="mt-2 text-sm leading-6 text-navy/65">Share your accreditations, commercial model, and preferred territories.</p>
       </div>
       <div className="field-grid">
         <label>Company name<input name="company_name" required /></label>

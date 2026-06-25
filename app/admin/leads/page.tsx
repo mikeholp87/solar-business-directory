@@ -30,7 +30,7 @@ export default async function AdminLeadsPage() {
     <section className="grid gap-4">
       <div className="surface-card p-5">
         <h2 className="text-2xl font-black">Leads</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/65">Track stage progress, invoice status and assignment.</p>
+        <p className="mt-2 text-sm leading-6 text-navy/65">Track stage progress, invoice status and assignment.</p>
       </div>
 
       {leads.map((lead) => (
@@ -39,7 +39,7 @@ export default async function AdminLeadsPage() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h3 className="text-xl font-black">{lead.firstName} {lead.lastName}</h3>
-              <p className="mt-1 text-sm text-ink/65">{lead.email} · {lead.phone} · {lead.postcode}</p>
+              <p className="mt-1 text-sm text-navy/65">{lead.email} · {lead.phone} · {lead.postcode}</p>
             </div>
             <span className="chip chip-soft capitalize">{lead.stage.replaceAll("_", " ")}</span>
           </div>

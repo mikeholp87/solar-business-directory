@@ -32,7 +32,7 @@ export default async function AdminInstallersPage() {
     <section className="grid gap-4">
       <div className="surface-card p-5">
         <h2 className="text-2xl font-black">Installers</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/65">Edit status, subscription state and commercial controls. Territory membership is managed on the territories page.</p>
+        <p className="mt-2 text-sm leading-6 text-navy/65">Edit status, subscription state and commercial controls. Territory membership is managed on the territories page.</p>
       </div>
 
       {installers.map((installer) => (
@@ -41,7 +41,7 @@ export default async function AdminInstallersPage() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h3 className="text-xl font-black">{installer.companyName}</h3>
-              <p className="mt-1 text-sm text-ink/65">{installer.slug} · {installer.email ?? "No email"} · {installer.phone ?? "No phone"}</p>
+              <p className="mt-1 text-sm text-navy/65">{installer.slug} · {installer.email ?? "No email"} · {installer.phone ?? "No phone"}</p>
             </div>
             <span className="chip chip-soft capitalize">{installer.status}</span>
           </div>

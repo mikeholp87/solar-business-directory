@@ -25,7 +25,7 @@ export default async function InstallerDocumentsPage() {
     <section className="grid gap-4">
       <div className="surface-card p-5">
         <h2 className="text-2xl font-black">Documents</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/65">Record accreditation files and compliance uploads. If storage is enabled later, this screen can swap the URL field for a file picker.</p>
+        <p className="mt-2 text-sm leading-6 text-navy/65">Record accreditation files and compliance uploads. If storage is enabled later, this screen can swap the URL field for a file picker.</p>
       </div>
 
       <form action={addDocumentAction} className="surface-card grid gap-4 p-5">
@@ -45,7 +45,7 @@ export default async function InstallerDocumentsPage() {
 
       {documents.length === 0 ? (
         <div className="surface-card p-5">
-          <p className="text-ink/70">No documents uploaded yet.</p>
+          <p className="text-navy/70">No documents uploaded yet.</p>
         </div>
       ) : (
         documents.map((document) => (
@@ -53,7 +53,7 @@ export default async function InstallerDocumentsPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="text-xl font-black">{document.documentType}</h3>
-                <p className="mt-1 text-sm text-ink/65">{document.fileUrl}</p>
+                <p className="mt-1 text-sm text-navy/65">{document.fileUrl}</p>
               </div>
               <span className={document.verified ? "chip chip-success" : "chip chip-soft"}>{document.verified ? "Verified" : "Pending"}</span>
             </div>

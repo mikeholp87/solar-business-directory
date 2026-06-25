@@ -75,7 +75,7 @@ function Pagination({
 
   return (
     <nav aria-label="Pagination" className="editorial-rail mt-2 flex flex-wrap items-center justify-between gap-4 p-4 sm:p-5">
-      <p className="text-sm font-bold text-ink/65">
+      <p className="text-sm font-bold text-navy/65">
         Page {currentPage} of {totalPages}
       </p>
       <div className="flex flex-wrap items-center gap-2">
@@ -85,7 +85,7 @@ function Pagination({
           const gap = previousPage && page - previousPage > 1;
           return (
             <span key={page} className="flex items-center gap-2">
-              {gap ? <span className="px-2 text-sm font-bold text-ink/45">…</span> : null}
+              {gap ? <span className="px-2 text-sm font-bold text-navy/45">…</span> : null}
               <PaginationLink page={page} active={page === currentPage} query={query} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
             </span>
           );
@@ -122,9 +122,9 @@ function PaginationLink({
   email: boolean;
 }) {
   const baseClass = "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border px-3 text-sm font-bold transition";
-  const activeClass = "border-fern bg-fern text-white shadow-soft";
-  const inactiveClass = "border-stone-200 bg-white/92 text-ink hover:border-stone-300 hover:bg-white";
-  const disabledClass = "pointer-events-none border-stone-200 bg-white/60 text-ink/35";
+  const activeClass = "border-accent bg-accent text-white shadow-soft";
+  const inactiveClass = "border-border bg-white text-navy hover:border-stone-300 hover:bg-white";
+  const disabledClass = "pointer-events-none border-border bg-white/60 text-navy/35";
 
   const className = `${baseClass} ${disabled ? disabledClass : active ? activeClass : inactiveClass}`;
   const href = buildDirectoryHref({ page, query, type, sort, perPage, bus, website, email });
@@ -229,7 +229,7 @@ export default function DirectoryPage({
             <div>
               <p className="eyebrow">Renewable Directory index</p>
               <h1 className="mt-4 text-4xl font-black leading-[0.96] sm:text-5xl">Search the installer index by territory, type, and record detail</h1>
-              <p className="mt-4 max-w-3xl text-lg leading-8 text-ink/72">
+              <p className="mt-4 max-w-3xl text-lg leading-8 text-navy/72">
                 Browse the current MCS directory for {data.query.technology.toLowerCase()} installers in {data.query.region}. Filter by the details that matter: company, coverage, certification, and contact information.
               </p>
             </div>
@@ -239,7 +239,7 @@ export default function DirectoryPage({
               <Stat label="Rows per page" value={String(perPage)} />
             </div>
           </div>
-          <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold text-ink/64">
+          <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold text-navy/64">
             <span className="chip chip-soft">{data.query.technology}</span>
             <span className="chip chip-soft">{data.query.region}</span>
             <span className="chip">{data.totalCount.toLocaleString("en-GB")} source rows</span>
@@ -273,9 +273,9 @@ export default function DirectoryPage({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[20px] border border-ink/10 bg-white/78 p-4">
-      <p className="text-xs font-black uppercase tracking-[0.18em] text-ink/48">{label}</p>
-      <p className="mt-2 text-2xl font-black tracking-tight text-ink">{value}</p>
+    <div className="rounded-[20px] border border-navy/10 bg-white p-4">
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-navy/48">{label}</p>
+      <p className="mt-2 text-2xl font-black tracking-tight text-navy">{value}</p>
     </div>
   );
 }

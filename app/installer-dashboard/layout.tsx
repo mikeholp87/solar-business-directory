@@ -25,6 +25,9 @@ export default async function InstallerDashboardLayout({ children }: Readonly<{ 
                 {label}
               </Link>
             ))}
+            <Link href="/auth/signout" className="button-secondary">
+              Sign out
+            </Link>
           </div>
         </div>
         {children}

@@ -28,7 +28,7 @@ export default async function AdminTerritoriesPage() {
     <section className="grid gap-4">
       <div className="surface-card p-5">
         <h2 className="text-2xl font-black">Territories</h2>
-        <p className="mt-2 text-sm leading-6 text-ink/65">Adjust slot caps, status and priority handling. Active installer membership is controlled from installer records.</p>
+        <p className="mt-2 text-sm leading-6 text-navy/65">Adjust slot caps, status and priority handling. Active installer membership is controlled from installer records.</p>
       </div>
 
       {territories.map((territory) => (
@@ -37,7 +37,7 @@ export default async function AdminTerritoriesPage() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h3 className="text-xl font-black">{territory.name}</h3>
-              <p className="mt-1 text-sm text-ink/65">{territory.region} · {territory.counties.join(", ")}</p>
+              <p className="mt-1 text-sm text-navy/65">{territory.region} · {territory.counties.join(", ")}</p>
             </div>
             <span className="chip chip-soft">{territory.activeInstallerCount}/{territory.maxInstallerSlots}</span>
           </div>
