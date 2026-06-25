@@ -11,7 +11,10 @@ export const metadata: Metadata = {
     default: "The Renewable Directory",
     template: "%s | The Renewable Directory"
   },
-  description: "Find trusted solar PV, battery storage, heat pump, and EV charger installers across the UK. Compare MCS-certified installers, request quotes, and connect with specialists."
+  description: "Find trusted solar PV, battery storage, heat pump, and EV charger installers across the UK. Compare MCS-certified installers, request quotes, and connect with specialists.",
+  icons: {
+    icon: "/favicon.svg"
+  }
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
