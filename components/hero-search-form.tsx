@@ -5,11 +5,18 @@ import { type FormEvent } from "react";
 
 const serviceOptions = [
   { label: "Select a service", value: "" },
-  { label: "Solar PV Installation", value: "Solar PV" },
-  { label: "Battery Storage", value: "Battery Storage" },
   { label: "Air Source Heat Pump", value: "Air Source Heat Pump" },
-  { label: "EV Charger Installation", value: "EV Charger" },
-  { label: "Commercial Renewable", value: "Commercial" },
+  { label: "Air to Water Heat Pump", value: "Air to Water Heat Pump" },
+  { label: "Battery Storage", value: "Battery Storage" },
+  { label: "Biomass", value: "Biomass" },
+  { label: "Exhaust Air Heat Pump", value: "Exhaust Air Heat Pump" },
+  { label: "Ground Assisted Heat Pump", value: "Ground Assisted Heat Pump" },
+  { label: "Ground/Water Source Heat Pump", value: "Ground/Water Source Heat Pump" },
+  { label: "Micro CHP", value: "Micro CHP" },
+  { label: "Small Wind Turbine", value: "Small Wind Turbine" },
+  { label: "Solar Assisted Heat Pump", value: "Solar Assisted Heat Pump" },
+  { label: "Solar Heating", value: "Solar Heating" },
+  { label: "Solar PV", value: "Solar PV" },
 ];
 
 export function HeroSearchForm() {
@@ -41,7 +48,7 @@ export function HeroSearchForm() {
       <div className="h-6 w-px bg-border" />
       <select
         name="service"
-        className="w-[180px] appearance-none border-0 bg-transparent px-3 py-2.5 text-sm text-muted focus:outline-none"
+        className="w-[220px] appearance-none border-0 bg-transparent px-3 py-2.5 text-sm text-muted focus:outline-none"
         aria-label="Select a service"
       >
         {serviceOptions.map((opt) => (
