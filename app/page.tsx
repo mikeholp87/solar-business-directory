@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, ClipboardCheck, MapPinned, UsersRound, CheckCircle, type LucideIcon } from "lucide-react";
+import { CheckCircle, type LucideIcon } from "lucide-react";
+import { HeroSearchForm } from "@/components/hero-search-form";
 import { InstallerCard } from "@/components/installer-card";
 import { TerritoryList } from "@/components/territory-list";
 import { listInstallers } from "@/lib/repositories/installers";
@@ -8,11 +9,11 @@ import { jsonLd } from "@/lib/seo";
 import { siteUrl } from "@/lib/runtime";
 
 const categories = [
-  { label: "Solar PV Installers", slug: "solar-pv" },
-  { label: "Battery Storage Installers", slug: "battery-storage" },
-  { label: "Air Source Heat Pump Installers", slug: "air-source-heat-pump" },
-  { label: "EV Charger Installers", slug: "ev-charger" },
-  { label: "Commercial Renewable Installers", slug: "commercial" },
+  { label: "Solar PV Installers", type: "Solar PV" },
+  { label: "Battery Storage Installers", type: "Battery Storage" },
+  { label: "Air Source Heat Pump Installers", type: "Air Source Heat Pump" },
+  { label: "EV Charger Installers", type: "EV Charger" },
+  { label: "Commercial Renewable Installers", type: "Commercial" },
 ];
 
 const features: Array<{ title: string; text: string }> = [
@@ -39,29 +40,7 @@ export default async function HomePage() {
             <p className="mt-5 max-w-lg text-base leading-relaxed text-muted">
               Compare local MCS-certified installers, request quotes and connect with trusted renewable energy specialists in your area.
             </p>
-            <div className="mt-8 flex max-w-xl items-center gap-0 rounded-lg border border-border bg-white p-1 shadow-soft">
-              <input
-                type="text"
-                placeholder="Enter your postcode"
-                className="w-full border-0 bg-transparent px-3 py-2.5 text-sm text-navy placeholder:text-muted focus:outline-none"
-                aria-label="Enter your postcode"
-              />
-              <div className="h-6 w-px bg-border" />
-              <select
-                className="w-[180px] appearance-none border-0 bg-transparent px-3 py-2.5 text-sm text-muted focus:outline-none"
-                aria-label="Select a service"
-              >
-                <option>Select a service</option>
-                <option>Solar PV Installation</option>
-                <option>Battery Storage</option>
-                <option>Air Source Heat Pump</option>
-                <option>EV Charger Installation</option>
-                <option>Commercial Renewable</option>
-              </select>
-              <Link className="button-primary shrink-0 !min-h-[40px] !px-5 !py-2 text-sm" href="/directory">
-                Search Installers
-              </Link>
-            </div>
+            <HeroSearchForm />
           </div>
           <div className="hidden lg:block">
             <img
@@ -92,12 +71,12 @@ export default async function HomePage() {
           <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
             {categories.map((cat) => (
               <Link
-                key={cat.slug}
-                href={`/directory?type=${cat.slug}`}
+                key={cat.type}
+                href={`/directory?type=${encodeURIComponent(cat.type)}`}
                 className="flex flex-col items-center gap-3 rounded-lg border border-border bg-white p-6 text-center transition-all hover:border-accent hover:shadow-card"
               >
                 <div className="flex h-16 w-16 items-center justify-center">
-                  <CategoryIcon type={cat.slug} />
+                  <CategoryIcon type={cat.type} />
                 </div>
                 <span className="text-sm font-semibold text-navy leading-tight">{cat.label}</span>
               </Link>
@@ -175,7 +154,7 @@ function CategoryIcon({ type }: { type: string }) {
   const color = "#102A43";
   const accent = "#00A651";
   switch (type) {
-    case "solar-pv":
+    case "Solar PV":
       return (
         <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke={color} strokeWidth="1.5">
           <rect x="8" y="18" width="32" height="20" rx="2" />
@@ -186,7 +165,7 @@ function CategoryIcon({ type }: { type: string }) {
           <circle cx="36" cy="12" r="4" stroke={accent} fill="none" />
         </svg>
       );
-    case "battery-storage":
+    case "Battery Storage":
       return (
         <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke={color} strokeWidth="1.5">
           <rect x="12" y="12" width="24" height="28" rx="3" />
@@ -195,7 +174,7 @@ function CategoryIcon({ type }: { type: string }) {
           <line x1="24" y1="20" x2="24" y2="32" stroke={accent} />
         </svg>
       );
-    case "air-source-heat-pump":
+    case "Air Source Heat Pump":
       return (
         <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke={color} strokeWidth="1.5">
           <rect x="8" y="16" width="20" height="24" rx="3" />
@@ -205,7 +184,7 @@ function CategoryIcon({ type }: { type: string }) {
           <path d="M37 16c3 3 3 10 0 14" stroke={accent} />
         </svg>
       );
-    case "ev-charger":
+    case "EV Charger":
       return (
         <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke={color} strokeWidth="1.5">
           <rect x="10" y="8" width="16" height="32" rx="3" />
