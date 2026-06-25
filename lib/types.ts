@@ -69,6 +69,12 @@ export type Installer = {
   gallery: string[];
   internalNotes?: string;
   leadCount?: number;
+  installerFeeType?: "monthly_directory" | "pay_per_lead" | "pay_per_install" | "hybrid";
+  referralFeeTotal?: number;
+  busAcceptanceFee?: number;
+  completionFee?: number;
+  vatApplicable?: boolean;
+  maximumMonthlyLeadAllocation?: number;
 };
 
 export type Lead = {
@@ -97,6 +103,16 @@ export type Lead = {
   referralFeeDue: number;
   referralFeePaid: boolean;
   invoiceStatus: "not_invoiced" | "draft" | "sent" | "paid" | "overdue";
+  leadValue?: number;
+  leadCost?: number;
+  busAcceptancePaymentDue?: number;
+  completionPaymentDue?: number;
+  vatApplicable?: boolean;
+  surveyDate?: string;
+  busApplicationDate?: string;
+  busAcceptanceDate?: string;
+  installDate?: string;
+  completionDate?: string;
   notes?: string;
   createdAt: string;
 };
