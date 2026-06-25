@@ -131,6 +131,11 @@ export default function LoginPage() {
                   </>
                 )}
               </p>
+
+              <p className="text-center text-sm text-navy/60">
+                Don&apos;t have an account?{" "}
+                <a href="/signup" className="underline hover:text-accent">Sign up</a>
+              </p>
             </form>
           )}
         </div>
