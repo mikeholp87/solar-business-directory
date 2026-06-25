@@ -1,11 +1,11 @@
 import Link from "next/link";
 
 const installerLinks = [
-  { label: "Solar PV installers", href: "/directory?type=solar-pv" },
-  { label: "Battery storage installers", href: "/directory?type=battery-storage" },
-  { label: "Heat pump installers", href: "/directory?type=air-source-heat-pump" },
-  { label: "EV charger installers", href: "/directory?type=ev-charger" },
-  { label: "Commercial renewable", href: "/directory?type=commercial" },
+  { label: "Solar PV installers", href: "/directory?type=Solar%20PV" },
+  { label: "Battery storage installers", href: "/directory?type=Battery%20Storage" },
+  { label: "Heat pump installers", href: "/directory?type=Air%20Source%20Heat%20Pump" },
+  { label: "EV charger installers", href: "/directory?type=EV%20Charger" },
+  { label: "Commercial renewable", href: "/directory?type=Commercial" },
 ];
 
 const forInstallers = [
