@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { isSupabaseConfigured } from "@/lib/runtime";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -17,11 +16,6 @@ export default function SignupPage() {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-
-    if (!isSupabaseConfigured()) {
-      setError("Sign up is only available when Supabase is configured.");
-      return;
-    }
 
     setLoading(true);
     try {
