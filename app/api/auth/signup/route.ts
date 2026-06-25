@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { createServerSupabaseClient } from "@/lib/supabase";
 
 export async function POST(request: Request) {
   const admin = createAdminSupabaseClient();
   if (!admin) {
+    console.error("[signup] createAdminSupabaseClient returned null — check SUPABASE_SERVICE_ROLE_KEY");
     return NextResponse.json({ error: "Service not configured" }, { status: 500 });
   }
 
@@ -33,6 +33,7 @@ export async function POST(request: Request) {
     perPage: 1000
   });
   if (listError) {
+    console.error("[signup] listUsers failed:", listError.message);
     return NextResponse.json({ error: "Failed to check existing users" }, { status: 500 });
   }
 
@@ -51,11 +52,15 @@ export async function POST(request: Request) {
     user_metadata: { role: userRole, company_name: companyName }
   });
   if (createError) {
+    console.error("[signup] createUser failed:", createError.message);
     return NextResponse.json({ error: createError.message }, { status: 400 });
   }
   if (!authData.user) {
+    console.error("[signup] createUser returned no user");
     return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
   }
+
+  console.log("[signup] auth user created:", authData.user.id);
 
   const { error: insertError } = await admin.from("users").insert({
     id: authData.user.id,
@@ -63,6 +68,7 @@ export async function POST(request: Request) {
     role: userRole
   });
   if (insertError) {
+    console.error("[signup] insert into users failed:", insertError.message);
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
 
