@@ -53,16 +53,26 @@ npm run dev
 - `STRIPE_STARTER_PRICE_ID`
 - `STRIPE_TERRITORY_PRICE_ID`
 - `STRIPE_REGIONAL_PRICE_ID`
+- `ADMIN_SEED_TOKEN` for the temporary protected seed endpoint
 
 ## Supabase setup
 
 1. Create a Supabase project.
 2. Run `supabase/schema.sql`.
 3. Run `supabase/seed.sql`.
-4. Create admin users in Supabase Auth.
-5. Insert admin rows into `public.users` with `role = 'admin'`.
-6. Create installer auth users.
-7. Link `public.installers.user_id` to the matching `public.users.id`.
+4. Run `supabase/mock-data.sql` for the fuller mock dataset used by the current app.
+5. Create admin users in Supabase Auth.
+6. Insert admin rows into `public.users` with `role = 'admin'`.
+7. Create installer auth users.
+8. Link `public.installers.user_id` to the matching `public.users.id`.
+
+If you want a single bootstrap script for the current state of the app, use `supabase/current-configuration.sql` with `psql` or `supabase db reset`.
+
+To seed a live Supabase database from the repo, set a Postgres connection string and run:
+
+```bash
+npm run seed:supabase
+```
 
 ## Stripe setup
 

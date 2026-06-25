@@ -9,10 +9,17 @@ Use this when provisioning a new Supabase project or troubleshooting database ac
 1. Create the Supabase project.
 2. Run `supabase/schema.sql`.
 3. Run `supabase/seed.sql`.
-4. Create admin users in Supabase Auth.
-5. Insert matching rows into `public.users` with `role = 'admin'`.
-6. Create installer auth users.
-7. Link `public.installers.user_id` to the matching `public.users.id`.
+4. Run `supabase/mock-data.sql` to load the fuller mock dataset used by the app.
+5. Create admin users in Supabase Auth.
+6. Insert matching rows into `public.users` with `role = 'admin'`.
+7. Create installer auth users.
+8. Link `public.installers.user_id` to the matching `public.users.id`.
+
+If you want one file instead of separate schema and seed runs, use `supabase/current-configuration.sql` with `psql` or `supabase db reset`.
+
+If you want a single command from this repo, export a Postgres connection string and run `npm run seed:supabase`.
+
+The temporary Vercel seed route is protected by `ADMIN_SEED_TOKEN` and expects the token in the `x-admin-seed-token` header.
 
 ## Required Checks
 
