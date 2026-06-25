@@ -41,10 +41,11 @@ export default function LoginPage() {
         if (signInError) throw signInError;
         router.push(redirectTo);
       } else {
-        await supabase.auth.signInWithOtp({
+        const { error: otpError } = await supabase.auth.signInWithOtp({
           email,
           options: { emailRedirectTo: `${window.location.origin}${redirectTo}` }
         });
+        if (otpError) throw otpError;
         setSent(true);
       }
     } catch (err) {
