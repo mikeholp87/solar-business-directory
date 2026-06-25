@@ -184,14 +184,25 @@ function CategoryIcon({ type }: { type: string }) {
           <path d="M37 16c3 3 3 10 0 14" stroke={accent} />
         </svg>
       );
-    case "EV Charger":
+    case "Ground/Water Source Heat Pump":
       return (
         <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke={color} strokeWidth="1.5">
-          <rect x="10" y="8" width="16" height="32" rx="3" />
-          <rect x="14" y="14" width="8" height="12" rx="1" />
-          <path d="M18 18l-2 4h4l-2 4" stroke={accent} />
-          <path d="M26 20h6l4 8h-6" />
-          <circle cx="36" cy="32" r="4" />
+          <rect x="8" y="8" width="18" height="18" rx="3" />
+          <circle cx="17" cy="17" r="5" />
+          <path d="M17 26v10" />
+          <path d="M12 36h10" />
+          <path d="M14 30c0 0 2 6 6 6" stroke={accent} />
+          <path d="M30 14l6-4v24l-6-4" />
+          <path d="M32 12c2 2 2 6 0 8" stroke={accent} />
+        </svg>
+      );
+    case "Biomass":
+      return (
+        <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke={color} strokeWidth="1.5">
+          <path d="M24 6c0 8-10 12-10 20a10 10 0 0 0 20 0C34 18 24 14 24 6z" />
+          <path d="M24 18c0 4-4 6-4 10a4 4 0 0 0 8 0c0-4-4-6-4-10z" stroke={accent} />
+          <line x1="24" y1="38" x2="24" y2="44" />
+          <line x1="18" y1="44" x2="30" y2="44" />
         </svg>
       );
     default:

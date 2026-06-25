@@ -4,8 +4,8 @@ const installerLinks = [
   { label: "Solar PV installers", href: "/directory?type=Solar%20PV" },
   { label: "Battery storage installers", href: "/directory?type=Battery%20Storage" },
   { label: "Heat pump installers", href: "/directory?type=Air%20Source%20Heat%20Pump" },
-  { label: "EV charger installers", href: "/directory?type=EV%20Charger" },
-  { label: "Commercial renewable", href: "/directory?type=Commercial" },
+  { label: "Ground source heat pump installers", href: "/directory?type=Ground%2FWater%20Source%20Heat%20Pump" },
+  { label: "Biomass installers", href: "/directory?type=Biomass" },
 ];
 
 const forInstallers = [
