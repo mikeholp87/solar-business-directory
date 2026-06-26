@@ -75,7 +75,7 @@ for (let i = 0; i < jsonInstallers.length; i += BATCH_SIZE) {
         address_postcode: json.addressParts?.postcode,
         address_country: json.addressParts?.country,
         source_page: json.sourcePage,
-        type: Array.isArray(json.category) && json.category.length > 0 ? json.category[0] : null,
+        type: Array.isArray(json.category) && json.category.length > 0 ? json.category[0] : 'General',
       })
       .eq("mcs_number", json.certificationNumber);
 
