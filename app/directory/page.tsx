@@ -10,6 +10,7 @@ import {
   parsePerPage,
   readDirectoryData,
 } from "@/lib/mcs-directory";
+import { SERVICE_TYPES } from "@/lib/service-types";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
@@ -187,9 +188,7 @@ export default async function DirectoryPage({
   const bus = parseFlag(searchParams.bus);
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
-  const types = Array.from(new Set(
-    data.installers.flatMap((installer) => installer.category)
-  )).sort((a, b) => a.localeCompare(b));
+  const types = [...SERVICE_TYPES];
 
   const filteredInstallers = data.installers
     .filter((installer) => {

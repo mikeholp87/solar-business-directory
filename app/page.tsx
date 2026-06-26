@@ -5,16 +5,14 @@ import { DirectoryResultCard } from "@/components/directory-result-card";
 import { TerritoryList } from "@/components/territory-list";
 import { listTerritories } from "@/lib/repositories/territories";
 import { readDirectoryData } from "@/lib/mcs-directory";
+import { SERVICE_TYPES } from "@/lib/service-types";
 import { jsonLd } from "@/lib/seo";
 import { siteUrl } from "@/lib/runtime";
 
-const categories = [
-  { label: "Solar PV Installers", type: "Solar PV" },
-  { label: "Battery Storage Installers", type: "Battery Storage" },
-  { label: "Air Source Heat Pump Installers", type: "Air Source Heat Pump" },
-  { label: "Ground Source Heat Pump Installers", type: "Ground/Water Source Heat Pump" },
-  { label: "Biomass Installers", type: "Biomass" },
-];
+const categories = SERVICE_TYPES.map((type) => ({
+  label: `${type} Installers`,
+  type,
+}));
 
 const features: Array<{ title: string; text: string }> = [
   { title: "Trusted & Verified", text: "All installers are MCS certified and vetted for your peace of mind." },
