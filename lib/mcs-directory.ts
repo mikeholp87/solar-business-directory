@@ -22,7 +22,7 @@ export type McsInstaller = {
   phone: string | null;
   sourcePage: number | null;
   slug?: string;
-  type?: string | null;
+  type?: string[];
 };
 
 export type McsDirectoryData = {
@@ -71,7 +71,7 @@ type InstallerRow = {
   address_postcode: string | null;
   address_country: string | null;
   source_page: number | null;
-  type: string | null;
+  type: string[];
 };
 
 const BASIC_SELECT = "company_name, slug, email, phone, website, description, mcs_installer_id, mcs_number, certification_body, bus_registered, services, areas_covered, address_line1, address_line2, address_line3, address_county, address_postcode, address_country, source_page, type";
@@ -138,7 +138,7 @@ export async function readDirectoryData(): Promise<McsDirectoryData> {
     phone: row.phone,
     sourcePage: row.source_page ?? null,
     slug: row.slug,
-    type: row.type ?? null,
+    type: Array.isArray(row.type) ? row.type : [],
   }));
 
   return {

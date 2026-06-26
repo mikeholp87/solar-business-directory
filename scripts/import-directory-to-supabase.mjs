@@ -154,7 +154,7 @@ for (let i = 0; i < rows.length; i += BATCH_SIZE) {
       address_postcode: row["addressParts.postcode"]?.trim() || null,
       address_country: row["addressParts.country"]?.trim() || null,
       source_page: row.sourcePage ? Number(row.sourcePage) : null,
-      type,
+      type: JSON.stringify(type ? [type] : []),
       status: "pending",
       subscription_status: "trialing",
     });

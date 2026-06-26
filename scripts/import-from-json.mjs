@@ -103,7 +103,7 @@ for (let i = 0; i < installers.length; i += BATCH_SIZE) {
       address_postcode: json.addressParts?.postcode ?? null,
       address_country: json.addressParts?.country ?? null,
       source_page: json.sourcePage ?? null,
-      type: category.length > 0 ? category[0] : 'General',
+      type: JSON.stringify(category),
       status: "pending",
       subscription_status: "trialing",
     });
