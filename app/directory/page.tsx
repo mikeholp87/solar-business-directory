@@ -11,6 +11,7 @@ import {
   readDirectoryData,
 } from "@/lib/mcs-directory";
 import { pageMetadata } from "@/lib/seo";
+import { SERVICE_TYPES } from "@/lib/service-types";
 
 export const metadata = pageMetadata(
   "Search for an MCS certified installer for your renewable installation",
@@ -187,7 +188,7 @@ export default async function DirectoryPage({
   const bus = parseFlag(searchParams.bus);
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
-  const types = Array.from(new Set(data.installers.flatMap((i) => i.category))).sort();
+  const types = [...SERVICE_TYPES];
 
   const filteredInstallers = data.installers
     .filter((installer) => {
