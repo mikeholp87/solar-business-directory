@@ -65,7 +65,8 @@ export async function POST(request: Request) {
   const { error: insertError } = await admin.from("users").insert({
     id: authData.user.id,
     email: emailLower,
-    role: userRole
+    role: userRole,
+    company_name: companyName
   });
   if (insertError) {
     console.error("[signup] insert into users failed:", insertError.message);

@@ -25,6 +25,7 @@ create table public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null unique,
   role user_role not null default 'installer',
+  company_name text,
   created_at timestamptz not null default now()
 );
 
