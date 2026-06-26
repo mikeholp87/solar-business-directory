@@ -57,6 +57,7 @@ export async function createLeadFromForm(params: {
   monthly_bill?: string;
   property_type?: string;
   bedrooms?: number;
+  best_time_to_contact?: string;
   interests: string[];
   consent_contact: boolean;
   consent_marketing: boolean;
@@ -85,6 +86,7 @@ export async function createLeadFromForm(params: {
     monthly_bill: params.monthly_bill,
     property_type: params.property_type,
     bedrooms: params.bedrooms,
+    best_time_to_contact: params.best_time_to_contact,
     interests: params.interests,
     consent_contact: params.consent_contact,
     consent_marketing: params.consent_marketing,

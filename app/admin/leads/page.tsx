@@ -90,7 +90,7 @@ export default async function AdminLeadsPage() {
           <div className="grid gap-4 md:grid-cols-3">
             <label>Property type<input value={lead.propertyType ?? ""} readOnly /></label>
             <label>Interests<input value={Array.isArray(lead.interests) ? lead.interests.join(", ") : ""} readOnly /></label>
-            <label>Referral fee due<input value={lead.referralFeeDue ?? ""} readOnly /></label>
+            <label>Best time to contact<input value={lead.bestTimeToContact ?? ""} readOnly /></label>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">

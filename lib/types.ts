@@ -90,6 +90,7 @@ export type Lead = {
   monthlyBill?: string;
   propertyType: string;
   bedrooms?: number;
+  bestTimeToContact?: string;
   interests: string[];
   consentContact?: boolean;
   consentMarketing?: boolean;

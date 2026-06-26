@@ -36,6 +36,7 @@ export async function POST(request: Request) {
     monthly_bill: parsed.data.monthly_bill,
     property_type: parsed.data.property_type,
     bedrooms: parsed.data.bedrooms,
+    best_time_to_contact: parsed.data.best_time_to_contact,
     interests: formData.getAll("interests").map(String),
     consent_contact: true,
     consent_marketing: formData.get("consent_marketing") === "true",

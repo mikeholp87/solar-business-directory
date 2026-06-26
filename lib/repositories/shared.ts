@@ -115,6 +115,8 @@ export function mergeLeadRecord(row: MaybeRecord | undefined, fallback: Lead): L
     phone: asString(row.phone, fallback.phone),
     postcode: asString(row.postcode, fallback.postcode),
     propertyType: asString(row.property_type, fallback.propertyType),
+    bedrooms: row.bedrooms === null || row.bedrooms === undefined ? fallback.bedrooms : Number(row.bedrooms),
+    bestTimeToContact: asString(row.best_time_to_contact, fallback.bestTimeToContact),
     interests: asJsonArray(row.interests, fallback.interests),
     stage: asString(row.stage, fallback.stage) as Lead["stage"],
     territoryId: typeof row.territory_id === "string" ? row.territory_id : fallback.territoryId,

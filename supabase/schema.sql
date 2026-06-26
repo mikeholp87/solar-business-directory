@@ -108,6 +108,7 @@ create table public.leads (
   monthly_bill text,
   property_type text,
   bedrooms integer,
+  best_time_to_contact text,
   interests jsonb not null default '[]'::jsonb,
   consent_contact boolean not null default false,
   consent_marketing boolean not null default false,
