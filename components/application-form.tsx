@@ -6,14 +6,26 @@ import { territories } from "@/lib/data";
 
 export function ApplicationForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const response = await fetch("/api/applications", { method: "POST", body: new FormData(event.currentTarget) });
-    if (response.ok) {
+    setError(null);
+    setLoading(true);
+    try {
+      const response = await fetch("/api/applications", { method: "POST", body: new FormData(event.currentTarget) });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Failed to submit application");
+      }
       setSubmitted(true);
       router.push("/apply/success");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -33,6 +45,7 @@ export function ApplicationForm() {
         <h2 className="mt-3 text-3xl font-black">Apply to join</h2>
         <p className="mt-2 text-sm leading-6 text-navy/65">Share your accreditations, commercial model, and preferred territories.</p>
       </div>
+      {error && <p className="text-red-600 text-sm">{error}</p>}
       <div className="field-grid">
         <label>Company name<input name="company_name" required /></label>
         <label>Contact name<input name="contact_name" required /></label>
@@ -88,8 +101,8 @@ export function ApplicationForm() {
           </label>
         ))}
       </div>
-      <button className="button-primary" type="submit">
-        Apply as Installer
+      <button className="button-primary" type="submit" disabled={loading}>
+        {loading ? "Submitting..." : "Apply as Installer"}
       </button>
     </form>
   );
