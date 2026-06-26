@@ -10,7 +10,7 @@ import {
   parsePerPage,
   readDirectoryData,
 } from "@/lib/mcs-directory";
-import { SERVICE_TYPES } from "@/lib/service-types";
+import { pageMetadata } from "@/lib/seo";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
@@ -188,7 +188,7 @@ export default async function DirectoryPage({
   const bus = parseFlag(searchParams.bus);
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
-  const types = [...SERVICE_TYPES];
+  const types = Array.from(new Set(data.installers.flatMap((i) => i.category))).sort();
 
   const filteredInstallers = data.installers
     .filter((installer) => {
@@ -208,7 +208,7 @@ export default async function DirectoryPage({
         .toLowerCase();
 
       if (query && !haystack.includes(query)) return false;
-      if (type && !installer.category.includes(type)) return false;
+      if (type && !installer.category.some((c) => c.toLowerCase() === type.toLowerCase())) return false;
       if (bus && !installer.boilerUpgradeSchemeRegistered) return false;
       if (website && !installer.website) return false;
       if (email && !installer.email) return false;
