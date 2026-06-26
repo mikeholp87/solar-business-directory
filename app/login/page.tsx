@@ -34,12 +34,15 @@ export default function LoginPage() {
 
     try {
       if (authMethod === "password") {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password
         });
         if (signInError) throw signInError;
-        router.push(redirectTo);
+
+        const { data: profile } = await supabase.from("users").select("role").eq("id", signInData.user.id).maybeSingle();
+        const actualRole = (profile?.role === "admin" ? "admin" : "installer") as "admin" | "installer";
+        router.push(roleDashboardPath(actualRole));
       } else {
         const { error: otpError } = await supabase.auth.signInWithOtp({
           email,
