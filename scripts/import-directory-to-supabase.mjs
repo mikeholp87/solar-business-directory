@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
@@ -8,8 +8,32 @@ import { createClient } from "@supabase/supabase-js";
 const scriptDir = fileURLToPath(new URL(".", import.meta.url));
 const root = resolve(scriptDir, "..");
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+function parseEnvFile(filePath) {
+  if (!existsSync(filePath)) return {};
+  return readFileSync(filePath, "utf8")
+    .split(/\r?\n/)
+    .reduce((acc, line) => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) return acc;
+      const equalsIndex = trimmed.indexOf("=");
+      if (equalsIndex === -1) return acc;
+      const key = trimmed.slice(0, equalsIndex).trim();
+      let value = trimmed.slice(equalsIndex + 1).trim();
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      acc[key] = value;
+      return acc;
+    }, {});
+}
+
+const fileEnv = Object.fromEntries(
+  [".env.local", ".env.production.local", ".env"]
+    .flatMap((f) => Object.entries(parseEnvFile(resolve(root, f))))
+);
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || fileEnv.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || fileEnv.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
