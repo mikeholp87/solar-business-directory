@@ -11,7 +11,6 @@ import {
   readDirectoryData,
 } from "@/lib/mcs-directory";
 import { pageMetadata } from "@/lib/seo";
-import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
   "Search for an MCS certified installer for your renewable installation",
