@@ -74,39 +74,41 @@ type InstallerRow = {
   type: string[];
 };
 
-const BASIC_SELECT = "company_name, slug, email, phone, website, description, mcs_installer_id, mcs_number, certification_body, bus_registered, services, areas_covered, address_line1, address_line2, address_line3, address_county, address_postcode, address_country, source_page, type";
-
-let _hasTypeColumn: boolean | null = null;
-
 async function fetchInstallers(supabase: ReturnType<typeof createClient>) {
-  // Try full select first, fall back if new columns don't exist yet
-  if (_hasTypeColumn === false) {
+  const PAGE_SIZE = 1000;
+  let allRows: unknown[] = [];
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
     const { data, error } = await supabase
       .from("installers")
-      .select("company_name, slug, email, phone, website, description, mcs_number, bus_registered, services, areas_covered")
+      .select("company_name, slug, email, phone, website, description, mcs_installer_id, mcs_number, certification_body, bus_registered, services, areas_covered, address_line1, address_line2, address_line3, address_county, address_postcode, address_country, source_page, type")
       .order("company_name")
-      .range(0, 4999);
-    return { data, error };
+      .range(offset, offset + PAGE_SIZE - 1);
+
+    if (error) {
+      // Fallback if new columns don't exist yet
+      const fallback = await supabase
+        .from("installers")
+        .select("company_name, slug, email, phone, website, description, mcs_number, bus_registered, services, areas_covered")
+        .order("company_name")
+        .range(offset, offset + PAGE_SIZE - 1);
+
+      if (fallback.error) throw fallback.error;
+      allRows = allRows.concat(fallback.data ?? []);
+    } else {
+      allRows = allRows.concat(data ?? []);
+    }
+
+    if (!data || data.length < PAGE_SIZE) {
+      hasMore = false;
+    } else {
+      offset += PAGE_SIZE;
+    }
   }
 
-  const result = await supabase
-    .from("installers")
-    .select(BASIC_SELECT)
-    .order("company_name")
-    .range(0, 4999);
-
-  if (result.error && result.error.message.includes("column") && result.error.message.includes("does not exist")) {
-    _hasTypeColumn = false;
-    const { data, error } = await supabase
-      .from("installers")
-      .select("company_name, slug, email, phone, website, description, mcs_number, bus_registered, services, areas_covered")
-      .order("company_name")
-      .range(0, 4999);
-    return { data, error };
-  }
-
-  _hasTypeColumn = true;
-  return result;
+  return { data: allRows, error: null };
 }
 
 export async function readDirectoryData(): Promise<McsDirectoryData> {
@@ -138,7 +140,7 @@ export async function readDirectoryData(): Promise<McsDirectoryData> {
     phone: row.phone,
     sourcePage: row.source_page ?? null,
     slug: row.slug,
-    type: Array.isArray(row.type) ? row.type : [],
+    type: Array.isArray(row.type) ? row.type : row.type ? [row.type] : [],
   }));
 
   return {
