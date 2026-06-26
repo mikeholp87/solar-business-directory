@@ -58,37 +58,69 @@ type InstallerRow = {
   phone: string | null;
   website: string | null;
   description: string | null;
+  mcs_installer_id: number | null;
   mcs_number: string | null;
+  certification_body: string | null;
   bus_registered: boolean;
   services: string[];
   areas_covered: string[];
+  address_line1: string | null;
+  address_line2: string | null;
+  address_line3: string | null;
+  address_county: string | null;
+  address_postcode: string | null;
+  address_country: string | null;
+  source_page: number | null;
+  type: string | null;
 };
+
+const BASIC_SELECT = "company_name, slug, email, phone, website, description, mcs_installer_id, mcs_number, certification_body, bus_registered, services, areas_covered, address_line1, address_line2, address_line3, address_county, address_postcode, address_country, source_page, type";
 
 export async function readDirectoryData(): Promise<McsDirectoryData> {
   const supabase = getSupabase();
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("installers")
-    .select("company_name, slug, email, phone, website, description, mcs_number, bus_registered, services, areas_covered")
+    .select(BASIC_SELECT)
     .order("company_name")
     .range(0, 4999);
+
+  if (error) {
+    // Fallback if new columns don't exist yet
+    const fallback = await supabase
+      .from("installers")
+      .select("company_name, slug, email, phone, website, description, mcs_number, bus_registered, services, areas_covered")
+      .order("company_name")
+      .range(0, 4999);
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error) throw error;
 
   const rows = (data ?? []) as unknown as InstallerRow[];
   const installers: McsInstaller[] = rows.map((row) => ({
-    installerId: null,
+    installerId: row.mcs_installer_id ?? null,
     companyName: row.company_name,
     address: row.description,
+    addressParts: row.address_line1 != null ? {
+      line1: row.address_line1,
+      line2: row.address_line2,
+      line3: row.address_line3,
+      county: row.address_county,
+      postcode: row.address_postcode,
+      country: row.address_country,
+    } : undefined,
     category: Array.isArray(row.services) ? row.services : [],
     regionsCovered: Array.isArray(row.areas_covered) ? row.areas_covered : [],
     boilerUpgradeSchemeRegistered: row.bus_registered ?? false,
-    certificationBody: null,
+    certificationBody: row.certification_body ?? null,
     certificationNumber: row.mcs_number,
     website: row.website,
     email: row.email,
     phone: row.phone,
-    sourcePage: null,
+    sourcePage: row.source_page ?? null,
     slug: row.slug,
+    type: row.type ?? null,
   }));
 
   return {
