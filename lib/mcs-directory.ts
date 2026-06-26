@@ -68,7 +68,8 @@ export async function readDirectoryData(): Promise<McsDirectoryData> {
   const { data, error } = await supabase
     .from("installers")
     .select("company_name, slug, email, phone, website, description, mcs_number, bus_registered, services, areas_covered")
-    .order("company_name");
+    .order("company_name")
+    .range(0, 4999);
 
   if (error) throw error;
 
