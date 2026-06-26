@@ -187,7 +187,11 @@ export default async function DirectoryPage({
   const bus = parseFlag(searchParams.bus);
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
-  const types = Array.from(new Set(data.installers.flatMap((installer) => installer.category))).sort((a, b) => a.localeCompare(b));
+  const types = Array.from(new Set(
+    data.installers.flatMap((installer) =>
+      installer.type ? [installer.type] : installer.category
+    )
+  )).sort((a, b) => a.localeCompare(b));
 
   const filteredInstallers = data.installers
     .filter((installer) => {
@@ -207,7 +211,7 @@ export default async function DirectoryPage({
         .toLowerCase();
 
       if (query && !haystack.includes(query)) return false;
-      if (type && !installer.category.includes(type)) return false;
+      if (type && installer.type !== type && !installer.category.includes(type)) return false;
       if (bus && !installer.boilerUpgradeSchemeRegistered) return false;
       if (website && !installer.website) return false;
       if (email && !installer.email) return false;

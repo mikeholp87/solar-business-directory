@@ -76,24 +76,42 @@ type InstallerRow = {
 
 const BASIC_SELECT = "company_name, slug, email, phone, website, description, mcs_installer_id, mcs_number, certification_body, bus_registered, services, areas_covered, address_line1, address_line2, address_line3, address_county, address_postcode, address_country, source_page, type";
 
-export async function readDirectoryData(): Promise<McsDirectoryData> {
-  const supabase = getSupabase();
-  let { data, error } = await supabase
+let _hasTypeColumn: boolean | null = null;
+
+async function fetchInstallers(supabase: ReturnType<typeof createClient>) {
+  // Try full select first, fall back if new columns don't exist yet
+  if (_hasTypeColumn === false) {
+    const { data, error } = await supabase
+      .from("installers")
+      .select("company_name, slug, email, phone, website, description, mcs_number, bus_registered, services, areas_covered")
+      .order("company_name")
+      .range(0, 4999);
+    return { data, error };
+  }
+
+  const result = await supabase
     .from("installers")
     .select(BASIC_SELECT)
     .order("company_name")
     .range(0, 4999);
 
-  if (error) {
-    // Fallback if new columns don't exist yet
-    const fallback = await supabase
+  if (result.error && result.error.message.includes("column") && result.error.message.includes("does not exist")) {
+    _hasTypeColumn = false;
+    const { data, error } = await supabase
       .from("installers")
       .select("company_name, slug, email, phone, website, description, mcs_number, bus_registered, services, areas_covered")
       .order("company_name")
       .range(0, 4999);
-    data = fallback.data;
-    error = fallback.error;
+    return { data, error };
   }
+
+  _hasTypeColumn = true;
+  return result;
+}
+
+export async function readDirectoryData(): Promise<McsDirectoryData> {
+  const supabase = getSupabase();
+  const { data, error } = await fetchInstallers(supabase);
 
   if (error) throw error;
 
