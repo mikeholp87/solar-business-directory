@@ -307,6 +307,9 @@ for each row execute function public.prevent_installer_commercial_self_edit();
 
 alter table public.users enable row level security;
 alter table public.installers enable row level security;
+
+create policy "users read own profile" on public.users for select using ((select auth.uid()) = id);
+create policy "admins manage users" on public.users for all using (public.is_admin()) with check (public.is_admin());
 alter table public.territories enable row level security;
 alter table public.installer_territories enable row level security;
 alter table public.leads enable row level security;
