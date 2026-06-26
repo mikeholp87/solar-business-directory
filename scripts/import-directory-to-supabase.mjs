@@ -104,6 +104,8 @@ for (let i = 0; i < rows.length; i += BATCH_SIZE) {
       ? row.category.split("|").map((s) => s.trim()).filter(Boolean)
       : [];
 
+    const type = services.length > 0 ? services[0] : null;
+
     const areasCovered = row.regionsCovered
       ? row.regionsCovered.split("|").map((s) => s.trim()).filter(Boolean)
       : [];
@@ -119,6 +121,7 @@ for (let i = 0; i < rows.length; i += BATCH_SIZE) {
       bus_registered: row.boilerUpgradeSchemeRegistered === "true",
       services: JSON.stringify(services),
       areas_covered: JSON.stringify(areasCovered),
+      type,
       status: "pending",
       subscription_status: "trialing",
     });

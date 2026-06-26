@@ -22,6 +22,7 @@ export type McsInstaller = {
   phone: string | null;
   sourcePage: number | null;
   slug?: string;
+  type?: string | null;
 };
 
 export type McsDirectoryData = {

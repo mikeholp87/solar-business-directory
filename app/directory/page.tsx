@@ -40,8 +40,8 @@ function sortInstallers(
   }
 
   if (sort === "type") {
-    const aType = a.category.join(" / ");
-    const bType = b.category.join(" / ");
+    const aType = a.type ?? a.category.join(" / ");
+    const bType = b.type ?? b.category.join(" / ");
     return aType.localeCompare(bType) || (a.companyName ?? "").localeCompare(b.companyName ?? "");
   }
 
