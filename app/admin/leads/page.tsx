@@ -84,6 +84,21 @@ export default async function AdminLeadsPage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <label>Territory<input value={territories.find((territory) => territory.id === lead.territoryId)?.name ?? "Unmatched"} readOnly /></label>
+            <label>Source<input value={lead.source ?? ""} readOnly /></label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <label>Property type<input value={lead.propertyType ?? ""} readOnly /></label>
+            <label>Interests<input value={Array.isArray(lead.interests) ? lead.interests.join(", ") : ""} readOnly /></label>
+            <label>Referral fee due<input value={lead.referralFeeDue ?? ""} readOnly /></label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <label>Campaign<input value={lead.campaign ?? ""} readOnly /></label>
+            <label>Created at<input value={lead.createdAt ? new Date(lead.createdAt).toLocaleString() : ""} readOnly /></label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
             <label>Notes<textarea name="notes" rows={3} defaultValue={lead.notes ?? ""} /></label>
           </div>
 

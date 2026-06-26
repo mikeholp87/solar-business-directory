@@ -74,6 +74,28 @@ export default async function AdminInstallersPage() {
             <label>Website<input name="website" defaultValue={installer.website ?? ""} /></label>
           </div>
 
+          <div className="grid gap-4 md:grid-cols-3">
+            <label>Contact name<input value={installer.contactName ?? ""} readOnly /></label>
+            <label>Company number<input value={installer.companyNumber ?? ""} readOnly /></label>
+            <label>VAT number<input value={installer.vatNumber ?? ""} readOnly /></label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <label>MCS number<input value={installer.mcsNumber ?? ""} readOnly /></label>
+            <label>RECC number<input value={installer.reccNumber ?? ""} readOnly /></label>
+            <label>HIES number<input value={installer.hiesNumber ?? ""} readOnly /></label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <label>TrustMark number<input value={installer.trustmarkNumber ?? ""} readOnly /></label>
+            <label>Accreditations verified<input value={installer.accreditationsVerified ? "Yes" : "No"} readOnly /></label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <label>Services<textarea value={Array.isArray(installer.services) ? installer.services.join(", ") : ""} readOnly rows={2} /></label>
+            <label>Areas covered<textarea value={Array.isArray(installer.areasCovered) ? installer.areasCovered.join(", ") : ""} readOnly rows={2} /></label>
+          </div>
+
           <div className="grid gap-4">
             <label>Phone<input name="phone" defaultValue={installer.phone ?? ""} /></label>
             <label>Description<textarea name="description" rows={4} defaultValue={installer.description} /></label>
