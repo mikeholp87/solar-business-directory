@@ -40,8 +40,8 @@ function sortInstallers(
   }
 
   if (sort === "type") {
-    const aType = (Array.isArray(a.type) && a.type.length > 0 ? a.type : a.category).join(" / ");
-    const bType = (Array.isArray(b.type) && b.type.length > 0 ? b.type : b.category).join(" / ");
+    const aType = a.category.join(" / ");
+    const bType = b.category.join(" / ");
     return aType.localeCompare(bType) || (a.companyName ?? "").localeCompare(b.companyName ?? "");
   }
 
@@ -188,9 +188,7 @@ export default async function DirectoryPage({
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
   const types = Array.from(new Set(
-    data.installers.flatMap((installer) =>
-      Array.isArray(installer.type) && installer.type.length > 0 ? installer.type : installer.category
-    )
+    data.installers.flatMap((installer) => installer.category)
   )).sort((a, b) => a.localeCompare(b));
 
   const filteredInstallers = data.installers
@@ -211,7 +209,7 @@ export default async function DirectoryPage({
         .toLowerCase();
 
       if (query && !haystack.includes(query)) return false;
-      if (type && !(Array.isArray(installer.type) ? installer.type : installer.category).includes(type)) return false;
+      if (type && !installer.category.includes(type)) return false;
       if (bus && !installer.boilerUpgradeSchemeRegistered) return false;
       if (website && !installer.website) return false;
       if (email && !installer.email) return false;
