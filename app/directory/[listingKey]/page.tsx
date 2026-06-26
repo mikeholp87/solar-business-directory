@@ -23,8 +23,8 @@ import { siteUrl } from "@/lib/runtime";
 
 export const dynamicParams = true;
 
-export function generateMetadata({ params }: { params: { listingKey: string } }) {
-  const data = readDirectoryData();
+export async function generateMetadata({ params }: { params: { listingKey: string } }) {
+  const data = await readDirectoryData();
   const installer = findListingByKey(data.installers, params.listingKey);
   const title = installer?.companyName ?? "MCS installer listing";
   return pageMetadata(
@@ -34,8 +34,8 @@ export function generateMetadata({ params }: { params: { listingKey: string } })
   );
 }
 
-export default function DirectoryListingPage({ params }: { params: { listingKey: string } }) {
-  const data = readDirectoryData();
+export default async function DirectoryListingPage({ params }: { params: { listingKey: string } }) {
+  const data = await readDirectoryData();
   const installer = findListingByKey(data.installers, params.listingKey);
 
   if (!installer) notFound();

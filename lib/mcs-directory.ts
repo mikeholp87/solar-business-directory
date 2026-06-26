@@ -1,5 +1,4 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { createClient } from "@supabase/supabase-js";
 
 export type McsInstaller = {
   installerId: number | null;
@@ -22,6 +21,7 @@ export type McsInstaller = {
   email: string | null;
   phone: string | null;
   sourcePage: number | null;
+  slug?: string;
 };
 
 export type McsDirectoryData = {
@@ -38,20 +38,64 @@ export type McsDirectoryData = {
 
 export const DEFAULT_PER_PAGE = 15;
 export const PER_PAGE_OPTIONS = [15, 30, 45, 60, 75, 90] as const;
-export const DATA_PATH = resolve(process.cwd(), "data/mcscertified-air-source-heat-pump-england.json");
 
-export function readDirectoryData() {
-  const raw = readFileSync(DATA_PATH, "utf8");
-  const parsed = JSON.parse(raw) as McsDirectoryData;
+let _supabase: ReturnType<typeof createClient> | null = null;
+
+function getSupabase() {
+  if (_supabase) return _supabase;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Supabase not configured");
+  _supabase = createClient(url, key);
+  return _supabase;
+}
+
+type InstallerRow = {
+  company_name: string;
+  slug: string;
+  email: string;
+  phone: string | null;
+  website: string | null;
+  description: string | null;
+  mcs_number: string | null;
+  bus_registered: boolean;
+  services: string[];
+  areas_covered: string[];
+};
+
+export async function readDirectoryData(): Promise<McsDirectoryData> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("installers")
+    .select("company_name, slug, email, phone, website, description, mcs_number, bus_registered, services, areas_covered")
+    .order("company_name");
+
+  if (error) throw error;
+
+  const rows = (data ?? []) as unknown as InstallerRow[];
+  const installers: McsInstaller[] = rows.map((row) => ({
+    installerId: null,
+    companyName: row.company_name,
+    address: row.description,
+    category: Array.isArray(row.services) ? row.services : [],
+    regionsCovered: Array.isArray(row.areas_covered) ? row.areas_covered : [],
+    boilerUpgradeSchemeRegistered: row.bus_registered ?? false,
+    certificationBody: null,
+    certificationNumber: row.mcs_number,
+    website: row.website,
+    email: row.email,
+    phone: row.phone,
+    sourcePage: null,
+    slug: row.slug,
+  }));
 
   return {
-    ...parsed,
-    installers: parsed.installers.map((installer) => ({
-      ...installer,
-      category: Array.isArray(installer.category) ? installer.category : [],
-      regionsCovered: Array.isArray(installer.regionsCovered) ? installer.regionsCovered : [],
-      addressParts: installer.addressParts ?? undefined,
-    })),
+    sourceUrl: "https://mcscertified.com/find-an-installer/",
+    query: { technology: "Air Source Heat Pump", region: "England" },
+    totalCount: installers.length,
+    totalPages: 1,
+    scrapedAt: new Date().toISOString(),
+    installers,
   };
 }
 
@@ -93,6 +137,7 @@ export function slugifyListingName(value: string | null) {
 }
 
 export function getListingKey(installer: McsInstaller) {
+  if (installer.slug) return installer.slug;
   if (installer.installerId != null) return String(installer.installerId);
   return `${installer.sourcePage ?? "page"}-${slugifyListingName(installer.companyName)}`;
 }
@@ -100,6 +145,9 @@ export function getListingKey(installer: McsInstaller) {
 export function findListingByKey(installers: McsInstaller[], key: string) {
   const normalized = key.trim();
   if (!normalized) return null;
+
+  const bySlug = installers.find((installer) => installer.slug === normalized);
+  if (bySlug) return bySlug;
 
   const byId = installers.find((installer) => installer.installerId != null && String(installer.installerId) === normalized);
   if (byId) return byId;

@@ -172,12 +172,12 @@ function buildDirectoryHref({
   return queryString ? `/directory?${queryString}` : "/directory";
 }
 
-export default function DirectoryPage({
+export default async function DirectoryPage({
   searchParams,
 }: {
   searchParams: { page?: string | string[]; q?: string | string[]; type?: string | string[]; category?: string | string[]; sort?: string | string[]; perPage?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
 }) {
-  const data = readDirectoryData();
+  const data = await readDirectoryData();
   const currentPage = parsePage(searchParams.page);
   const searchInput = normalizeSearchParam(searchParams.q);
   const query = searchInput.toLowerCase();
