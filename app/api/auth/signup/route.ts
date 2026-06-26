@@ -28,20 +28,10 @@ export async function POST(request: Request) {
   const allowedRoles = ["installer"];
   const userRole = allowedRoles.includes(role ?? "") ? role! : "installer";
 
-  const { data: existingUsers, error: listError } = await admin.auth.admin.listUsers({
-    page: 1,
-    perPage: 1000
-  });
-  if (listError) {
-    console.error("[signup] listUsers failed:", listError.message);
-    return NextResponse.json({ error: "Failed to check existing users" }, { status: 500 });
-  }
-
   const emailLower = email.toLowerCase().trim();
-  const alreadyExists = existingUsers.users.some(
-    (u) => u.email?.toLowerCase() === emailLower
-  );
-  if (alreadyExists) {
+
+  const { data: existingUser } = await admin.auth.admin.getUserByEmail(emailLower);
+  if (existingUser) {
     return NextResponse.json({ error: "An account with this email already exists" }, { status: 409 });
   }
 
