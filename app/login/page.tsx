@@ -15,13 +15,25 @@ export default function LoginPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [debug, setDebug] = useState<string[]>([]);
   const router = useRouter();
+
+  function log(msg: string) {
+    setDebug((prev) => [...prev, `${new Date().toLocaleTimeString()} ${msg}`]);
+  }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setDebug([]);
 
-    if (!isSupabaseConfigured()) {
+    log("Step 1: Form submitted");
+
+    const configured = isSupabaseConfigured();
+    log(`Step 2: isSupabaseConfigured() = ${configured}`);
+
+    if (!configured) {
+      log("DEMO MODE: setting demo cookies and redirecting");
       document.cookie = `demo-role=${role}; path=/`;
       document.cookie = `demo-email=${encodeURIComponent(email)}; path=/`;
       router.push(roleDashboardPath(role));
@@ -29,26 +41,54 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    const supabase = createClient();
+    log("Step 3: Creating Supabase client...");
+    let supabase;
+    try {
+      supabase = createClient();
+      log("Step 4: Client created OK");
+    } catch (e) {
+      log(`Step 4 FAILED: ${e instanceof Error ? e.message : String(e)}`);
+      setError(`Client creation failed: ${e instanceof Error ? e.message : String(e)}`);
+      setLoading(false);
+      return;
+    }
+
     const redirectTo = new URLSearchParams(window.location.search).get("redirect") ?? roleDashboardPath(role);
+    log(`Step 5: Redirect target = ${redirectTo}`);
 
     try {
       if (authMethod === "password") {
+        log("Step 6: Calling signInWithPassword...");
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password
         });
-        if (signInError) throw signInError;
+        if (signInError) {
+          log(`Step 6 FAILED: ${signInError.message} (status: ${signInError.status})`);
+          throw signInError;
+        }
+        log(`Step 6 OK: user.id = ${signInData.user.id}`);
 
-        const { data: profile } = await supabase.from("users").select("role").eq("id", signInData.user.id).maybeSingle();
+        log("Step 7: Querying users table for role...");
+        const { data: profile, error: profileError } = await supabase.from("users").select("role").eq("id", signInData.user.id).maybeSingle();
+        if (profileError) {
+          log(`Step 7 FAILED: ${profileError.message} (code: ${profileError.code})`);
+        } else if (!profile) {
+          log("Step 7: profile is NULL (no row in users table or RLS blocked)");
+        } else {
+          log(`Step 7 OK: role = ${profile.role}`);
+        }
         const actualRole = (profile?.role === "admin" ? "admin" : "installer") as "admin" | "installer";
+        log(`Step 8: router.push("${roleDashboardPath(actualRole)}")...`);
         router.push(roleDashboardPath(actualRole));
       } else {
+        log("Step 6: Sending magic link...");
         const { error: otpError } = await supabase.auth.signInWithOtp({
           email,
           options: { emailRedirectTo: `${window.location.origin}${redirectTo}` }
         });
         if (otpError) throw otpError;
+        log("Step 6 OK: Magic link sent");
         setSent(true);
       }
     } catch (err) {
@@ -64,7 +104,7 @@ export default function LoginPage() {
         <div className="surface-card p-6">
           <p className="eyebrow">Secure access</p>
           <h1 className="text-3xl font-black">Sign in</h1>
-          <p className="mt-2 text-navy/65">Sign in with your email and password, or use a magic link. Demo login works locally.</p>
+          <p className="mt-2 text-navy/65">Sign in with your email and password, or use a magic link.</p>
 
           {sent ? (
             <p className="surface-card-success mt-5 p-3 font-bold text-accent">Check your email for the sign-in link.</p>
@@ -141,6 +181,15 @@ export default function LoginPage() {
                 <a href="/signup" className="underline hover:text-accent">Sign up</a>
               </p>
             </form>
+          )}
+
+          {debug.length > 0 && (
+            <div className="mt-4 rounded bg-gray-100 p-3 text-xs font-mono">
+              <p className="mb-1 font-bold text-gray-700">Debug log:</p>
+              {debug.map((line, i) => (
+                <p key={i} className="text-gray-600">{line}</p>
+              ))}
+            </div>
           )}
         </div>
       </div>
