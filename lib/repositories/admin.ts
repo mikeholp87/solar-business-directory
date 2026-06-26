@@ -67,7 +67,6 @@ export async function updateInstallerAdmin(installerId: string, payload: Partial
     monthly_install_capacity: payload.monthlyInstallCapacity,
     internal_notes: payload.internalNotes,
     description: payload.description,
-    areas_covered: payload.areasCovered,
     survey_turnaround_days: payload.surveyTurnaroundDays,
     website: payload.website,
     phone: payload.phone
