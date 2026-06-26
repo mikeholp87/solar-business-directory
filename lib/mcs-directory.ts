@@ -74,6 +74,19 @@ type InstallerRow = {
   type: string[];
 };
 
+function parseJsonArray(value: unknown): string[] {
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 async function fetchInstallers(supabase: ReturnType<typeof createClient>) {
   const PAGE_SIZE = 1000;
   let allRows: unknown[] = [];
@@ -130,8 +143,8 @@ export async function readDirectoryData(): Promise<McsDirectoryData> {
       postcode: row.address_postcode,
       country: row.address_country,
     } : undefined,
-    category: Array.isArray(row.services) ? row.services : [],
-    regionsCovered: Array.isArray(row.areas_covered) ? row.areas_covered : [],
+    category: parseJsonArray(row.services),
+    regionsCovered: parseJsonArray(row.areas_covered),
     boilerUpgradeSchemeRegistered: row.bus_registered ?? false,
     certificationBody: row.certification_body ?? null,
     certificationNumber: row.mcs_number,
