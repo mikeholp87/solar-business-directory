@@ -30,11 +30,6 @@ export async function POST(request: Request) {
 
   const emailLower = email.toLowerCase().trim();
 
-  const { data: existingUser } = await admin.auth.admin.getUserByEmail(emailLower);
-  if (existingUser) {
-    return NextResponse.json({ error: "An account with this email already exists" }, { status: 409 });
-  }
-
   const { data: authData, error: createError } = await admin.auth.admin.createUser({
     email: emailLower,
     password,
@@ -42,8 +37,11 @@ export async function POST(request: Request) {
     user_metadata: { role: userRole, company_name: companyName }
   });
   if (createError) {
+    const msg = createError.message.includes("already")
+      ? "An account with this email already exists"
+      : createError.message;
     console.error("[signup] createUser failed:", createError.message);
-    return NextResponse.json({ error: createError.message }, { status: 400 });
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
   if (!authData.user) {
     console.error("[signup] createUser returned no user");
