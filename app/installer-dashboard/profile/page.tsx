@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/roles";
-import { getInstallerDashboardData, updateInstallerProfile } from "@/lib/repositories/installer-dashboard";
+import { deriveInstallerIdFromSession, getInstallerDashboardData, updateInstallerProfile } from "@/lib/repositories/installer-dashboard";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata("Installer Profile", "Edit your public installer profile.", "/installer-dashboard/profile");
@@ -8,7 +8,8 @@ export const metadata = pageMetadata("Installer Profile", "Edit your public inst
 async function saveProfileAction(formData: FormData) {
   "use server";
   await requireRole(["installer", "admin"]);
-  const installerId = String(formData.get("id") ?? "");
+  const installerId = await deriveInstallerIdFromSession();
+  if (!installerId) throw new Error("Installer profile not found");
   await updateInstallerProfile(installerId, {
     description: String(formData.get("description") ?? ""),
     areasCovered: String(formData.get("areas_covered") ?? "").split(",").map((item) => item.trim()).filter(Boolean),
@@ -32,7 +33,6 @@ export default async function InstallerProfilePage() {
       </div>
 
       <form action={saveProfileAction} className="surface-card grid gap-4 p-5">
-        <input type="hidden" name="id" value={installer.id} />
         <div className="flex flex-wrap gap-2">
           <span className="chip chip-soft">{installer.status}</span>
           <span className="chip chip-soft">{installer.subscriptionStatus}</span>

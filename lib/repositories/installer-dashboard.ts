@@ -21,6 +21,15 @@ async function resolveCurrentInstaller() {
   return fallback;
 }
 
+export async function deriveInstallerIdFromSession(): Promise<string | null> {
+  const user = await getCurrentSessionUser();
+  if (!user) return null;
+  const supabase = await getSupabaseOrNull();
+  if (!supabase) return null;
+  const { data } = await supabase.from("installers").select("id").eq("user_id", user.id).maybeSingle();
+  return data?.id ?? null;
+}
+
 export async function getCurrentInstaller() {
   return resolveCurrentInstaller();
 }
@@ -42,6 +51,10 @@ export async function getInstallerDashboardData() {
 export async function updateInstallerProfile(installerId: string, payload: Partial<Installer>) {
   const supabase = await getSupabaseOrNull();
   if (!supabase) return { ok: true as const };
+  const user = await getCurrentSessionUser();
+  if (!user) return { ok: false as const, error: "Not authenticated" };
+  const { data: ownerCheck } = await supabase.from("installers").select("id").eq("id", installerId).eq("user_id", user.id).maybeSingle();
+  if (!ownerCheck) return { ok: false as const, error: "Not authorised" };
   const { error } = await supabase.from("installers").update({
     description: payload.description,
     areas_covered: payload.areasCovered,
@@ -57,6 +70,10 @@ export async function updateInstallerProfile(installerId: string, payload: Parti
 export async function updateInstallerLead(installerId: string, leadId: string, payload: Partial<Lead>) {
   const supabase = await getSupabaseOrNull();
   if (!supabase) return { ok: true as const };
+  const user = await getCurrentSessionUser();
+  if (!user) return { ok: false as const, error: "Not authenticated" };
+  const { data: ownerCheck } = await supabase.from("installers").select("id").eq("id", installerId).eq("user_id", user.id).maybeSingle();
+  if (!ownerCheck) return { ok: false as const, error: "Not authorised" };
   const { error } = await supabase.from("leads").update({
     stage: payload.stage,
     notes: payload.notes
@@ -81,15 +98,43 @@ export async function listInstallerDocuments(installerId: string): Promise<Docum
   }));
 }
 
-export async function addInstallerDocument(installerId: string, payload: { documentType: string; fileUrl: string; verified?: boolean }) {
+export async function addInstallerDocument(installerId: string, payload: { documentType: string; fileUrl: string }) {
   const supabase = await getSupabaseOrNull();
   if (!supabase) return { ok: true as const };
+  const user = await getCurrentSessionUser();
+  if (!user) return { ok: false as const, error: "Not authenticated" };
+  const { data: ownerCheck } = await supabase.from("installers").select("id").eq("id", installerId).eq("user_id", user.id).maybeSingle();
+  if (!ownerCheck) return { ok: false as const, error: "Not authorised" };
   const { error } = await supabase.from("documents").insert({
     installer_id: installerId,
     document_type: payload.documentType,
     file_url: payload.fileUrl,
-    verified: payload.verified ?? false
+    verified: false
   });
+  if (error) return { ok: false as const, error: error.message };
+  return { ok: true as const };
+}
+
+export async function deleteInstallerDocument(installerId: string, documentId: string) {
+  const supabase = await getSupabaseOrNull();
+  if (!supabase) return { ok: true as const };
+  const user = await getCurrentSessionUser();
+  if (!user) return { ok: false as const, error: "Not authenticated" };
+  const { data: ownerCheck } = await supabase.from("installers").select("id").eq("id", installerId).eq("user_id", user.id).maybeSingle();
+  if (!ownerCheck) return { ok: false as const, error: "Not authorised" };
+  const { error } = await supabase.from("documents").delete().eq("id", documentId).eq("installer_id", installerId);
+  if (error) return { ok: false as const, error: error.message };
+  return { ok: true as const };
+}
+
+export async function deleteTerritoryRequest(installerId: string, requestId: string) {
+  const supabase = await getSupabaseOrNull();
+  if (!supabase) return { ok: true as const };
+  const user = await getCurrentSessionUser();
+  if (!user) return { ok: false as const, error: "Not authenticated" };
+  const { data: ownerCheck } = await supabase.from("installers").select("id").eq("id", installerId).eq("user_id", user.id).maybeSingle();
+  if (!ownerCheck) return { ok: false as const, error: "Not authorised" };
+  const { error } = await supabase.from("territory_requests").delete().eq("id", requestId).eq("installer_id", installerId).eq("status", "pending");
   if (error) return { ok: false as const, error: error.message };
   return { ok: true as const };
 }
@@ -111,6 +156,12 @@ export async function listTerritoryRequests(installerId: string): Promise<Territ
 export async function requestTerritory(installerId: string, territoryId: string, notes?: string) {
   const supabase = await getSupabaseOrNull();
   if (!supabase) return { ok: true as const };
+  const user = await getCurrentSessionUser();
+  if (!user) return { ok: false as const, error: "Not authenticated" };
+  const { data: ownerCheck } = await supabase.from("installers").select("id").eq("id", installerId).eq("user_id", user.id).maybeSingle();
+  if (!ownerCheck) return { ok: false as const, error: "Not authorised" };
+  const { data: existing } = await supabase.from("territory_requests").select("id").eq("installer_id", installerId).eq("territory_id", territoryId).in("status", ["pending", "approved"]).maybeSingle();
+  if (existing) return { ok: false as const, error: "Already requested" };
   const { error } = await supabase.from("territory_requests").insert({
     installer_id: installerId,
     territory_id: territoryId,

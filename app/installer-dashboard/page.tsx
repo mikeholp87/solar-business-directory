@@ -1,5 +1,33 @@
+import { revalidatePath } from "next/cache";
 import { FileUp, MapPinned, Plus, ReceiptText } from "lucide-react";
-import { getInstallerDashboardData } from "@/lib/repositories/installer-dashboard";
+import { requireRole } from "@/lib/auth/roles";
+import { deriveInstallerIdFromSession, getInstallerDashboardData, updateInstallerLead, updateInstallerProfile } from "@/lib/repositories/installer-dashboard";
+
+async function saveOverviewProfileAction(formData: FormData) {
+  "use server";
+  await requireRole(["installer", "admin"]);
+  const installerId = await deriveInstallerIdFromSession();
+  if (!installerId) throw new Error("Installer profile not found");
+  await updateInstallerProfile(installerId, {
+    description: String(formData.get("description") ?? ""),
+    areasCovered: String(formData.get("areas_covered") ?? "").split(",").map((item) => item.trim()).filter(Boolean),
+    surveyTurnaroundDays: formData.get("survey_turnaround_days") ? Number(formData.get("survey_turnaround_days")) : undefined
+  });
+  revalidatePath("/installer-dashboard");
+}
+
+async function saveOverviewLeadAction(formData: FormData) {
+  "use server";
+  await requireRole(["installer", "admin"]);
+  const installerId = await deriveInstallerIdFromSession();
+  if (!installerId) throw new Error("Installer profile not found");
+  const leadId = String(formData.get("id") ?? "");
+  await updateInstallerLead(installerId, leadId, {
+    stage: String(formData.get("stage") ?? "contacted") as never,
+    notes: String(formData.get("notes") ?? "")
+  });
+  revalidatePath("/installer-dashboard");
+}
 
 export default async function InstallerDashboardPage() {
   const { installer, leads: assignedLeads, allocatedTerritories } = await getInstallerDashboardData();
@@ -21,30 +49,30 @@ export default async function InstallerDashboardPage() {
       <div className="grid gap-6 lg:grid-cols-[0.42fr_0.58fr]">
         <section className="surface-card p-5">
           <h2 className="text-2xl font-black">Profile</h2>
-          <div className="mt-4 grid gap-4">
-            <label>Company description<textarea defaultValue={installer.description} rows={5} /></label>
-            <label>Areas covered<textarea defaultValue={installer.areasCovered.join(", ")} rows={3} /></label>
-            <label>Survey turnaround days<input defaultValue={installer.surveyTurnaroundDays} type="number" /></label>
-            <label>Upload accreditation document<input type="file" /></label>
-            <button className="button-primary" type="button">Save profile</button>
-          </div>
+          <form action={saveOverviewProfileAction} className="mt-4 grid gap-4">
+            <label>Company description<textarea name="description" defaultValue={installer.description} rows={5} /></label>
+            <label>Areas covered<textarea name="areas_covered" defaultValue={installer.areasCovered.join(", ")} rows={3} /></label>
+            <label>Survey turnaround days<input name="survey_turnaround_days" defaultValue={installer.surveyTurnaroundDays} type="number" /></label>
+            <button className="button-primary" type="submit">Save profile</button>
+          </form>
         </section>
 
         <section className="surface-card p-5">
           <h2 className="text-2xl font-black">Assigned leads</h2>
           <div className="mt-4 grid gap-3">
             {assignedLeads.map((lead) => (
-              <div key={lead.id} className="surface-card bg-white/72 p-4">
+              <form key={lead.id} action={saveOverviewLeadAction} className="surface-card bg-white/72 p-4">
+                <input type="hidden" name="id" value={lead.id} />
                 <div className="flex flex-wrap justify-between gap-3">
                   <p className="font-black">{lead.firstName} {lead.lastName}</p>
                   <span className="chip chip-soft capitalize">{lead.stage.replaceAll("_", " ")}</span>
                 </div>
                 <p className="mt-2 text-sm text-navy/65">{lead.postcode} · {lead.propertyType} · {lead.interests.join(", ")}</p>
                 <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
-                  <label>Update status<select defaultValue={lead.stage}><option value="contacted">Contacted</option><option value="qualified">Qualified</option><option value="survey_booked">Survey booked</option><option value="quote_issued">Quote issued</option></select></label>
-                  <button className="button-secondary self-end" type="button">Add note</button>
+                  <label>Update status<select name="stage" defaultValue={lead.stage}><option value="contacted">Contacted</option><option value="qualified">Qualified</option><option value="survey_booked">Survey booked</option><option value="quote_issued">Quote issued</option></select></label>
+                  <button className="button-secondary self-end" type="submit">Save</button>
                 </div>
-              </div>
+              </form>
             ))}
           </div>
         </section>

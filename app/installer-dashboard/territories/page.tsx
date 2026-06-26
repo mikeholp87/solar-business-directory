@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/roles";
-import { getInstallerDashboardData, requestTerritory } from "@/lib/repositories/installer-dashboard";
+import { deleteTerritoryRequest, deriveInstallerIdFromSession, getInstallerDashboardData, requestTerritory } from "@/lib/repositories/installer-dashboard";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata("Territories", "Request additional territory coverage.", "/installer-dashboard/territories");
@@ -8,10 +8,22 @@ export const metadata = pageMetadata("Territories", "Request additional territor
 async function requestTerritoryAction(formData: FormData) {
   "use server";
   await requireRole(["installer", "admin"]);
-  const installerId = String(formData.get("installer_id") ?? "");
+  const installerId = await deriveInstallerIdFromSession();
+  if (!installerId) throw new Error("Installer profile not found");
   const territoryId = String(formData.get("territory_id") ?? "");
   const notes = String(formData.get("notes") ?? "");
   await requestTerritory(installerId, territoryId, notes);
+  revalidatePath("/installer-dashboard");
+  revalidatePath("/installer-dashboard/territories");
+}
+
+async function cancelRequestAction(formData: FormData) {
+  "use server";
+  await requireRole(["installer", "admin"]);
+  const installerId = await deriveInstallerIdFromSession();
+  if (!installerId) throw new Error("Installer profile not found");
+  const requestId = String(formData.get("request_id") ?? "");
+  await deleteTerritoryRequest(installerId, requestId);
   revalidatePath("/installer-dashboard");
   revalidatePath("/installer-dashboard/territories");
 }
@@ -43,7 +55,6 @@ export default async function InstallerTerritoriesPage() {
         <div className="surface-card p-5">
           <h3 className="text-xl font-black">Request more coverage</h3>
           <form action={requestTerritoryAction} className="mt-4 grid gap-4">
-            <input type="hidden" name="installer_id" value={installer.id} />
             <label>Territory
               <select name="territory_id" required>
                 <option value="">Select a territory</option>
@@ -65,7 +76,15 @@ export default async function InstallerTerritoriesPage() {
             <div key={request.id} className="surface-card bg-white/72 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="font-black">{territories.find((territory) => territory.id === request.territoryId)?.name ?? request.territoryId}</p>
-                <span className="chip chip-soft capitalize">{request.status}</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="chip chip-soft capitalize">{request.status}</span>
+                  {request.status === "pending" ? (
+                    <form action={cancelRequestAction}>
+                      <input type="hidden" name="request_id" value={request.id} />
+                      <button className="button-secondary" type="submit">Cancel</button>
+                    </form>
+                  ) : null}
+                </div>
               </div>
               {request.notes ? <p className="mt-2 text-sm text-navy/65">{request.notes}</p> : null}
             </div>

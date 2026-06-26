@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/roles";
-import { addInstallerDocument, getInstallerDashboardData } from "@/lib/repositories/installer-dashboard";
+import { addInstallerDocument, deleteInstallerDocument, deriveInstallerIdFromSession, getInstallerDashboardData } from "@/lib/repositories/installer-dashboard";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata("Documents", "Upload and review compliance documents.", "/installer-dashboard/documents");
@@ -8,18 +8,29 @@ export const metadata = pageMetadata("Documents", "Upload and review compliance 
 async function addDocumentAction(formData: FormData) {
   "use server";
   await requireRole(["installer", "admin"]);
-  const installerId = String(formData.get("installer_id") ?? "");
+  const installerId = await deriveInstallerIdFromSession();
+  if (!installerId) throw new Error("Installer profile not found");
   await addInstallerDocument(installerId, {
     documentType: String(formData.get("document_type") ?? ""),
-    fileUrl: String(formData.get("file_url") ?? ""),
-    verified: formData.get("verified") === "on"
+    fileUrl: String(formData.get("file_url") ?? "")
   });
   revalidatePath("/installer-dashboard");
   revalidatePath("/installer-dashboard/documents");
 }
 
+async function deleteDocumentAction(formData: FormData) {
+  "use server";
+  await requireRole(["installer", "admin"]);
+  const installerId = await deriveInstallerIdFromSession();
+  if (!installerId) throw new Error("Installer profile not found");
+  const documentId = String(formData.get("document_id") ?? "");
+  await deleteInstallerDocument(installerId, documentId);
+  revalidatePath("/installer-dashboard");
+  revalidatePath("/installer-dashboard/documents");
+}
+
 export default async function InstallerDocumentsPage() {
-  const { installer, documents } = await getInstallerDashboardData();
+  const { documents } = await getInstallerDashboardData();
 
   return (
     <section className="grid gap-4">
@@ -29,15 +40,10 @@ export default async function InstallerDocumentsPage() {
       </div>
 
       <form action={addDocumentAction} className="surface-card grid gap-4 p-5">
-        <input type="hidden" name="installer_id" value={installer.id} />
         <div className="grid gap-4 md:grid-cols-2">
           <label>Document type<input name="document_type" placeholder="MCS certificate" required /></label>
           <label>File URL<input name="file_url" placeholder="https://..." required /></label>
         </div>
-        <label className="flex items-start gap-2">
-          <input name="verified" type="checkbox" className="size-4 w-auto" />
-          <span>Verified by admin</span>
-        </label>
         <div className="flex flex-wrap gap-3">
           <button className="button-primary" type="submit">Add document</button>
         </div>
@@ -55,7 +61,13 @@ export default async function InstallerDocumentsPage() {
                 <h3 className="text-xl font-black">{document.documentType}</h3>
                 <p className="mt-1 text-sm text-navy/65">{document.fileUrl}</p>
               </div>
-              <span className={document.verified ? "chip chip-success" : "chip chip-soft"}>{document.verified ? "Verified" : "Pending"}</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={document.verified ? "chip chip-success" : "chip chip-soft"}>{document.verified ? "Verified" : "Pending"}</span>
+                <form action={deleteDocumentAction}>
+                  <input type="hidden" name="document_id" value={document.id} />
+                  <button className="button-secondary" type="submit">Delete</button>
+                </form>
+              </div>
             </div>
           </div>
         ))

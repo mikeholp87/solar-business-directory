@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/roles";
-import { getInstallerDashboardData, updateInstallerLead } from "@/lib/repositories/installer-dashboard";
+import { deriveInstallerIdFromSession, getInstallerDashboardData, updateInstallerLead } from "@/lib/repositories/installer-dashboard";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata("Assigned Leads", "Update the status of your assigned leads.", "/installer-dashboard/leads");
@@ -8,7 +8,8 @@ export const metadata = pageMetadata("Assigned Leads", "Update the status of you
 async function saveLeadAction(formData: FormData) {
   "use server";
   await requireRole(["installer", "admin"]);
-  const installerId = String(formData.get("installer_id") ?? "");
+  const installerId = await deriveInstallerIdFromSession();
+  if (!installerId) throw new Error("Installer profile not found");
   const leadId = String(formData.get("id") ?? "");
   await updateInstallerLead(installerId, leadId, {
     stage: String(formData.get("stage") ?? "contacted") as never,
@@ -19,7 +20,7 @@ async function saveLeadAction(formData: FormData) {
 }
 
 export default async function InstallerLeadsPage() {
-  const { installer, leads } = await getInstallerDashboardData();
+  const { leads } = await getInstallerDashboardData();
 
   return (
     <section className="grid gap-4">
@@ -35,7 +36,6 @@ export default async function InstallerLeadsPage() {
       ) : (
         leads.map((lead) => (
           <form key={lead.id} action={saveLeadAction} className="surface-card grid gap-4 p-5">
-            <input type="hidden" name="installer_id" value={installer.id} />
             <input type="hidden" name="id" value={lead.id} />
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
