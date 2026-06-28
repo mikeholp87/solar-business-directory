@@ -1,13 +1,27 @@
 import Link from "next/link";
 import { BadgePoundSterling, Download, MapPinned, Users, Wrench, type LucideIcon } from "lucide-react";
 import { leadStages } from "@/lib/data";
-import { getLeadDashboardSummary } from "@/lib/repositories/leads";
+import { getAdminDashboardData } from "@/lib/repositories/admin";
 
 export default async function AdminPage() {
-  const summary = await getLeadDashboardSummary();
-  const { activeInstallers, pendingApplications, busAccepted, completedInstalls, leadsThisMonth, fullTerritories, availableTerritories, commissionDue, installers, leads, territories, applications } = summary;
+  const summary = await getAdminDashboardData();
+  const {
+    activeInstallers,
+    pendingApplications,
+    busAccepted,
+    completedInstalls,
+    leadsThisMonth,
+    fullTerritories,
+    availableTerritories,
+    commissionDue,
+    installers,
+    leads,
+    territories,
+    applications,
+    directoryData,
+  } = summary;
   const stats: Array<[LucideIcon, string, string | number]> = [
-    [Users, "Total installers", installers.length],
+    [Users, "Directory listings", directoryData.totalCount],
     [Wrench, "Active installers", activeInstallers.length],
     [Users, "Pending applications", pendingApplications.length],
     [Users, "Applications", applications.length],

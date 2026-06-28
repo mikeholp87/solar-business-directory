@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { installers as fallbackInstallers } from "@/lib/data";
 
 export type McsInstaller = {
   installerId: number | null;
@@ -46,9 +47,28 @@ function getSupabase() {
   if (_supabase) return _supabase;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Supabase not configured");
+  if (!url || !key) return null;
   _supabase = createClient(url, key);
   return _supabase;
+}
+
+function fallbackDirectoryInstallers(): McsInstaller[] {
+  return fallbackInstallers.map((installer) => ({
+    installerId: null,
+    companyName: installer.companyName,
+    address: installer.description,
+    category: [...installer.services],
+    regionsCovered: [...installer.areasCovered],
+    boilerUpgradeSchemeRegistered: installer.accreditations.busRegistered,
+    certificationBody: null,
+    certificationNumber: installer.accreditations.mcsNumber ?? null,
+    website: null,
+    email: null,
+    phone: null,
+    sourcePage: null,
+    slug: installer.slug,
+    type: [],
+  }));
 }
 
 type InstallerRow = {
@@ -126,6 +146,18 @@ async function fetchInstallers(supabase: ReturnType<typeof createClient>) {
 
 export async function readDirectoryData(): Promise<McsDirectoryData> {
   const supabase = getSupabase();
+  if (!supabase) {
+    const installers = fallbackDirectoryInstallers();
+    return {
+      sourceUrl: "https://mcscertified.com/find-an-installer/",
+      query: { technology: "Air Source Heat Pump", region: "England" },
+      totalCount: installers.length,
+      totalPages: 1,
+      scrapedAt: new Date().toISOString(),
+      installers,
+    };
+  }
+
   const { data, error } = await fetchInstallers(supabase);
 
   if (error) throw error;

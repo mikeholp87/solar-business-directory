@@ -2,6 +2,7 @@ import { reviews as fallbackReviews } from "@/lib/data";
 import { queueEmailNotification } from "@/lib/notifications/email";
 import { installerApprovedTemplate } from "@/lib/notifications/templates/installer-approved";
 import { logAuditEvent } from "@/lib/audit/log-event";
+import { readDirectoryData } from "@/lib/mcs-directory";
 import { getSupabaseOrNull, mergeReviewRecord } from "@/lib/repositories/shared";
 import { listInstallerApplications } from "@/lib/repositories/applications";
 import { getLeadDashboardSummary } from "@/lib/repositories/leads";
@@ -14,10 +15,11 @@ function adminClient() {
 
 export async function getAdminDashboardData() {
   const summary = await getLeadDashboardSummary();
+  const directoryData = await readDirectoryData();
   const applications = await listInstallerApplications();
   const reviews = await listReviewsForAdmin();
   const pendingApplications = applications.filter((application) => application.status === "pending");
-  return { ...summary, applications, pendingApplications, reviews };
+  return { ...summary, directoryData, applications, pendingApplications, reviews };
 }
 
 export async function listReviewsForAdmin(): Promise<Review[]> {
