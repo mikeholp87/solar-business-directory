@@ -1,10 +1,12 @@
 import { revalidatePath } from "next/cache";
+import Link from "next/link";
 import { requireRole } from "@/lib/auth/roles";
 import { listInstallersForAdmin } from "@/lib/repositories/installers";
 import { updateInstallerAdmin } from "@/lib/repositories/admin";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata("Installers", "Manage installer status, subscriptions and commercial fields.", "/admin/installers");
+const PAGE_SIZE = 15;
 
 async function saveInstallerAction(formData: FormData) {
   "use server";
@@ -25,8 +27,24 @@ async function saveInstallerAction(formData: FormData) {
   revalidatePath("/admin/installers");
 }
 
-export default async function AdminInstallersPage() {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+function parsePage(searchParams: SearchParams | undefined) {
+  const value = searchParams?.page;
+  const raw = Array.isArray(value) ? value[0] : value;
+  const parsed = Number(raw ?? "1");
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+}
+
+export default async function AdminInstallersPage({ searchParams }: { searchParams?: SearchParams }) {
   const installers = await listInstallersForAdmin();
+  const currentPage = parsePage(searchParams);
+  const totalPages = Math.max(1, Math.ceil(installers.length / PAGE_SIZE));
+  const page = Math.min(currentPage, totalPages);
+  const start = (page - 1) * PAGE_SIZE;
+  const pageInstallers = installers.slice(start, start + PAGE_SIZE);
+  const showingStart = installers.length === 0 ? 0 : start + 1;
+  const showingEnd = Math.min(start + PAGE_SIZE, installers.length);
 
   return (
     <section className="grid gap-4">
@@ -35,7 +53,24 @@ export default async function AdminInstallersPage() {
         <p className="mt-2 text-sm leading-6 text-navy/65">Edit status, subscription state and commercial controls. Territory membership is managed on the territories page.</p>
       </div>
 
-      {installers.map((installer) => (
+      <div className="surface-card flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+        <p className="text-sm font-semibold text-navy/65">
+          Showing {showingStart}-{showingEnd} of {installers.length}
+        </p>
+        <div className="flex items-center gap-2">
+          <PageLink href={`/admin/installers?page=${Math.max(1, page - 1)}`} disabled={page <= 1}>
+            Previous
+          </PageLink>
+          <span className="text-sm font-semibold text-navy/55">
+            Page {page} of {totalPages}
+          </span>
+          <PageLink href={`/admin/installers?page=${Math.min(totalPages, page + 1)}`} disabled={page >= totalPages}>
+            Next
+          </PageLink>
+        </div>
+      </div>
+
+      {pageInstallers.map((installer) => (
         <form key={installer.id} action={saveInstallerAction} className="surface-card grid gap-4 p-5">
           <input type="hidden" name="id" value={installer.id} />
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -115,5 +150,16 @@ export default async function AdminInstallersPage() {
         </form>
       ))}
     </section>
+  );
+}
+
+function PageLink({ href, disabled, children }: { href: string; disabled?: boolean; children: React.ReactNode }) {
+  const className = disabled ? "button-secondary pointer-events-none opacity-50" : "button-secondary";
+  return disabled ? (
+    <span className={className}>{children}</span>
+  ) : (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
   );
 }
