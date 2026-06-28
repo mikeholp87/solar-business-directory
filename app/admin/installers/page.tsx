@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/roles";
-import { listInstallers } from "@/lib/repositories/installers";
+import { listInstallersForAdmin } from "@/lib/repositories/installers";
 import { updateInstallerAdmin } from "@/lib/repositories/admin";
 import { pageMetadata } from "@/lib/seo";
 
@@ -26,7 +26,7 @@ async function saveInstallerAction(formData: FormData) {
 }
 
 export default async function AdminInstallersPage() {
-  const installers = await listInstallers();
+  const installers = await listInstallersForAdmin();
 
   return (
     <section className="grid gap-4">
