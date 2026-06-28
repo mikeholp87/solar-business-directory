@@ -17,6 +17,7 @@ export function Header() {
         </Link>
         <nav className="hidden items-center gap-1 text-sm font-semibold md:flex">
           <Link className="rounded-lg px-3 py-2 text-navy transition-colors hover:bg-surface" href="/directory">Directory</Link>
+          <Link className="rounded-lg px-3 py-2 text-navy transition-colors hover:bg-surface" href="/pricing">Pricing</Link>
           <Link className="rounded-lg px-3 py-2 text-navy transition-colors hover:bg-surface" href="/apply">Apply Now</Link>
           <Link className="rounded-lg px-3 py-2 text-navy transition-colors hover:bg-surface" href="/installer-dashboard">Installer login</Link>
         </nav>
