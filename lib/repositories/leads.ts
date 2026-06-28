@@ -6,6 +6,7 @@ import { listInstallerApplications } from "@/lib/repositories/applications";
 import { listTerritories } from "@/lib/repositories/territories";
 import { queueEmailNotification } from "@/lib/notifications/email";
 import { leadReceivedTemplate } from "@/lib/notifications/templates/lead-received";
+import { NOTIFICATION_RECIPIENTS } from "@/lib/notifications/recipients";
 import { logAuditEvent } from "@/lib/audit/log-event";
 import type { Lead } from "@/lib/types";
 
@@ -120,6 +121,14 @@ export async function createLeadFromForm(params: {
   await Promise.all([
     queueEmailNotification({
       eventType: "lead.received",
+      recipientRole: "admin",
+      subject: notification.subject,
+      body: notification.body,
+      payload
+    }),
+    queueEmailNotification({
+      eventType: "lead.received",
+      recipientEmail: NOTIFICATION_RECIPIENTS.dan,
       recipientRole: "admin",
       subject: notification.subject,
       body: notification.body,

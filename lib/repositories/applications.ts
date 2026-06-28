@@ -1,6 +1,7 @@
 import { getSupabaseOrNull } from "@/lib/repositories/shared";
 import { queueEmailNotification } from "@/lib/notifications/email";
 import { applicationReceivedTemplate } from "@/lib/notifications/templates/application-received";
+import { NOTIFICATION_RECIPIENTS } from "@/lib/notifications/recipients";
 import { installerApprovedTemplate } from "@/lib/notifications/templates/installer-approved";
 import { logAuditEvent } from "@/lib/audit/log-event";
 
@@ -71,6 +72,14 @@ export async function createInstallerApplication(payload: Record<string, unknown
   await Promise.all([
     queueEmailNotification({
       eventType: "application.received",
+      recipientRole: "admin",
+      subject: notification.subject,
+      body: notification.body,
+      payload
+    }),
+    queueEmailNotification({
+      eventType: "application.received",
+      recipientEmail: NOTIFICATION_RECIPIENTS.dan,
       recipientRole: "admin",
       subject: notification.subject,
       body: notification.body,
