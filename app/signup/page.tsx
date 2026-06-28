@@ -2,8 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase-client";
+
+function slugifyCompanyName(value: string) {
+  const base = value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return base || "installer";
+}
 
 export default function SignupPage() {
+  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -19,16 +30,26 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, companyName, role })
+      const normalizedEmail = email.toLowerCase().trim();
+      const userRole = role === "admin" ? "admin" : "installer";
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: {
+          data: {
+            role: userRole,
+            company_name: companyName,
+            installer_slug: `${slugifyCompanyName(companyName)}-${crypto.randomUUID().slice(0, 8)}`
+          }
+        }
       });
+      if (signUpError) {
+        throw new Error(signUpError.message);
+      }
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Signup failed");
+      if (data.session) {
+        window.location.assign(userRole === "admin" ? "/admin" : "/installer-dashboard");
+        return;
       }
 
       setSuccess(true);

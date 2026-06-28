@@ -227,6 +227,69 @@ create table public.audit_logs (
   created_at timestamptz not null default now()
 );
 
+create function public.handle_new_auth_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  user_role_value user_role := coalesce((new.raw_user_meta_data->>'role')::user_role, 'installer');
+  company_name_value text := nullif(new.raw_user_meta_data->>'company_name', '');
+  installer_slug_value text := nullif(new.raw_user_meta_data->>'installer_slug', '');
+begin
+  insert into public.users (id, email, role, company_name)
+  values (
+    new.id,
+    lower(new.email),
+    user_role_value,
+    company_name_value
+  )
+  on conflict (id) do update
+    set email = excluded.email,
+        role = excluded.role,
+        company_name = excluded.company_name;
+
+  if user_role_value = 'installer' then
+    insert into public.installers (
+      user_id,
+      company_name,
+      slug,
+      contact_name,
+      email,
+      status,
+      subscription_status,
+      bus_registered,
+      accreditations_verified
+    )
+    select
+      new.id,
+      coalesce(company_name_value, split_part(new.email, '@', 1)),
+      coalesce(installer_slug_value, regexp_replace(lower(coalesce(company_name_value, split_part(new.email, '@', 1))), '[^a-z0-9]+', '-', 'g') || '-' || substr(new.id::text, 1, 8)),
+      coalesce(company_name_value, split_part(new.email, '@', 1)),
+      lower(new.email),
+      'pending',
+      'trialing',
+      false,
+      false
+    where not exists (
+      select 1
+      from public.installers
+      where user_id = new.id
+    );
+  end if;
+
+  return new;
+end;
+$$;
+
+revoke all on function public.handle_new_auth_user() from public;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute function public.handle_new_auth_user();
+
 create or replace function public.is_admin()
 returns boolean
 language sql
