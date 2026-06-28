@@ -8,10 +8,11 @@ export async function listInstallers(): Promise<Installer[]> {
     return fallbackInstallers;
   }
 
-  const [{ data: installerRows }, { data: territoryRows }, { data: reviewRows }] = await Promise.all([
+  const [{ data: installerRows }, { data: territoryRows }, { data: reviewRows }, { data: leadRows }] = await Promise.all([
     supabase.from("installers").select("*").order("company_name"),
     supabase.from("installer_territories").select("installer_id,territory_id,status"),
-    supabase.from("reviews").select("installer_id,rating,approved")
+    supabase.from("reviews").select("installer_id,rating,approved"),
+    supabase.from("leads").select("assigned_installer_id")
   ]);
 
   const territoryIdsByInstaller = new Map<string, string[]>();
@@ -37,16 +38,24 @@ export async function listInstallers(): Promise<Installer[]> {
     statsByInstaller.set(installerId, current);
   }
 
+  const leadCountByInstaller = new Map<string, number>();
+  for (const row of leadRows ?? []) {
+    const installerId = (row as { assigned_installer_id?: string }).assigned_installer_id;
+    if (!installerId) continue;
+    leadCountByInstaller.set(installerId, (leadCountByInstaller.get(installerId) ?? 0) + 1);
+  }
+
   return (installerRows ?? []).map((row) => {
     const fallback = fallbackInstallers.find((item) => item.slug === (row as { slug?: string }).slug) ?? fallbackInstallers[0];
     const reviews = statsByInstaller.get((row as { id?: string }).id ?? "") ?? statsByInstaller.get(fallback.id) ?? { total: fallback.rating, count: 1 };
     const rating = reviews.count > 0 ? Number((reviews.total / reviews.count).toFixed(1)) : fallback.rating;
+    const installerId = (row as { id?: string }).id ?? fallback.id;
     return mergeInstallerRecord(
       {
         ...row,
         territory_ids: territoryIdsByInstaller.get((row as { id?: string }).id ?? "") ?? fallback.territoryIds,
         rating,
-        lead_count: 0
+        lead_count: leadCountByInstaller.get(installerId) ?? 0
       },
       fallback
     );

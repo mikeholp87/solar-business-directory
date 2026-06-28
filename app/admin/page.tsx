@@ -5,11 +5,12 @@ import { getLeadDashboardSummary } from "@/lib/repositories/leads";
 
 export default async function AdminPage() {
   const summary = await getLeadDashboardSummary();
-  const { activeInstallers, pendingApplications, busAccepted, completedInstalls, leadsThisMonth, fullTerritories, availableTerritories, commissionDue, installers, leads, territories } = summary;
+  const { activeInstallers, pendingApplications, busAccepted, completedInstalls, leadsThisMonth, fullTerritories, availableTerritories, commissionDue, installers, leads, territories, applications } = summary;
   const stats: Array<[LucideIcon, string, string | number]> = [
     [Users, "Total installers", installers.length],
     [Wrench, "Active installers", activeInstallers.length],
     [Users, "Pending applications", pendingApplications.length],
+    [Users, "Applications", applications.length],
     [Users, "Leads this month", leadsThisMonth.length],
     [BadgePoundSterling, "BUS accepted leads", busAccepted.length],
     [Wrench, "Completed installs", completedInstalls.length],

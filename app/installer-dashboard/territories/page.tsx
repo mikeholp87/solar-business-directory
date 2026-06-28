@@ -30,6 +30,16 @@ async function cancelRequestAction(formData: FormData) {
 
 export default async function InstallerTerritoriesPage() {
   const { installer, territories, allocatedTerritories, territoryRequests } = await getInstallerDashboardData();
+  if (!installer) {
+    return (
+      <section className="surface-card p-5">
+        <h2 className="text-2xl font-black">Installer profile missing</h2>
+        <p className="mt-2 text-sm leading-6 text-navy/65">
+          This account has no linked installer profile, so territory requests are unavailable.
+        </p>
+      </section>
+    );
+  }
   const availableTerritories = territories.filter((territory) => !allocatedTerritories.some((item) => item.id === territory.id));
 
   return (

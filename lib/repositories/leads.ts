@@ -2,6 +2,7 @@ import { leads as fallbackLeads } from "@/lib/data";
 import { assignLeadToInstaller } from "@/lib/lead-assignment";
 import { getSupabaseOrNull, mergeLeadRecord } from "@/lib/repositories/shared";
 import { listInstallers } from "@/lib/repositories/installers";
+import { listInstallerApplications } from "@/lib/repositories/applications";
 import { listTerritories } from "@/lib/repositories/territories";
 import { queueEmailNotification } from "@/lib/notifications/email";
 import { leadReceivedTemplate } from "@/lib/notifications/templates/lead-received";
@@ -21,8 +22,9 @@ export async function getLeadDashboardSummary() {
   const leads = await listLeads();
   const territories = await listTerritories();
   const installers = await listInstallers();
+  const applications = await listInstallerApplications();
   const activeInstallers = installers.filter((installer) => installer.status === "active");
-  const pendingApplications = installers.filter((installer) => installer.status === "pending");
+  const pendingApplications = applications.filter((application) => application.status === "pending");
   const busAccepted = leads.filter((lead) => lead.stage === "bus_accepted");
   const completedInstalls = leads.filter((lead) => lead.stage === "installation_completed");
   const leadsThisMonth = leads.filter((lead) => new Date(lead.createdAt).getMonth() === new Date().getMonth());
@@ -34,6 +36,7 @@ export async function getLeadDashboardSummary() {
     leads,
     territories,
     installers,
+    applications,
     activeInstallers,
     pendingApplications,
     busAccepted,

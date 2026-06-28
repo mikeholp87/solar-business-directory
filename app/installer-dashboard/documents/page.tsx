@@ -30,7 +30,18 @@ async function deleteDocumentAction(formData: FormData) {
 }
 
 export default async function InstallerDocumentsPage() {
-  const { documents } = await getInstallerDashboardData();
+  const { installer, documents } = await getInstallerDashboardData();
+
+  if (!installer) {
+    return (
+      <section className="surface-card p-5">
+        <h2 className="text-2xl font-black">Installer profile missing</h2>
+        <p className="mt-2 text-sm leading-6 text-navy/65">
+          This account has no linked installer profile, so document management is unavailable.
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section className="grid gap-4">

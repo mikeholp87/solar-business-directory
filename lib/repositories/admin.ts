@@ -16,7 +16,8 @@ export async function getAdminDashboardData() {
   const summary = await getLeadDashboardSummary();
   const applications = await listInstallerApplications();
   const reviews = await listReviewsForAdmin();
-  return { ...summary, applications, reviews };
+  const pendingApplications = applications.filter((application) => application.status === "pending");
+  return { ...summary, applications, pendingApplications, reviews };
 }
 
 export async function listReviewsForAdmin(): Promise<Review[]> {

@@ -46,6 +46,13 @@ export default async function AdminInstallersPage() {
             <span className="chip chip-soft capitalize">{installer.status}</span>
           </div>
 
+          <div className="grid gap-4 md:grid-cols-4">
+            <label>Lead count<input value={installer.leadCount ?? 0} readOnly /></label>
+            <label>Territories<input value={installer.territoryIds.length} readOnly /></label>
+            <label>Public profile<input value={installer.status === "active" && installer.accreditationsVerified ? "Visible" : "Hidden"} readOnly /></label>
+            <label>Subscription<input value={installer.subscriptionStatus} readOnly /></label>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-3">
             <label>Status
               <select name="status" defaultValue={installer.status}>

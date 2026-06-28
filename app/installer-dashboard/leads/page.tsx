@@ -20,7 +20,18 @@ async function saveLeadAction(formData: FormData) {
 }
 
 export default async function InstallerLeadsPage() {
-  const { leads } = await getInstallerDashboardData();
+  const { installer, leads } = await getInstallerDashboardData();
+
+  if (!installer) {
+    return (
+      <section className="surface-card p-5">
+        <h2 className="text-2xl font-black">Installer profile missing</h2>
+        <p className="mt-2 text-sm leading-6 text-navy/65">
+          This account has no linked installer profile, so assigned leads cannot be loaded.
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section className="grid gap-4">

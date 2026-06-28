@@ -7,18 +7,22 @@ import { listTerritories } from "@/lib/repositories/territories";
 import type { Installer, Lead, Territory, TerritoryRequest, DocumentRecord } from "@/lib/types";
 
 async function resolveCurrentInstaller() {
-  const user = await getCurrentSessionUser();
   const supabase = await getSupabaseOrNull();
-  if (user && supabase) {
+  if (!supabase) {
+    return fallbackInstallers.find((installer) => installer.status === "active") ?? fallbackInstallers[0];
+  }
+
+  const user = await getCurrentSessionUser();
+  if (user) {
     const { data } = await supabase.from("installers").select("*").eq("user_id", user.id).maybeSingle();
     if (data) {
       const fallback = fallbackInstallers.find((installer) => installer.slug === data.slug) ?? fallbackInstallers[0];
       return mergeInstallerRecord(data, fallback);
     }
+    return null;
   }
 
-  const fallback = fallbackInstallers.find((installer) => installer.status === "active") ?? fallbackInstallers[0];
-  return fallback;
+  return null;
 }
 
 export async function deriveInstallerIdFromSession(): Promise<string | null> {
@@ -36,6 +40,17 @@ export async function getCurrentInstaller() {
 
 export async function getInstallerDashboardData() {
   const installer = await resolveCurrentInstaller();
+  if (!installer) {
+    return {
+      installer: null,
+      installers: [],
+      territories: [],
+      leads: [],
+      allocatedTerritories: [],
+      documents: [],
+      territoryRequests: []
+    };
+  }
   const [installers, territories, leads, documents, territoryRequests] = await Promise.all([
     listInstallers(),
     listTerritories(),

@@ -25,6 +25,17 @@ async function saveProfileAction(formData: FormData) {
 export default async function InstallerProfilePage() {
   const { installer } = await getInstallerDashboardData();
 
+  if (!installer) {
+    return (
+      <section className="surface-card p-5">
+        <h2 className="text-2xl font-black">Installer profile missing</h2>
+        <p className="mt-2 text-sm leading-6 text-navy/65">
+          There is no installer record linked to this account, so profile editing is unavailable.
+        </p>
+      </section>
+    );
+  }
+
   return (
     <section className="grid gap-4">
       <div className="surface-card p-5">

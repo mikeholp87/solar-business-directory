@@ -32,6 +32,17 @@ async function saveOverviewLeadAction(formData: FormData) {
 export default async function InstallerDashboardPage() {
   const { installer, leads: assignedLeads, allocatedTerritories } = await getInstallerDashboardData();
 
+  if (!installer) {
+    return (
+      <section className="surface-card p-5">
+        <h2 className="text-2xl font-black">Installer profile missing</h2>
+        <p className="mt-2 text-sm leading-6 text-navy/65">
+          Your Supabase account is authenticated, but it is not linked to an installer record yet. Create or link an installer profile before using the dashboard.
+        </p>
+      </section>
+    );
+  }
+
   return (
     <section className="grid gap-8">
       <div className="surface-card p-5">
