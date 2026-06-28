@@ -1,15 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase-client";
 
 const roleDashboardPath = (role: "installer" | "admin") => (role === "admin" ? "/admin" : "/installer-dashboard");
-
-function resolveRedirectPath(candidate: string | null, fallback: string) {
-  if (!candidate || !candidate.startsWith("/")) return fallback;
-  return candidate;
-}
 
 export default function LoginForm() {
   const supabase = createClient();
@@ -19,8 +13,6 @@ export default function LoginForm() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const searchParams = useSearchParams();
-  const redirectPath = searchParams?.get("redirect") ?? null;
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,12 +21,9 @@ export default function LoginForm() {
     if (authMethod === "magiclink") {
       setLoading(true);
       try {
-        const destination = resolveRedirectPath(redirectPath, roleDashboardPath("installer"));
-        const callbackUrl = new URL("/auth/callback", window.location.origin);
-        callbackUrl.searchParams.set("redirect", destination);
         const { error } = await supabase.auth.signInWithOtp({
           email: email.toLowerCase().trim(),
-          options: { emailRedirectTo: callbackUrl.toString() }
+          options: { emailRedirectTo: `${window.location.origin}/auth/callback` }
         });
         if (error) throw new Error(error.message);
         setSent(true);
@@ -63,8 +52,7 @@ export default function LoginForm() {
       if (profileError) throw new Error(profileError.message);
 
       const role = profile?.role === "admin" ? "admin" : "installer";
-      const destination = resolveRedirectPath(redirectPath, roleDashboardPath(role));
-      window.location.assign(destination);
+      window.location.assign(roleDashboardPath(role));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
