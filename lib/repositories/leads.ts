@@ -4,6 +4,7 @@ import { getSupabaseOrNull, mergeLeadRecord } from "@/lib/repositories/shared";
 import { listInstallers } from "@/lib/repositories/installers";
 import { listInstallerApplications } from "@/lib/repositories/applications";
 import { listTerritories } from "@/lib/repositories/territories";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { queueEmailNotification } from "@/lib/notifications/email";
 import { leadReceivedTemplate } from "@/lib/notifications/templates/lead-received";
 import { NOTIFICATION_RECIPIENTS } from "@/lib/notifications/recipients";
@@ -19,8 +20,17 @@ export async function listLeads(): Promise<Lead[]> {
   return data.map((row) => mergeLeadRecord(row, fallbackLeads[0]));
 }
 
+export async function listLeadsForAdmin(): Promise<Lead[]> {
+  const supabase = createAdminSupabaseClient();
+  if (!supabase) return fallbackLeads;
+
+  const { data, error } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((row) => mergeLeadRecord(row, fallbackLeads[0]));
+}
+
 export async function getLeadDashboardSummary() {
-  const leads = await listLeads();
+  const leads = await listLeadsForAdmin();
   const territories = await listTerritories();
   const installers = await listInstallers();
   const applications = await listInstallerApplications();

@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/roles";
-import { listLeads } from "@/lib/repositories/leads";
+import { listLeadsForAdmin } from "@/lib/repositories/leads";
 import { listInstallers } from "@/lib/repositories/installers";
 import { listTerritories } from "@/lib/repositories/territories";
 import { updateLeadAdmin } from "@/lib/repositories/admin";
@@ -24,7 +24,7 @@ async function saveLeadAction(formData: FormData) {
 }
 
 export default async function AdminLeadsPage() {
-  const [leads, installers, territories] = await Promise.all([listLeads(), listInstallers(), listTerritories()]);
+  const [leads, installers, territories] = await Promise.all([listLeadsForAdmin(), listInstallers(), listTerritories()]);
 
   return (
     <section className="grid gap-4">
