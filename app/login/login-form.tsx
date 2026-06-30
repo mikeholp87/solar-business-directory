@@ -7,7 +7,7 @@ const roleDashboardPath = (role: "installer" | "admin") => (role === "admin" ? "
 
 export default function LoginForm() {
   const supabase = createClient();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [authMethod, setAuthMethod] = useState<"password" | "magiclink">("password");
   const [sent, setSent] = useState(false);
@@ -19,10 +19,15 @@ export default function LoginForm() {
     setError(null);
 
     if (authMethod === "magiclink") {
+      const email = identifier.toLowerCase().trim();
+      if (!email.includes("@")) {
+        setError("Magic links require a valid email address.");
+        return;
+      }
       setLoading(true);
       try {
         const { error } = await supabase.auth.signInWithOtp({
-          email: email.toLowerCase().trim(),
+          email,
           options: { emailRedirectTo: `${window.location.origin}/auth/callback` }
         });
         if (error) throw new Error(error.message);
@@ -37,9 +42,22 @@ export default function LoginForm() {
 
     setLoading(true);
     try {
+      const resolveResponse = await fetch("/api/auth/resolve", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ identifier })
+      });
+      const resolved = (await resolveResponse.json().catch(() => null)) as { email?: string; error?: string } | null;
+
+      if (!resolveResponse.ok || !resolved?.email) {
+        throw new Error(resolved?.error ?? "Authentication failed");
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.toLowerCase().trim(),
-        password,
+        email: resolved.email,
+        password
       });
       if (error) throw new Error(error.message);
       if (!data.user) throw new Error("Authentication failed");
@@ -64,7 +82,7 @@ export default function LoginForm() {
     <div className="surface-card p-6">
       <p className="eyebrow">Secure access</p>
       <h1 className="text-3xl font-black">Sign in</h1>
-      <p className="mt-2 text-navy/65">Sign in with your email and password, or use a magic link.</p>
+      <p className="mt-2 text-navy/65">Sign in with your email or username and password, or use a magic link.</p>
 
       {sent ? (
         <p className="surface-card-success mt-5 p-3 font-bold text-accent">Check your email for the sign-in link.</p>
@@ -73,11 +91,12 @@ export default function LoginForm() {
           {error && <p className="text-red-600 text-sm">{error}</p>}
 
           <label>
-            Email
+            Email or username
             <input
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              type="email"
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
+              type="text"
+              autoComplete="username"
               required
             />
           </label>
