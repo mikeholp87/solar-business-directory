@@ -8,6 +8,10 @@ type SupabaseAdminEnv = {
   serviceRoleKey: string;
 };
 
+type SignupEnv = {
+  adminInviteCode: string | null;
+};
+
 function readEnv(name: string) {
   const value = process.env[name];
   return typeof value === "string" && value.trim() ? value.trim() : null;
@@ -39,4 +43,10 @@ export function getSupabaseAdminEnv(): SupabaseAdminEnv | null {
   }
 
   return { url, serviceRoleKey };
+}
+
+export function getSignupEnv(): SignupEnv {
+  return {
+    adminInviteCode: readEnv("ADMIN_SIGNUP_INVITE_CODE")
+  };
 }

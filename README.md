@@ -57,6 +57,7 @@ npm run dev
 - `STRIPE_STARTER_PRICE_ID`
 - `STRIPE_TERRITORY_PRICE_ID`
 - `STRIPE_REGIONAL_PRICE_ID`
+- `ADMIN_SIGNUP_INVITE_CODE` for invite-only admin signups
 - `ADMIN_SEED_TOKEN` for the temporary protected seed endpoint
 
 ## Supabase setup

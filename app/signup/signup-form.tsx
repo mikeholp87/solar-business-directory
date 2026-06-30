@@ -2,23 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase-client";
 
-function slugifyCompanyName(value: string) {
-  const base = value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return base || "installer";
-}
+type SignupFormProps = {
+  adminSignupEnabled: boolean;
+};
 
-export default function SignupForm() {
-  const supabase = createClient();
+export default function SignupForm({ adminSignupEnabled }: SignupFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [role, setRole] = useState<"installer" | "admin">("installer");
+  const [adminInviteCode, setAdminInviteCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -30,25 +24,27 @@ export default function SignupForm() {
 
     setLoading(true);
     try {
-      const normalizedEmail = email.toLowerCase().trim();
-      const userRole = role === "admin" ? "admin" : "installer";
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
-        options: {
-          data: {
-            role: userRole,
-            company_name: companyName,
-            installer_slug: `${slugifyCompanyName(companyName)}-${crypto.randomUUID().slice(0, 8)}`
-          }
-        }
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          companyName,
+          role,
+          adminInviteCode: role === "admin" ? adminInviteCode : undefined
+        })
       });
-      if (signUpError) {
-        throw new Error(signUpError.message);
+      const data = (await response.json().catch(() => null)) as { ok?: boolean; role?: "installer" | "admin"; error?: string } | null;
+
+      if (!response.ok) {
+        throw new Error(data?.error ?? "Unable to create account.");
       }
 
-      if (data.session) {
-        window.location.assign(userRole === "admin" ? "/admin" : "/installer-dashboard");
+      if (data?.role) {
+        window.location.assign(data.role === "admin" ? "/admin" : "/installer-dashboard");
         return;
       }
 
@@ -66,7 +62,10 @@ export default function SignupForm() {
         <div className="surface-card p-6">
           <p className="eyebrow">Create account</p>
           <h1 className="text-3xl font-black">Sign up</h1>
-          <p className="mt-2 text-navy/65">Create an account to access the installer portal.</p>
+          <p className="mt-2 text-navy/65">Create an installer account, or an admin account with an invite code.</p>
+          <p className="mt-2 text-sm text-navy/55">
+            {adminSignupEnabled ? "Admin signup is enabled for this environment." : "Admin signup is not enabled in this environment."}
+          </p>
 
           {success ? (
             <div className="mt-5">
@@ -104,7 +103,7 @@ export default function SignupForm() {
                   value={companyName}
                   onChange={(event) => setCompanyName(event.target.value)}
                   type="text"
-                  required
+                  required={role === "installer"}
                 />
               </label>
 
@@ -115,8 +114,22 @@ export default function SignupForm() {
                   onChange={(event) => setRole(event.target.value as "installer" | "admin")}
                 >
                   <option value="installer">Installer</option>
+                  <option value="admin" disabled={!adminSignupEnabled}>Admin</option>
                 </select>
               </label>
+
+              {role === "admin" && (
+                <label>
+                  Admin invite code
+                  <input
+                    value={adminInviteCode}
+                    onChange={(event) => setAdminInviteCode(event.target.value)}
+                    type="password"
+                    autoComplete="off"
+                    required
+                  />
+                </label>
+              )}
 
               <button className="button-primary" type="submit" disabled={loading}>
                 {loading ? "Creating account..." : "Create account"}

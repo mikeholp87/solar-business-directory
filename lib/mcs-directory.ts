@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 import { installers as fallbackInstallers } from "@/lib/data";
 
 export type McsInstaller = {
@@ -41,6 +42,17 @@ export type McsDirectoryData = {
 export const DEFAULT_PER_PAGE = 15;
 export const PER_PAGE_OPTIONS = [15, 30, 45, 60, 75, 90] as const;
 
+export type DirectorySearchFilters = {
+  query: string;
+  type: string;
+  sort: "relevance" | "name" | "type";
+  page: number;
+  perPage: number;
+  bus: boolean;
+  website: boolean;
+  email: boolean;
+};
+
 let _supabase: ReturnType<typeof createClient> | null = null;
 
 function getSupabase() {
@@ -69,6 +81,46 @@ function fallbackDirectoryInstallers(): McsInstaller[] {
     slug: installer.slug,
     type: [],
   }));
+}
+
+function filterFallbackDirectoryInstallers(filters: DirectorySearchFilters) {
+  return fallbackDirectoryInstallers()
+    .filter((installer) => {
+      const haystack = [
+        installer.companyName,
+        installer.address,
+        installer.category.join(" "),
+        installer.certificationBody,
+        installer.certificationNumber,
+        installer.website,
+        installer.email,
+        installer.phone,
+        installer.regionsCovered.join(" "),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      if (filters.query && !haystack.includes(filters.query.toLowerCase())) return false;
+      if (filters.type && !installer.category.some((item) => item.toLowerCase() === filters.type.toLowerCase())) return false;
+      if (filters.bus && !installer.boilerUpgradeSchemeRegistered) return false;
+      if (filters.website && !installer.website) return false;
+      if (filters.email && !installer.email) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (filters.sort === "name" || filters.sort === "relevance") {
+        return (a.companyName ?? "").localeCompare(b.companyName ?? "") || (a.address ?? "").localeCompare(b.address ?? "");
+      }
+
+      if (filters.sort === "type") {
+        const aType = a.category.join(" / ");
+        const bType = b.category.join(" / ");
+        return aType.localeCompare(bType) || (a.companyName ?? "").localeCompare(b.companyName ?? "");
+      }
+
+      return 0;
+    });
 }
 
 type InstallerRow = {
@@ -144,7 +196,37 @@ async function fetchInstallers(supabase: ReturnType<typeof createClient>) {
   return { data: allRows, error: null };
 }
 
-export async function readDirectoryData(): Promise<McsDirectoryData> {
+function mapSearchResultInstaller(row: Record<string, unknown>): McsInstaller {
+  const category = parseJsonArray(row.category ?? row.services ?? []);
+  const regionsCovered = parseJsonArray(row.regions_covered ?? row.areas_covered ?? []);
+  const type = parseJsonArray(row.type ?? row.services ?? []);
+  return {
+    installerId: typeof row.installer_id === "number" ? row.installer_id : typeof row.mcs_installer_id === "number" ? row.mcs_installer_id : null,
+    companyName: typeof row.company_name === "string" ? row.company_name : null,
+    address: typeof row.address === "string" ? row.address : typeof row.description === "string" ? row.description : null,
+    addressParts: row.address_line1 || row.address_postcode ? {
+      line1: typeof row.address_line1 === "string" ? row.address_line1 : null,
+      line2: typeof row.address_line2 === "string" ? row.address_line2 : null,
+      line3: typeof row.address_line3 === "string" ? row.address_line3 : null,
+      county: typeof row.address_county === "string" ? row.address_county : null,
+      postcode: typeof row.address_postcode === "string" ? row.address_postcode : null,
+      country: typeof row.address_country === "string" ? row.address_country : null,
+    } : undefined,
+    category,
+    regionsCovered,
+    boilerUpgradeSchemeRegistered: typeof row.boiler_upgrade_scheme_registered === "boolean" ? row.boiler_upgrade_scheme_registered : Boolean(row.bus_registered),
+    certificationBody: typeof row.certification_body === "string" ? row.certification_body : null,
+    certificationNumber: typeof row.certification_number === "string" ? row.certification_number : typeof row.mcs_number === "string" ? row.mcs_number : null,
+    website: typeof row.website === "string" ? row.website : null,
+    email: typeof row.email === "string" ? row.email : null,
+    phone: typeof row.phone === "string" ? row.phone : null,
+    sourcePage: typeof row.source_page === "number" ? row.source_page : null,
+    slug: typeof row.slug === "string" ? row.slug : undefined,
+    type
+  };
+}
+
+async function loadDirectoryData(): Promise<McsDirectoryData> {
   const supabase = getSupabase();
   if (!supabase) {
     const installers = fallbackDirectoryInstallers();
@@ -196,6 +278,81 @@ export async function readDirectoryData(): Promise<McsDirectoryData> {
     scrapedAt: new Date().toISOString(),
     installers,
   };
+}
+
+const getCachedDirectoryData = unstable_cache(loadDirectoryData, ["mcs-directory-data"], {
+  revalidate: 300
+});
+
+export async function readDirectoryData(): Promise<McsDirectoryData> {
+  return getCachedDirectoryData();
+}
+
+async function loadDirectorySearchData(filters: DirectorySearchFilters): Promise<McsDirectoryData> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    const installers = filterFallbackDirectoryInstallers(filters);
+    const totalCount = installers.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / filters.perPage));
+    const start = (Math.max(filters.page, 1) - 1) * filters.perPage;
+    const results = installers.slice(start, start + filters.perPage);
+    return {
+      sourceUrl: "https://mcscertified.com/find-an-installer/",
+      query: { technology: "Air Source Heat Pump", region: "England" },
+      totalCount,
+      totalPages,
+      scrapedAt: new Date().toISOString(),
+      installers: results
+    };
+  }
+
+  const { data, error } = await supabase.rpc("search_directory_installers", {
+    search_query: filters.query || null,
+    service_type: filters.type || null,
+    bus_only: filters.bus,
+    website_only: filters.website,
+    email_only: filters.email,
+    sort_option: filters.sort,
+    page_number: filters.page,
+    page_size: filters.perPage
+  } as never);
+
+  if (!error && data) {
+    const payload = (Array.isArray(data) ? data[0] : data) as Record<string, unknown> | null;
+    const installerRows = Array.isArray(payload?.installers) ? payload.installers as Record<string, unknown>[] : [];
+    const installers = installerRows.map((item) => mapSearchResultInstaller(item));
+    const totalCount = typeof payload?.total_count === "number" ? payload.total_count : installers.length;
+    return {
+      sourceUrl: "https://mcscertified.com/find-an-installer/",
+      query: { technology: "Air Source Heat Pump", region: "England" },
+      totalCount,
+      totalPages: Math.max(1, Math.ceil(totalCount / filters.perPage)),
+      scrapedAt: new Date().toISOString(),
+      installers
+    };
+  }
+
+  const installers = filterFallbackDirectoryInstallers(filters);
+  const totalCount = installers.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / filters.perPage));
+  const start = (Math.max(filters.page, 1) - 1) * filters.perPage;
+  const results = installers.slice(start, start + filters.perPage);
+  return {
+    sourceUrl: "https://mcscertified.com/find-an-installer/",
+    query: { technology: "Air Source Heat Pump", region: "England" },
+    scrapedAt: new Date().toISOString(),
+    totalCount,
+    totalPages,
+    installers: results
+  };
+}
+
+const getCachedDirectorySearchData = unstable_cache(loadDirectorySearchData, ["mcs-directory-search-data"], {
+  revalidate: 300
+});
+
+export async function readDirectoryPageData(filters: DirectorySearchFilters): Promise<McsDirectoryData> {
+  return getCachedDirectorySearchData(filters);
 }
 
 export function parsePage(page: string | string[] | undefined) {

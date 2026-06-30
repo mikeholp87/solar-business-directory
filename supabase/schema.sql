@@ -227,6 +227,202 @@ create table public.audit_logs (
   created_at timestamptz not null default now()
 );
 
+create index if not exists installers_company_name_idx on public.installers (company_name);
+create index if not exists installers_user_id_idx on public.installers (user_id);
+create index if not exists installers_status_verified_company_name_idx on public.installers (company_name) where status = 'active' and accreditations_verified = true;
+create index if not exists installers_stripe_customer_id_idx on public.installers (stripe_customer_id) where stripe_customer_id is not null;
+create index if not exists installers_stripe_subscription_id_idx on public.installers (stripe_subscription_id) where stripe_subscription_id is not null;
+create index if not exists installers_services_gin_idx on public.installers using gin (services);
+create index if not exists installers_areas_covered_gin_idx on public.installers using gin (areas_covered);
+
+create index if not exists installer_territories_installer_status_idx on public.installer_territories (installer_id, status);
+create index if not exists installer_territories_territory_status_idx on public.installer_territories (territory_id, status);
+
+create index if not exists leads_assigned_installer_id_created_at_idx on public.leads (assigned_installer_id, created_at desc);
+create index if not exists leads_territory_id_idx on public.leads (territory_id);
+create index if not exists leads_stage_idx on public.leads (stage);
+
+create index if not exists installer_applications_status_created_at_idx on public.installer_applications (status, created_at desc);
+create index if not exists documents_installer_id_uploaded_at_idx on public.documents (installer_id, uploaded_at desc);
+create index if not exists reviews_installer_id_approved_created_at_idx on public.reviews (installer_id, approved, created_at desc);
+create index if not exists territory_requests_installer_status_requested_at_idx on public.territory_requests (installer_id, status, requested_at desc);
+create index if not exists notification_outbox_status_created_at_idx on public.notification_outbox (status, created_at desc);
+create index if not exists notification_outbox_recipient_role_status_idx on public.notification_outbox (recipient_role, status, created_at desc);
+create index if not exists audit_logs_created_at_idx on public.audit_logs (created_at desc);
+
+create or replace function public.search_directory_installers(
+  search_query text default null,
+  service_type text default null,
+  bus_only boolean default false,
+  website_only boolean default false,
+  email_only boolean default false,
+  sort_option text default 'relevance',
+  page_number integer default 1,
+  page_size integer default 15
+)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+with args as (
+  select
+    nullif(btrim(lower(search_query)), '') as query_term,
+    nullif(btrim(service_type), '') as service_term,
+    greatest(coalesce(page_number, 1), 1) as requested_page,
+    greatest(coalesce(page_size, 15), 1) as per_page,
+    case when sort_option in ('relevance', 'name', 'type') then sort_option else 'relevance' end as sort_term
+),
+filtered as (
+  select
+    i.id as installer_uuid,
+    i.company_name,
+    i.slug,
+    i.email,
+    i.phone,
+    i.website,
+    i.description,
+    i.mcs_number,
+    i.bus_registered,
+    i.services,
+    i.areas_covered
+  from public.installers i
+  cross join args a
+  where
+    (a.query_term is null or (
+      lower(i.company_name) like '%' || a.query_term || '%' or
+      lower(coalesce(i.description, '')) like '%' || a.query_term || '%' or
+      lower(coalesce(i.mcs_number, '')) like '%' || a.query_term || '%' or
+      lower(i.email) like '%' || a.query_term || '%' or
+      lower(coalesce(i.phone, '')) like '%' || a.query_term || '%' or
+      lower(coalesce(i.website, '')) like '%' || a.query_term || '%' or
+      exists (
+        select 1
+        from jsonb_array_elements_text(coalesce(i.services, '[]'::jsonb)) as service_value(value)
+        where lower(service_value.value) like '%' || a.query_term || '%'
+      ) or
+      exists (
+        select 1
+        from jsonb_array_elements_text(coalesce(i.areas_covered, '[]'::jsonb)) as area_value(value)
+        where lower(area_value.value) like '%' || a.query_term || '%'
+      )
+    ))
+    and (a.service_term is null or i.services ? a.service_term)
+    and (not bus_only or i.bus_registered)
+    and (not website_only or nullif(btrim(coalesce(i.website, '')), '') is not null)
+    and (not email_only or nullif(btrim(i.email), '') is not null)
+),
+stats as (
+  select count(*)::int as total_count from filtered
+),
+ranked as (
+  select
+    f.*,
+    s.total_count,
+    row_number() over (
+      order by
+        case
+          when a.sort_term = 'name' then null
+          when a.sort_term = 'type' then null
+          when a.query_term is null then 0
+          when lower(f.company_name) = a.query_term then 0
+          when lower(f.company_name) like a.query_term || '%' then 1
+          when lower(f.company_name) like '%' || a.query_term || '%' then 2
+          when lower(coalesce(f.description, '')) like '%' || a.query_term || '%' then 3
+          when lower(coalesce(f.mcs_number, '')) like '%' || a.query_term || '%' then 4
+          when lower(f.email) like '%' || a.query_term || '%' then 5
+          when lower(coalesce(f.phone, '')) like '%' || a.query_term || '%' then 6
+          else 7
+        end,
+        lower(f.company_name),
+        f.slug
+    ) as relevance_rank,
+    row_number() over (
+      order by
+        lower(f.company_name),
+        f.slug
+    ) as name_rank,
+    row_number() over (
+      order by
+        coalesce((select string_agg(value, ' / ' order by value) from jsonb_array_elements_text(coalesce(f.services, '[]'::jsonb)) as service_value(value)), ''),
+        lower(f.company_name),
+        f.slug
+    ) as type_rank
+  from filtered f
+  cross join stats s
+  cross join args a
+),
+bounds as (
+  select
+    total_count,
+    per_page,
+    greatest(1, least(requested_page, greatest(ceil(total_count::numeric / per_page)::int, 1))) as safe_page,
+    sort_term
+  from stats
+  cross join args
+)
+select jsonb_build_object(
+  'total_count', coalesce((select total_count from bounds), 0),
+  'installers', coalesce(
+    (
+      select jsonb_agg(
+        jsonb_build_object(
+          'installer_id', null,
+          'company_name', r.company_name,
+          'slug', r.slug,
+          'email', r.email,
+          'phone', r.phone,
+          'website', r.website,
+          'description', r.description,
+          'mcs_installer_id', null,
+          'mcs_number', r.mcs_number,
+          'certification_body', null,
+          'bus_registered', r.bus_registered,
+          'services', r.services,
+          'areas_covered', r.areas_covered,
+          'address_line1', null,
+          'address_line2', null,
+          'address_line3', null,
+          'address_county', null,
+          'address_postcode', null,
+          'address_country', null,
+          'source_page', null,
+          'category', r.services,
+          'regions_covered', r.areas_covered,
+          'type', r.services
+        )
+        order by
+          case (select sort_term from bounds)
+            when 'name' then r.name_rank
+            when 'type' then r.type_rank
+            else r.relevance_rank
+          end
+      )
+      from ranked r
+      cross join bounds b
+      where r.name_rank > 0
+        and r.relevance_rank > 0
+        and (
+          case b.sort_term
+            when 'name' then r.name_rank
+            when 'type' then r.type_rank
+            else r.relevance_rank
+          end
+        ) > ((b.safe_page - 1) * b.per_page)
+        and (
+          case b.sort_term
+            when 'name' then r.name_rank
+            when 'type' then r.type_rank
+            else r.relevance_rank
+          end
+        ) <= (b.safe_page * b.per_page)
+    ),
+    '[]'::jsonb
+  )
+);
+$$;
+
 create function public.handle_new_auth_user()
 returns trigger
 language plpgsql
