@@ -5,7 +5,6 @@ export type DirectorySortOption = "relevance" | "name" | "type";
 
 type DirectoryToolbarProps = {
   query: string;
-  postcode: string;
   type: string;
   sort: DirectorySortOption;
   perPage: number;
@@ -19,7 +18,6 @@ type DirectoryToolbarProps = {
 
 export function DirectoryToolbar({
   query,
-  postcode,
   type,
   sort,
   perPage,
@@ -33,7 +31,6 @@ export function DirectoryToolbar({
   return (
     <form method="get" className="editorial-rail p-5 sm:p-6">
       <input type="hidden" name="page" value="1" />
-      <input type="hidden" name="postcode" value={postcode} />
 
       <div className="editorial-rail__header grid gap-3 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
         <div>

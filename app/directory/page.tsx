@@ -10,8 +10,6 @@ import {
   parsePerPage,
   readDirectoryPageData,
 } from "@/lib/mcs-directory";
-import { getActiveInstallers } from "@/lib/repositories/installers";
-import { getTerritoryByPostcode } from "@/lib/repositories/territories";
 import { pageMetadata } from "@/lib/seo";
 import { SERVICE_TYPES } from "@/lib/service-types";
 
@@ -37,7 +35,6 @@ function Pagination({
   currentPage,
   totalPages,
   query,
-  postcode,
   type,
   sort,
   perPage,
@@ -48,7 +45,6 @@ function Pagination({
   currentPage: number;
   totalPages: number;
   query: string;
-  postcode: string;
   type: string;
   sort: DirectorySortOption;
   perPage: number;
@@ -66,18 +62,18 @@ function Pagination({
         Page {currentPage} of {totalPages}
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <PaginationLink page={currentPage - 1} disabled={currentPage <= 1} label="Previous" query={query} postcode={postcode} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
+        <PaginationLink page={currentPage - 1} disabled={currentPage <= 1} label="Previous" query={query} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
         {pages.map((page, index) => {
           const previousPage = pages[index - 1];
           const gap = previousPage && page - previousPage > 1;
           return (
             <span key={page} className="flex items-center gap-2">
               {gap ? <span className="px-2 text-sm font-bold text-navy/45">…</span> : null}
-              <PaginationLink page={page} active={page === currentPage} query={query} postcode={postcode} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
+              <PaginationLink page={page} active={page === currentPage} query={query} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
             </span>
           );
         })}
-        <PaginationLink page={currentPage + 1} disabled={currentPage >= totalPages} label="Next" query={query} postcode={postcode} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
+        <PaginationLink page={currentPage + 1} disabled={currentPage >= totalPages} label="Next" query={query} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
       </div>
     </nav>
   );
@@ -89,7 +85,6 @@ function PaginationLink({
   disabled,
   label,
   query,
-  postcode,
   type,
   sort,
   perPage,
@@ -102,7 +97,6 @@ function PaginationLink({
   disabled?: boolean;
   label?: string;
   query: string;
-  postcode: string;
   type: string;
   sort: DirectorySortOption;
   perPage: number;
@@ -116,7 +110,7 @@ function PaginationLink({
   const disabledClass = "pointer-events-none border-border bg-white/60 text-navy/35";
 
   const className = `${baseClass} ${disabled ? disabledClass : active ? activeClass : inactiveClass}`;
-  const href = buildDirectoryHref({ page, query, postcode, type, sort, perPage, bus, website, email });
+  const href = buildDirectoryHref({ page, query, type, sort, perPage, bus, website, email });
 
   if (disabled) {
     return <span className={className}>{label ?? page}</span>;
@@ -132,7 +126,6 @@ function PaginationLink({
 function buildDirectoryHref({
   page,
   query,
-  postcode,
   type,
   sort,
   perPage,
@@ -142,7 +135,6 @@ function buildDirectoryHref({
 }: {
   page: number;
   query: string;
-  postcode: string;
   type: string;
   sort: DirectorySortOption;
   perPage: number;
@@ -153,7 +145,6 @@ function buildDirectoryHref({
   const params = new URLSearchParams();
   if (page > 1) params.set("page", String(page));
   if (query) params.set("q", query);
-  if (postcode) params.set("postcode", postcode);
   if (type) params.set("type", type);
   if (sort !== "relevance") params.set("sort", sort);
   if (perPage !== DEFAULT_PER_PAGE) params.set("perPage", String(perPage));
@@ -167,11 +158,10 @@ function buildDirectoryHref({
 export default async function DirectoryPage({
   searchParams,
 }: {
-  searchParams: { page?: string | string[]; q?: string | string[]; postcode?: string | string[]; type?: string | string[]; category?: string | string[]; sort?: string | string[]; perPage?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
+  searchParams: { page?: string | string[]; q?: string | string[]; type?: string | string[]; category?: string | string[]; sort?: string | string[]; perPage?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
 }) {
   const currentPage = parsePage(searchParams.page);
   const searchInput = normalizeSearchParam(searchParams.q);
-  const postcode = normalizeSearchParam(searchParams.postcode);
   const type = normalizeServiceType(normalizeSearchParam(searchParams.type ?? searchParams.category));
   const sort = parseSort(normalizeSearchParam(searchParams.sort));
   const perPage = parsePerPage(searchParams.perPage);
@@ -179,18 +169,8 @@ export default async function DirectoryPage({
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
   const types = [...SERVICE_TYPES];
-  const postcodeTerritory = postcode ? await getTerritoryByPostcode(postcode) : null;
-  const postcodeInstallerSlugs = postcode
-    ? postcodeTerritory
-      ? (await getActiveInstallers())
-          .filter((installer) => installer.territoryIds.includes(postcodeTerritory.id))
-          .map((installer) => installer.slug)
-      : []
-    : null;
   const data = await readDirectoryPageData({
     query: searchInput,
-    postcode,
-    allowedSlugs: postcodeInstallerSlugs,
     type,
     sort,
     page: currentPage,
@@ -222,7 +202,6 @@ export default async function DirectoryPage({
             </div>
           </div>
           <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold text-navy/64">
-            {postcode ? <span className="chip chip-soft">Postcode {postcode}</span> : null}
             <span className="chip chip-soft">{data.query.technology}</span>
             <span className="chip chip-soft">{data.query.region}</span>
             <span className="chip">{data.totalCount.toLocaleString("en-GB")} matching installers</span>
@@ -231,7 +210,6 @@ export default async function DirectoryPage({
 
         <DirectoryToolbar
           query={searchInput}
-          postcode={postcode}
           type={type}
           sort={sort}
           perPage={perPage}
@@ -249,7 +227,7 @@ export default async function DirectoryPage({
           ))}
         </div>
 
-        <Pagination currentPage={safePage} totalPages={totalPages} query={searchInput} postcode={postcode} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
+        <Pagination currentPage={safePage} totalPages={totalPages} query={searchInput} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
       </div>
     </main>
   );
