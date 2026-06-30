@@ -14,7 +14,7 @@ export function HeroSearchForm() {
     const service = String(form.get("service") ?? "");
 
     const params = new URLSearchParams();
-    if (postcode) params.set("q", postcode);
+    if (postcode) params.set("postcode", postcode);
     if (service) params.set("type", service);
 
     const query = params.toString();

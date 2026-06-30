@@ -309,34 +309,6 @@ header a:hover {
   box-shadow: var(--surface-shadow-strong);
 }
 
-@keyframes not-found-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(0, -12px, 0);
-  }
-}
-
-@keyframes not-found-drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(16px, -8px, 0);
-  }
-}
-
-.not-found-float {
-  animation: not-found-float 10s ease-in-out infinite;
-}
-
-.not-found-drift {
-  animation: not-found-drift 14s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

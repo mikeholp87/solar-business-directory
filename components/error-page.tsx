@@ -44,8 +44,8 @@ export function ErrorPage({
         <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
           <section className="surface-card overflow-hidden border border-navy/10 bg-navy text-white shadow-[0_20px_60px_rgba(16,42,67,0.22)]">
             <div className="relative h-full p-6 sm:p-8 lg:p-10">
-              <div className="absolute right-0 top-0 h-44 w-44 rounded-full bg-[#00A651]/15 blur-3xl not-found-float" />
-              <div className="absolute -bottom-16 left-8 h-32 w-32 rounded-full bg-white/8 blur-3xl not-found-drift" />
+              <div className="absolute right-0 top-0 h-44 w-44 rounded-full bg-[#00A651]/15 blur-3xl" />
+              <div className="absolute -bottom-16 left-8 h-32 w-32 rounded-full bg-white/8 blur-3xl" />
 
               <p className="eyebrow border-white/10 bg-white/6 text-white/75">{eyebrow}</p>
 
@@ -88,7 +88,7 @@ export function ErrorPage({
                 </div>
 
                 <svg
-                  className="not-found-float pointer-events-none absolute right-6 top-[8.25rem] hidden h-28 w-40 text-[#00A651]/70 sm:block"
+                  className="pointer-events-none absolute right-6 top-[8.25rem] hidden h-28 w-40 text-[#00A651]/70 sm:block"
                   viewBox="0 0 160 112"
                   fill="none"
                   aria-hidden="true"

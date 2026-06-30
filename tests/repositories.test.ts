@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { getLeadDashboardSummary } from "@/lib/repositories/leads";
-import { listInstallers } from "@/lib/repositories/installers";
+import { getActiveInstallers, listInstallers } from "@/lib/repositories/installers";
 import { listTerritories, getTerritoryByPostcode } from "@/lib/repositories/territories";
-import { matchesServiceType, normalizeServiceType } from "@/lib/mcs-directory";
+import { matchesServiceType, normalizeServiceType, readDirectoryPageData } from "@/lib/mcs-directory";
 
 describe("repository fallback data", () => {
   it("returns installer and territory seed data when Supabase is not configured", async () => {
@@ -29,5 +29,25 @@ describe("repository fallback data", () => {
     expect(normalizeServiceType("Solar PV installers")).toBe("Solar PV");
     expect(matchesServiceType(["Air source heat pumps"], "air-source-heat-pump")).toBe(true);
     expect(matchesServiceType(["Ground source heat pumps"], "Ground/Water Source Heat Pump")).toBe(true);
+  });
+
+  it("filters directory results by postcode territory", async () => {
+    const territory = await getTerritoryByPostcode("LL57 1AA");
+    const allowedSlugs = territory ? (await getActiveInstallers()).filter((installer) => installer.territoryIds.includes(territory.id)).map((installer) => installer.slug) : [];
+    const data = await readDirectoryPageData({
+      query: "",
+      postcode: "LL57 1AA",
+      allowedSlugs,
+      type: "",
+      sort: "relevance",
+      page: 1,
+      perPage: 15,
+      bus: false,
+      website: false,
+      email: false,
+    });
+
+    expect(data.totalCount).toBeGreaterThan(0);
+    expect(data.installers.some((installer) => installer.slug === "cambrian-eco-heat")).toBe(true);
   });
 });

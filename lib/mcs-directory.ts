@@ -45,6 +45,8 @@ export const PER_PAGE_OPTIONS = [15, 30, 45, 60, 75, 90] as const;
 
 export type DirectorySearchFilters = {
   query: string;
+  postcode: string;
+  allowedSlugs: string[] | null;
   type: string;
   sort: "relevance" | "name" | "type";
   page: number;
@@ -164,6 +166,7 @@ function fallbackDirectoryInstallers(): McsInstaller[] {
 
 function filterDirectoryInstallers(installers: McsInstaller[], filters: DirectorySearchFilters) {
   const selectedType = normalizeServiceType(filters.type);
+  const allowedSlugs = filters.allowedSlugs ? new Set(filters.allowedSlugs) : null;
 
   return installers
     .filter((installer) => {
@@ -183,6 +186,7 @@ function filterDirectoryInstallers(installers: McsInstaller[], filters: Director
         .toLowerCase();
 
       if (filters.query && !haystack.includes(filters.query.toLowerCase())) return false;
+      if (allowedSlugs && (!installer.slug || !allowedSlugs.has(installer.slug))) return false;
       if (selectedType && !matchesServiceType(installer.category, selectedType)) return false;
       if (filters.bus && !installer.boilerUpgradeSchemeRegistered) return false;
       if (filters.website && !installer.website) return false;
@@ -332,6 +336,7 @@ export async function readDirectoryData(): Promise<McsDirectoryData> {
 
 async function loadDirectorySearchData(filters: DirectorySearchFilters): Promise<McsDirectoryData> {
   const supabase = getSupabase();
+
   if (!supabase) {
     const installers = filterDirectoryInstallers(fallbackDirectoryInstallers(), filters);
     const totalCount = installers.length;
@@ -372,7 +377,14 @@ const getCachedDirectorySearchData = unstable_cache(loadDirectorySearchData, ["m
 });
 
 export async function readDirectoryPageData(filters: DirectorySearchFilters): Promise<McsDirectoryData> {
-  return getCachedDirectorySearchData(filters);
+  try {
+    return await getCachedDirectorySearchData(filters);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("incrementalCache missing")) {
+      return loadDirectorySearchData(filters);
+    }
+    throw error;
+  }
 }
 
 export function parsePage(page: string | string[] | undefined) {
