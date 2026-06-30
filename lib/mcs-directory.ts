@@ -50,6 +50,16 @@ export type McsDirectoryListingData = {
   installer: McsInstaller;
 };
 
+export type McsHomepageData = {
+  sourceUrl: string;
+  query: {
+    technology: string;
+    region: string;
+  };
+  scrapedAt: string;
+  featuredInstallers: McsInstaller[];
+};
+
 export const DEFAULT_PER_PAGE = 15;
 export const PER_PAGE_OPTIONS = [15, 30, 45, 60, 75, 90] as const;
 
@@ -301,6 +311,14 @@ async function fetchInstallers(supabase: ReturnType<typeof createClient>) {
   return { data: allRows, error: null };
 }
 
+async function fetchFeaturedInstallers(supabase: ReturnType<typeof createClient>, limit: number) {
+  const selectColumns =
+    "company_name, slug, email, phone, website, description, mcs_installer_id, mcs_number, certification_body, bus_registered, services, areas_covered, address_line1, address_line2, address_line3, address_county, address_postcode, address_country, source_page, type";
+  const query = supabase.from("installers").select(selectColumns).order("company_name").range(0, Math.max(limit, 1) - 1);
+
+  return query;
+}
+
 async function fetchInstallerByListingKey(supabase: ReturnType<typeof createClient>, listingKey: string) {
   const selectColumns =
     "company_name, slug, email, phone, website, description, mcs_installer_id, mcs_number, certification_body, bus_registered, services, areas_covered, address_line1, address_line2, address_line3, address_county, address_postcode, address_country, source_page, type";
@@ -350,6 +368,36 @@ const getCachedDirectoryData = unstable_cache(loadDirectoryData, ["mcs-directory
 
 export async function readDirectoryData(): Promise<McsDirectoryData> {
   return getCachedDirectoryData();
+}
+
+async function loadHomepageData(): Promise<McsHomepageData> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return {
+      sourceUrl: "https://mcscertified.com/find-an-installer/",
+      query: { technology: "Air Source Heat Pump", region: "England" },
+      scrapedAt: new Date().toISOString(),
+      featuredInstallers: fallbackDirectoryInstallers().slice(0, 3),
+    };
+  }
+
+  const { data, error } = await fetchFeaturedInstallers(supabase, 3);
+  if (error) throw error;
+
+  return {
+    sourceUrl: "https://mcscertified.com/find-an-installer/",
+    query: { technology: "Air Source Heat Pump", region: "England" },
+    scrapedAt: new Date().toISOString(),
+    featuredInstallers: mapInstallerRows((data ?? []) as InstallerRow[]),
+  };
+}
+
+const getCachedHomepageData = unstable_cache(loadHomepageData, ["mcs-homepage-data"], {
+  revalidate: 300
+});
+
+export async function readHomepageData(): Promise<McsHomepageData> {
+  return getCachedHomepageData();
 }
 
 async function loadDirectoryListingData(listingKey: string): Promise<McsDirectoryListingData> {

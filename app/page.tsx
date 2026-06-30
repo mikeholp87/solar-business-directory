@@ -5,7 +5,7 @@ import { HeroSearchForm } from "@/components/hero-search-form";
 import { DirectoryResultCard } from "@/components/directory-result-card";
 import { TerritoryList } from "@/components/territory-list";
 import { listTerritories } from "@/lib/repositories/territories";
-import { readDirectoryData } from "@/lib/mcs-directory";
+import { readHomepageData } from "@/lib/mcs-directory";
 import { serviceFacets } from "@/lib/seo/service-facets";
 import { jsonLd } from "@/lib/seo";
 import { siteUrl } from "@/lib/runtime";
@@ -19,8 +19,8 @@ const features: Array<{ title: string; text: string }> = [
 ];
 
 export default async function HomePage() {
-  const [directoryData, territories] = await Promise.all([readDirectoryData(), listTerritories()]);
-  const featuredInstallers = directoryData.installers.slice(0, 3);
+  const [homepageData, territories] = await Promise.all([readHomepageData(), listTerritories()]);
+  const featuredInstallers = homepageData.featuredInstallers;
 
   return (
     <main>
