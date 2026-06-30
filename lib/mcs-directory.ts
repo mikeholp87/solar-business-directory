@@ -45,8 +45,6 @@ export const PER_PAGE_OPTIONS = [15, 30, 45, 60, 75, 90] as const;
 
 export type DirectorySearchFilters = {
   query: string;
-  postcode: string;
-  allowedSlugs: string[] | null;
   type: string;
   sort: "relevance" | "name" | "type";
   page: number;
@@ -166,7 +164,6 @@ function fallbackDirectoryInstallers(): McsInstaller[] {
 
 function filterDirectoryInstallers(installers: McsInstaller[], filters: DirectorySearchFilters) {
   const selectedType = normalizeServiceType(filters.type);
-  const allowedSlugs = filters.allowedSlugs ? new Set(filters.allowedSlugs) : null;
 
   return installers
     .filter((installer) => {
@@ -186,7 +183,6 @@ function filterDirectoryInstallers(installers: McsInstaller[], filters: Director
         .toLowerCase();
 
       if (filters.query && !haystack.includes(filters.query.toLowerCase())) return false;
-      if (allowedSlugs && (!installer.slug || !allowedSlugs.has(installer.slug))) return false;
       if (selectedType && !matchesServiceType(installer.category, selectedType)) return false;
       if (filters.bus && !installer.boilerUpgradeSchemeRegistered) return false;
       if (filters.website && !installer.website) return false;
