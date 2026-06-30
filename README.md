@@ -110,4 +110,4 @@ npm run build
 - The app falls back to local seed data when Supabase is not configured.
 - The installer documents screen currently records document URLs; file storage upload wiring is the remaining gap.
 - The notification system queues outbound messages in the database for later delivery.
-- EmailJS handles outbound email delivery when the EmailJS environment variables are configured.
+- EmailJS handles outbound email delivery when the EmailJS environment variables are configured, including `EMAILJS_FROM_EMAIL` for the sender address.
