@@ -1,5 +1,8 @@
 import { Suspense } from "react";
 import LoginForm from "./login-form";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata("Sign in", "Sign in to the installer portal.", "/login", { noindex: true });
 
 export default function LoginPage() {
   return (

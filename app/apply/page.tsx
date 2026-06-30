@@ -1,7 +1,13 @@
 import { ApplicationForm } from "@/components/application-form";
-import { pageMetadata } from "@/lib/seo";
+import { jsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata("Join Renewable Directory as an Installer", "Apply for territory-based exposure, qualified homeowner enquiries and reduced-cost lead opportunities.", "/apply");
+
+const faqs = [
+  ["What happens after I apply?", "The admin team reviews accreditations, territory fit, and the commercial model before confirming next steps."],
+  ["How quickly will I hear back?", "Applications are queued for review and are usually handled through the admin workflow as soon as the submission arrives."],
+  ["Can I choose multiple services?", "Yes. You can list the services and territories that best match your operating area and capacity."]
+];
 
 export default function ApplyPage() {
   return (
@@ -27,7 +33,29 @@ export default function ApplyPage() {
           </section>
         </div>
         <ApplicationForm />
+
+        <section className="surface-card-dossier p-6 lg:col-span-2">
+          <p className="eyebrow">FAQ</p>
+          <h2 className="mt-3 text-2xl font-black">Installer application questions</h2>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            {faqs.map(([question, answer]) => (
+              <details key={question} className="rounded-[20px] border border-border bg-white p-4">
+                <summary className="cursor-pointer font-bold">{question}</summary>
+                <p className="mt-2 text-navy/70">{answer}</p>
+              </details>
+            ))}
+          </div>
+        </section>
       </div>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } }))
+        })}
+      />
     </main>
   );
 }

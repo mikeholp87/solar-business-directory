@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata("Thank you", "Enquiry confirmation page.", "/thank-you", { noindex: true });
 
 export default function ThankYouPage() {
   return (

@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata("Billing", "Installer billing and subscription status.", "/billing", { noindex: true });
 
 export default function BillingPage() {
   return (

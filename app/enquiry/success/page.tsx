@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata("Enquiry received", "Homeowner enquiry confirmation page.", "/enquiry/success", { noindex: true });
 
 export default function EnquirySuccessPage() {
   return (

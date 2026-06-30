@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata("Application received", "Installer application confirmation.", "/apply/success", { noindex: true });
 
 export default function ApplySuccessPage() {
   return (

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { jsonLd } from "@/lib/seo";
+import { siteUrl } from "@/lib/runtime";
 
 const plans = [
   {
@@ -39,7 +41,14 @@ const plans = [
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Compare three simple pricing tiers for installer listings, visibility, and support."
+  description: "Compare three simple pricing tiers for installer listings, visibility, and support.",
+  openGraph: {
+    title: "Pricing",
+    description: "Compare three simple pricing tiers for installer listings, visibility, and support.",
+    url: `${siteUrl()}/pricing`,
+    siteName: "Renewable Directory",
+    type: "website"
+  }
 };
 
 export default function PricingPage() {
@@ -114,6 +123,25 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: "Installer directory listings",
+          description: "Installer listing and visibility plans for the Renewable Directory.",
+          brand: { "@type": "Brand", name: "The Renewable Directory" },
+          url: `${siteUrl()}/pricing`,
+          offers: {
+            "@type": "AggregateOffer",
+            priceCurrency: "GBP",
+            lowPrice: 149,
+            highPrice: 499,
+            offerCount: 3
+          }
+        })}
+      />
     </main>
   );
 }

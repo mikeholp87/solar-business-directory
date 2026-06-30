@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata("Billing updated", "Billing confirmation page.", "/billing/success", { noindex: true });
 
 export default function BillingSuccessPage() {
   return (

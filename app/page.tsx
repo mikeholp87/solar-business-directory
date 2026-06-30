@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle, type LucideIcon } from "lucide-react";
 import { HeroSearchForm } from "@/components/hero-search-form";
@@ -5,14 +6,9 @@ import { DirectoryResultCard } from "@/components/directory-result-card";
 import { TerritoryList } from "@/components/territory-list";
 import { listTerritories } from "@/lib/repositories/territories";
 import { readDirectoryData } from "@/lib/mcs-directory";
-import { SERVICE_TYPES } from "@/lib/service-types";
+import { serviceFacets } from "@/lib/seo/service-facets";
 import { jsonLd } from "@/lib/seo";
 import { siteUrl } from "@/lib/runtime";
-
-const categories = SERVICE_TYPES.map((type) => ({
-  label: `${type} Installers`,
-  type,
-}));
 
 const features: Array<{ title: string; text: string }> = [
   { title: "Trusted & Verified", text: "All installers are MCS certified and vetted for your peace of mind." },
@@ -40,11 +36,14 @@ export default async function HomePage() {
             </p>
             <HeroSearchForm />
           </div>
-          <div className="hidden lg:block">
-            <img
+          <div className="relative hidden h-[320px] overflow-hidden rounded-lg shadow-card-hover lg:block">
+            <Image
               src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&h=400&fit=crop&crop=center"
               alt="UK home with solar panels installed on roof"
-              className="h-[320px] w-full rounded-lg object-cover shadow-card-hover"
+              fill
+              priority
+              sizes="(min-width: 1024px) 38vw, 0px"
+              className="object-cover"
             />
           </div>
         </div>
@@ -64,19 +63,19 @@ export default async function HomePage() {
 
       {/* Categories */}
       <section className="section-band bg-surface">
-        <div className="container-page">
-          <p className="eyebrow">Directory Categories</p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-            {categories.map((cat) => (
+          <div className="container-page">
+            <p className="eyebrow">Directory Categories</p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            {serviceFacets.map((facet) => (
               <Link
-                key={cat.type}
-                href={`/directory?type=${encodeURIComponent(cat.type)}`}
+                key={facet.slug}
+                href={`/services/${facet.slug}`}
                 className="flex flex-col items-center gap-3 rounded-lg border border-border bg-white p-6 text-center transition-all hover:border-accent hover:shadow-card"
               >
                 <div className="flex h-16 w-16 items-center justify-center">
-                  <CategoryIcon type={cat.type} />
+                  <CategoryIcon type={facet.type} />
                 </div>
-                <span className="text-sm font-semibold text-navy leading-tight">{cat.label}</span>
+                <span className="text-sm font-semibold text-navy leading-tight">{facet.label}</span>
               </Link>
             ))}
           </div>

@@ -2,10 +2,15 @@ import type { Metadata } from "next";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
-export function pageMetadata(title: string, description: string, path = "/"): Metadata {
+type PageMetadataOptions = {
+  noindex?: boolean;
+};
+
+export function pageMetadata(title: string, description: string, path = "/", options: PageMetadataOptions = {}): Metadata {
   return {
     title,
     description,
+    robots: options.noindex ? { index: false, follow: false } : undefined,
     alternates: { canonical: `${siteUrl}${path}` },
     openGraph: {
       title,
