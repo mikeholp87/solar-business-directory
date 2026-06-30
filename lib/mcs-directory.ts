@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
 import { installers as fallbackInstallers } from "@/lib/data";
+import { SERVICE_TYPES } from "@/lib/service-types";
 
 export type McsInstaller = {
   installerId: number | null;
@@ -55,6 +56,57 @@ export type DirectorySearchFilters = {
 
 let _supabase: ReturnType<typeof createClient> | null = null;
 
+function slugifyServiceType(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+const SERVICE_TYPE_ALIASES: Record<string, string[]> = {
+  "Air Source Heat Pump": ["air source heat pump", "air source heat pumps"],
+  "Ground/Water Source Heat Pump": [
+    "ground source heat pump",
+    "ground source heat pumps",
+    "water source heat pump",
+    "water source heat pumps",
+    "ground/water source heat pump",
+    "ground/water source heat pumps",
+  ],
+  "Solar PV": ["solar pv"],
+  "Battery Storage": ["battery storage"],
+  Biomass: ["biomass"],
+  "Technical surveys": ["technical surveys", "technical survey"],
+  "Heat loss calculations": ["heat loss calculations", "heat loss calculation"],
+};
+
+export function normalizeServiceType(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return "";
+
+  if (normalized.endsWith(" installers")) {
+    const withoutSuffix = normalized.slice(0, -11).trim();
+    const matchedSuffix = normalizeServiceType(withoutSuffix);
+    if (matchedSuffix) return matchedSuffix;
+  }
+
+  const canonical = SERVICE_TYPES.find((serviceType) => {
+    const label = serviceType.toLowerCase();
+    return label === normalized || slugifyServiceType(serviceType) === normalized;
+  });
+
+  if (canonical) return canonical;
+
+  for (const [serviceType, aliases] of Object.entries(SERVICE_TYPE_ALIASES)) {
+    const aliasSet = [serviceType.toLowerCase(), slugifyServiceType(serviceType), ...aliases];
+    if (aliasSet.some((alias) => alias === normalized)) return serviceType;
+  }
+
+  return value.trim();
+}
+
 function getSupabase() {
   if (_supabase) return _supabase;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -62,6 +114,33 @@ function getSupabase() {
   if (!url || !key) return null;
   _supabase = createClient(url, key);
   return _supabase;
+}
+
+function mapInstallerRows(rows: InstallerRow[]): McsInstaller[] {
+  return rows.map((row) => ({
+    installerId: row.mcs_installer_id ?? null,
+    companyName: row.company_name,
+    address: row.description,
+    addressParts: row.address_line1 != null ? {
+      line1: row.address_line1,
+      line2: row.address_line2,
+      line3: row.address_line3,
+      county: row.address_county,
+      postcode: row.address_postcode,
+      country: row.address_country,
+    } : undefined,
+    category: parseJsonArray(row.services),
+    regionsCovered: parseJsonArray(row.areas_covered),
+    boilerUpgradeSchemeRegistered: row.bus_registered ?? false,
+    certificationBody: row.certification_body ?? null,
+    certificationNumber: row.mcs_number,
+    website: row.website,
+    email: row.email,
+    phone: row.phone,
+    sourcePage: row.source_page ?? null,
+    slug: row.slug,
+    type: Array.isArray(row.type) ? row.type : row.type ? [row.type] : [],
+  }));
 }
 
 function fallbackDirectoryInstallers(): McsInstaller[] {
@@ -83,8 +162,10 @@ function fallbackDirectoryInstallers(): McsInstaller[] {
   }));
 }
 
-function filterFallbackDirectoryInstallers(filters: DirectorySearchFilters) {
-  return fallbackDirectoryInstallers()
+function filterDirectoryInstallers(installers: McsInstaller[], filters: DirectorySearchFilters) {
+  const selectedType = normalizeServiceType(filters.type);
+
+  return installers
     .filter((installer) => {
       const haystack = [
         installer.companyName,
@@ -102,7 +183,7 @@ function filterFallbackDirectoryInstallers(filters: DirectorySearchFilters) {
         .toLowerCase();
 
       if (filters.query && !haystack.includes(filters.query.toLowerCase())) return false;
-      if (filters.type && !matchesServiceType(installer.category, filters.type)) return false;
+      if (selectedType && !matchesServiceType(installer.category, selectedType)) return false;
       if (filters.bus && !installer.boilerUpgradeSchemeRegistered) return false;
       if (filters.website && !installer.website) return false;
       if (filters.email && !installer.email) return false;
@@ -132,22 +213,9 @@ export function matchesServiceType(values: string[], selectedType: string) {
 }
 
 export function getServiceTypeAliases(selectedType: string) {
-  const normalized = selectedType.toLowerCase();
-  if (normalized === "air source heat pump") return ["air source heat pump", "air source heat pumps"];
-  if (normalized === "ground/water source heat pump") return [
-    "ground source heat pump",
-    "ground source heat pumps",
-    "water source heat pump",
-    "water source heat pumps",
-    "ground/water source heat pump",
-    "ground/water source heat pumps",
-  ];
-  if (normalized === "solar pv") return ["solar pv", "solar pvs"];
-  if (normalized === "battery storage") return ["battery storage", "battery storages"];
-  if (normalized === "biomass") return ["biomass"];
-  if (normalized === "technical surveys") return ["technical survey", "technical surveys"];
-  if (normalized === "heat loss calculations") return ["heat loss calculation", "heat loss calculations"];
-  return [normalized];
+  const canonicalType = normalizeServiceType(selectedType);
+  const aliases = SERVICE_TYPE_ALIASES[canonicalType] ?? [canonicalType.toLowerCase()];
+  return Array.from(new Set([canonicalType.toLowerCase(), slugifyServiceType(canonicalType), ...aliases]));
 }
 
 type InstallerRow = {
@@ -223,36 +291,6 @@ async function fetchInstallers(supabase: ReturnType<typeof createClient>) {
   return { data: allRows, error: null };
 }
 
-function mapSearchResultInstaller(row: Record<string, unknown>): McsInstaller {
-  const category = parseJsonArray(row.category ?? row.services ?? []);
-  const regionsCovered = parseJsonArray(row.regions_covered ?? row.areas_covered ?? []);
-  const type = parseJsonArray(row.type ?? row.services ?? []);
-  return {
-    installerId: typeof row.installer_id === "number" ? row.installer_id : typeof row.mcs_installer_id === "number" ? row.mcs_installer_id : null,
-    companyName: typeof row.company_name === "string" ? row.company_name : null,
-    address: typeof row.address === "string" ? row.address : typeof row.description === "string" ? row.description : null,
-    addressParts: row.address_line1 || row.address_postcode ? {
-      line1: typeof row.address_line1 === "string" ? row.address_line1 : null,
-      line2: typeof row.address_line2 === "string" ? row.address_line2 : null,
-      line3: typeof row.address_line3 === "string" ? row.address_line3 : null,
-      county: typeof row.address_county === "string" ? row.address_county : null,
-      postcode: typeof row.address_postcode === "string" ? row.address_postcode : null,
-      country: typeof row.address_country === "string" ? row.address_country : null,
-    } : undefined,
-    category,
-    regionsCovered,
-    boilerUpgradeSchemeRegistered: typeof row.boiler_upgrade_scheme_registered === "boolean" ? row.boiler_upgrade_scheme_registered : Boolean(row.bus_registered),
-    certificationBody: typeof row.certification_body === "string" ? row.certification_body : null,
-    certificationNumber: typeof row.certification_number === "string" ? row.certification_number : typeof row.mcs_number === "string" ? row.mcs_number : null,
-    website: typeof row.website === "string" ? row.website : null,
-    email: typeof row.email === "string" ? row.email : null,
-    phone: typeof row.phone === "string" ? row.phone : null,
-    sourcePage: typeof row.source_page === "number" ? row.source_page : null,
-    slug: typeof row.slug === "string" ? row.slug : undefined,
-    type
-  };
-}
-
 async function loadDirectoryData(): Promise<McsDirectoryData> {
   const supabase = getSupabase();
   if (!supabase) {
@@ -272,30 +310,7 @@ async function loadDirectoryData(): Promise<McsDirectoryData> {
   if (error) throw error;
 
   const rows = (data ?? []) as unknown as InstallerRow[];
-  const installers: McsInstaller[] = rows.map((row) => ({
-    installerId: row.mcs_installer_id ?? null,
-    companyName: row.company_name,
-    address: row.description,
-    addressParts: row.address_line1 != null ? {
-      line1: row.address_line1,
-      line2: row.address_line2,
-      line3: row.address_line3,
-      county: row.address_county,
-      postcode: row.address_postcode,
-      country: row.address_country,
-    } : undefined,
-    category: parseJsonArray(row.services),
-    regionsCovered: parseJsonArray(row.areas_covered),
-    boilerUpgradeSchemeRegistered: row.bus_registered ?? false,
-    certificationBody: row.certification_body ?? null,
-    certificationNumber: row.mcs_number,
-    website: row.website,
-    email: row.email,
-    phone: row.phone,
-    sourcePage: row.source_page ?? null,
-    slug: row.slug,
-    type: Array.isArray(row.type) ? row.type : row.type ? [row.type] : [],
-  }));
+  const installers = mapInstallerRows(rows);
 
   return {
     sourceUrl: "https://mcscertified.com/find-an-installer/",
@@ -318,7 +333,7 @@ export async function readDirectoryData(): Promise<McsDirectoryData> {
 async function loadDirectorySearchData(filters: DirectorySearchFilters): Promise<McsDirectoryData> {
   const supabase = getSupabase();
   if (!supabase) {
-    const installers = filterFallbackDirectoryInstallers(filters);
+    const installers = filterDirectoryInstallers(fallbackDirectoryInstallers(), filters);
     const totalCount = installers.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / filters.perPage));
     const start = (Math.max(filters.page, 1) - 1) * filters.perPage;
@@ -333,33 +348,11 @@ async function loadDirectorySearchData(filters: DirectorySearchFilters): Promise
     };
   }
 
-  const { data, error } = await supabase.rpc("search_directory_installers", {
-    search_query: filters.query || null,
-    service_type: filters.type || null,
-    bus_only: filters.bus,
-    website_only: filters.website,
-    email_only: filters.email,
-    sort_option: filters.sort,
-    page_number: filters.page,
-    page_size: filters.perPage
-  } as never);
+  const { data, error } = await fetchInstallers(supabase);
 
-  if (!error && data) {
-    const payload = (Array.isArray(data) ? data[0] : data) as Record<string, unknown> | null;
-    const installerRows = Array.isArray(payload?.installers) ? payload.installers as Record<string, unknown>[] : [];
-    const installers = installerRows.map((item) => mapSearchResultInstaller(item));
-    const totalCount = typeof payload?.total_count === "number" ? payload.total_count : installers.length;
-    return {
-      sourceUrl: "https://mcscertified.com/find-an-installer/",
-      query: { technology: "Air Source Heat Pump", region: "England" },
-      totalCount,
-      totalPages: Math.max(1, Math.ceil(totalCount / filters.perPage)),
-      scrapedAt: new Date().toISOString(),
-      installers
-    };
-  }
+  if (error) throw error;
 
-  const installers = filterFallbackDirectoryInstallers(filters);
+  const installers = filterDirectoryInstallers(mapInstallerRows((data ?? []) as InstallerRow[]), filters);
   const totalCount = installers.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / filters.perPage));
   const start = (Math.max(filters.page, 1) - 1) * filters.perPage;

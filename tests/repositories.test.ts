@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getLeadDashboardSummary } from "@/lib/repositories/leads";
 import { listInstallers } from "@/lib/repositories/installers";
 import { listTerritories, getTerritoryByPostcode } from "@/lib/repositories/territories";
+import { matchesServiceType, normalizeServiceType } from "@/lib/mcs-directory";
 
 describe("repository fallback data", () => {
   it("returns installer and territory seed data when Supabase is not configured", async () => {
@@ -21,5 +22,12 @@ describe("repository fallback data", () => {
     expect(summary.leads.length).toBeGreaterThan(0);
     expect(summary.activeInstallers.length).toBeGreaterThan(0);
     expect(summary.commissionDue).toBeGreaterThanOrEqual(0);
+  });
+
+  it("matches service filters across labels, slugs, and category suffixes", () => {
+    expect(normalizeServiceType("solar-pv")).toBe("Solar PV");
+    expect(normalizeServiceType("Solar PV installers")).toBe("Solar PV");
+    expect(matchesServiceType(["Air source heat pumps"], "air-source-heat-pump")).toBe(true);
+    expect(matchesServiceType(["Ground source heat pumps"], "Ground/Water Source Heat Pump")).toBe(true);
   });
 });

@@ -3,6 +3,7 @@ import { DirectoryResultCard } from "@/components/directory-result-card";
 import { DirectoryToolbar, type DirectorySortOption } from "@/components/directory-toolbar";
 import {
   DEFAULT_PER_PAGE,
+  normalizeServiceType,
   normalizeSearchParam,
   parseFlag,
   parsePage,
@@ -161,7 +162,7 @@ export default async function DirectoryPage({
 }) {
   const currentPage = parsePage(searchParams.page);
   const searchInput = normalizeSearchParam(searchParams.q);
-  const type = normalizeSearchParam(searchParams.type ?? searchParams.category);
+  const type = normalizeServiceType(normalizeSearchParam(searchParams.type ?? searchParams.category));
   const sort = parseSort(normalizeSearchParam(searchParams.sort));
   const perPage = parsePerPage(searchParams.perPage);
   const bus = parseFlag(searchParams.bus);
