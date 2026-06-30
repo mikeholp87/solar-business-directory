@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DirectoryResultCard } from "@/components/directory-result-card";
-import { readDirectoryData } from "@/lib/mcs-directory";
+import { matchesServiceType, readDirectoryData } from "@/lib/mcs-directory";
 import { pageMetadata, jsonLd } from "@/lib/seo";
 import { getServiceFacetBySlug, serviceFacets } from "@/lib/seo/service-facets";
 
@@ -27,7 +27,7 @@ export default async function ServiceFacetPage({ params }: { params: { slug: str
   if (!facet) notFound();
 
   const data = await readDirectoryData();
-  const installers = data.installers.filter((installer) => installer.category.some((category) => category.toLowerCase() === facet.type.toLowerCase()));
+  const installers = data.installers.filter((installer) => matchesServiceType(installer.category, facet.type));
   const featured = installers.slice(0, 3);
 
   return (

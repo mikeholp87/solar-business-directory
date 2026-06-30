@@ -123,7 +123,7 @@ function filterFallbackDirectoryInstallers(filters: DirectorySearchFilters) {
     });
 }
 
-function matchesServiceType(values: string[], selectedType: string) {
+export function matchesServiceType(values: string[], selectedType: string) {
   const aliases = getServiceTypeAliases(selectedType);
   return values.some((value) => {
     const lower = value.toLowerCase();
@@ -131,7 +131,7 @@ function matchesServiceType(values: string[], selectedType: string) {
   });
 }
 
-function getServiceTypeAliases(selectedType: string) {
+export function getServiceTypeAliases(selectedType: string) {
   const normalized = selectedType.toLowerCase();
   if (normalized === "air source heat pump") return ["air source heat pump", "air source heat pumps"];
   if (normalized === "ground/water source heat pump") return [
@@ -142,6 +142,11 @@ function getServiceTypeAliases(selectedType: string) {
     "ground/water source heat pump",
     "ground/water source heat pumps",
   ];
+  if (normalized === "solar pv") return ["solar pv", "solar pvs"];
+  if (normalized === "battery storage") return ["battery storage", "battery storages"];
+  if (normalized === "biomass") return ["biomass"];
+  if (normalized === "technical surveys") return ["technical survey", "technical surveys"];
+  if (normalized === "heat loss calculations") return ["heat loss calculation", "heat loss calculations"];
   return [normalized];
 }
 

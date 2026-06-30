@@ -272,7 +272,7 @@ as $$
 with args as (
   select
     nullif(btrim(lower(search_query)), '') as query_term,
-    nullif(btrim(service_type), '') as service_term,
+    nullif(btrim(lower(service_type)), '') as service_term,
     greatest(coalesce(page_number, 1), 1) as requested_page,
     greatest(coalesce(page_size, 15), 1) as per_page,
     case when sort_option in ('relevance', 'name', 'type') then sort_option else 'relevance' end as sort_term
