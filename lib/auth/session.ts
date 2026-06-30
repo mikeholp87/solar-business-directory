@@ -21,10 +21,11 @@ export async function getCurrentSessionUser(): Promise<SessionUser | null> {
     };
   }
 
-  const { data: authData } = await supabase.auth.getUser();
-  if (!authData.user?.email) return null;
+  const { data: sessionData } = await supabase.auth.getSession();
+  const sessionUser = sessionData.session?.user;
+  if (!sessionUser?.email) return null;
 
-  const { data } = await supabase.from("users").select("id,email,role").eq("id", authData.user.id).maybeSingle();
+  const { data } = await supabase.from("users").select("id,email,role").eq("id", sessionUser.id).maybeSingle();
   if (!data) return null;
   return {
     id: data.id,

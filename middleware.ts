@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { finalizeResponse, updateSession } from "@/lib/supabase/proxy";
 
-const protectedPaths = ["/admin", "/installer-dashboard", "/billing"];
+const protectedPaths = ["/admin", "/installer-dashboard", "/billing", "/api/admin"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -29,5 +29,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/installer-dashboard/:path*", "/billing/:path*"]
+  matcher: ["/admin/:path*", "/installer-dashboard/:path*", "/billing/:path*", "/api/admin/:path*"]
 };
