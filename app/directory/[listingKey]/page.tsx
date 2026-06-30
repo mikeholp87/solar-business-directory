@@ -58,7 +58,7 @@ export default async function DirectoryListingPage({ params }: { params: { listi
             <ArrowLeft size={18} />
             Back to directory
           </Link>
-          <span className="eyebrow">Scraped MCS record</span>
+          <span className="eyebrow">MCS certified record</span>
         </div>
 
         <section className="surface-card overflow-hidden">
