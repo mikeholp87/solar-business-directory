@@ -48,6 +48,10 @@ npm run dev
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `EMAILJS_SERVICE_ID`
+- `EMAILJS_TEMPLATE_ID`
+- `EMAILJS_PUBLIC_KEY`
+- `EMAILJS_PRIVATE_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_STARTER_PRICE_ID`
@@ -106,3 +110,4 @@ npm run build
 - The app falls back to local seed data when Supabase is not configured.
 - The installer documents screen currently records document URLs; file storage upload wiring is the remaining gap.
 - The notification system queues outbound messages in the database for later delivery.
+- EmailJS handles outbound email delivery when the EmailJS environment variables are configured.
