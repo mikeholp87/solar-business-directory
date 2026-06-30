@@ -27,10 +27,10 @@ export async function updateSession(request: NextRequest) {
     }
   });
 
-  const { data, error } = await supabase.auth.getClaims();
+  const { data, error } = await supabase.auth.getUser();
   return {
     response,
-    sessionExists: !error && Boolean(data?.claims?.sub)
+    sessionExists: !error && Boolean(data?.user)
   };
 }
 
