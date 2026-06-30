@@ -102,7 +102,7 @@ function filterFallbackDirectoryInstallers(filters: DirectorySearchFilters) {
         .toLowerCase();
 
       if (filters.query && !haystack.includes(filters.query.toLowerCase())) return false;
-      if (filters.type && !installer.category.some((item) => item.toLowerCase() === filters.type.toLowerCase())) return false;
+      if (filters.type && !matchesServiceType(installer.category, filters.type)) return false;
       if (filters.bus && !installer.boilerUpgradeSchemeRegistered) return false;
       if (filters.website && !installer.website) return false;
       if (filters.email && !installer.email) return false;
@@ -121,6 +121,28 @@ function filterFallbackDirectoryInstallers(filters: DirectorySearchFilters) {
 
       return 0;
     });
+}
+
+function matchesServiceType(values: string[], selectedType: string) {
+  const aliases = getServiceTypeAliases(selectedType);
+  return values.some((value) => {
+    const lower = value.toLowerCase();
+    return aliases.some((alias) => lower.includes(alias));
+  });
+}
+
+function getServiceTypeAliases(selectedType: string) {
+  const normalized = selectedType.toLowerCase();
+  if (normalized === "air source heat pump") return ["air source heat pump", "air source heat pumps"];
+  if (normalized === "ground/water source heat pump") return [
+    "ground source heat pump",
+    "ground source heat pumps",
+    "water source heat pump",
+    "water source heat pumps",
+    "ground/water source heat pump",
+    "ground/water source heat pumps",
+  ];
+  return [normalized];
 }
 
 type InstallerRow = {

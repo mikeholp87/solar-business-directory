@@ -232,6 +232,9 @@ create index if not exists installers_user_id_idx on public.installers (user_id)
 create index if not exists installers_status_verified_company_name_idx on public.installers (company_name) where status = 'active' and accreditations_verified = true;
 create index if not exists installers_stripe_customer_id_idx on public.installers (stripe_customer_id) where stripe_customer_id is not null;
 create index if not exists installers_stripe_subscription_id_idx on public.installers (stripe_subscription_id) where stripe_subscription_id is not null;
+create index if not exists installers_company_name_lower_idx on public.installers (lower(company_name));
+create index if not exists installers_email_lower_idx on public.installers (lower(email));
+create index if not exists installers_mcs_number_lower_idx on public.installers (lower(coalesce(mcs_number, '')));
 create index if not exists installers_services_gin_idx on public.installers using gin (services);
 create index if not exists installers_areas_covered_gin_idx on public.installers using gin (areas_covered);
 
@@ -308,7 +311,31 @@ filtered as (
         where lower(area_value.value) like '%' || a.query_term || '%'
       )
     ))
-    and (a.service_term is null or i.services ? a.service_term)
+    and (
+      a.service_term is null or exists (
+        select 1
+        from (
+          values
+            ('Air Source Heat Pump', array['air source heat pump', 'air source heat pumps']::text[]),
+            ('Ground/Water Source Heat Pump', array['ground source heat pump', 'ground source heat pumps', 'water source heat pump', 'water source heat pumps', 'ground/water source heat pump', 'ground/water source heat pumps']::text[]),
+            ('Solar PV', array['solar pv']::text[]),
+            ('Battery Storage', array['battery storage']::text[]),
+            ('Biomass', array['biomass']::text[]),
+            ('Technical surveys', array['technical surveys']::text[]),
+            ('Heat loss calculations', array['heat loss calculations']::text[])
+        ) as service_map(label, aliases)
+        where lower(service_map.label) = a.service_term
+          and exists (
+            select 1
+            from jsonb_array_elements_text(coalesce(i.services, '[]'::jsonb)) as service_value(value)
+            where exists (
+              select 1
+              from unnest(service_map.aliases) as alias(value)
+              where lower(service_value.value) like '%' || lower(alias.value) || '%'
+            )
+          )
+      )
+    )
     and (not bus_only or i.bus_registered)
     and (not website_only or nullif(btrim(coalesce(i.website, '')), '') is not null)
     and (not email_only or nullif(btrim(i.email), '') is not null)

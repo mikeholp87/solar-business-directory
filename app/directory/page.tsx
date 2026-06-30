@@ -3,12 +3,11 @@ import { DirectoryResultCard } from "@/components/directory-result-card";
 import { DirectoryToolbar, type DirectorySortOption } from "@/components/directory-toolbar";
 import {
   DEFAULT_PER_PAGE,
-  type McsInstaller,
   normalizeSearchParam,
   parseFlag,
   parsePage,
   parsePerPage,
-  readDirectoryData,
+  readDirectoryPageData,
 } from "@/lib/mcs-directory";
 import { pageMetadata } from "@/lib/seo";
 import { SERVICE_TYPES } from "@/lib/service-types";
@@ -29,24 +28,6 @@ function pageWindow(currentPage: number, totalPages: number) {
 
 function parseSort(value: string): DirectorySortOption {
   return value === "name" || value === "type" ? value : "relevance";
-}
-
-function sortInstallers(
-  a: McsInstaller,
-  b: McsInstaller,
-  sort: DirectorySortOption
-) {
-  if (sort === "name") {
-    return (a.companyName ?? "").localeCompare(b.companyName ?? "") || (a.address ?? "").localeCompare(b.address ?? "");
-  }
-
-  if (sort === "type") {
-    const aType = a.category.join(" / ");
-    const bType = b.category.join(" / ");
-    return aType.localeCompare(bType) || (a.companyName ?? "").localeCompare(b.companyName ?? "");
-  }
-
-  return 0;
 }
 
 function Pagination({
@@ -178,10 +159,8 @@ export default async function DirectoryPage({
 }: {
   searchParams: { page?: string | string[]; q?: string | string[]; type?: string | string[]; category?: string | string[]; sort?: string | string[]; perPage?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
 }) {
-  const data = await readDirectoryData();
   const currentPage = parsePage(searchParams.page);
   const searchInput = normalizeSearchParam(searchParams.q);
-  const query = searchInput.toLowerCase();
   const type = normalizeSearchParam(searchParams.type ?? searchParams.category);
   const sort = parseSort(normalizeSearchParam(searchParams.sort));
   const perPage = parsePerPage(searchParams.perPage);
@@ -189,38 +168,19 @@ export default async function DirectoryPage({
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
   const types = [...SERVICE_TYPES];
-
-  const filteredInstallers = data.installers
-    .filter((installer) => {
-      const haystack = [
-        installer.companyName,
-        installer.address,
-        installer.category.join(" "),
-        installer.certificationBody,
-        installer.certificationNumber,
-        installer.website,
-        installer.email,
-        installer.phone,
-        installer.regionsCovered.join(" "),
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      if (query && !haystack.includes(query)) return false;
-      if (type && !installer.category.some((c) => c.toLowerCase() === type.toLowerCase())) return false;
-      if (bus && !installer.boilerUpgradeSchemeRegistered) return false;
-      if (website && !installer.website) return false;
-      if (email && !installer.email) return false;
-      return true;
-    })
-    .sort((a, b) => sortInstallers(a, b, sort));
-
-  const totalPages = Math.max(1, Math.ceil(filteredInstallers.length / perPage));
+  const data = await readDirectoryPageData({
+    query: searchInput,
+    type,
+    sort,
+    page: currentPage,
+    perPage,
+    bus,
+    website,
+    email
+  });
+  const totalPages = data.totalPages;
   const safePage = Math.min(currentPage, totalPages);
-  const start = (safePage - 1) * perPage;
-  const end = start + perPage;
-  const results = filteredInstallers.slice(start, end);
+  const results = data.installers;
 
   return (
     <main className="section-band">
@@ -235,7 +195,7 @@ export default async function DirectoryPage({
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              <Stat label="Matching installers" value={filteredInstallers.length.toLocaleString("en-GB")} />
+              <Stat label="Matching installers" value={data.totalCount.toLocaleString("en-GB")} />
               <Stat label="Types in view" value={types.length.toLocaleString("en-GB")} />
               <Stat label="Rows per page" value={String(perPage)} />
             </div>
@@ -243,7 +203,7 @@ export default async function DirectoryPage({
           <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold text-navy/64">
             <span className="chip chip-soft">{data.query.technology}</span>
             <span className="chip chip-soft">{data.query.region}</span>
-            <span className="chip">{data.totalCount.toLocaleString("en-GB")} source rows</span>
+            <span className="chip">{data.totalCount.toLocaleString("en-GB")} matching installers</span>
           </div>
         </section>
 
@@ -256,7 +216,7 @@ export default async function DirectoryPage({
           bus={bus}
           website={website}
           email={email}
-          totalResults={filteredInstallers.length}
+          totalResults={data.totalCount}
           showingCount={results.length}
         />
 
