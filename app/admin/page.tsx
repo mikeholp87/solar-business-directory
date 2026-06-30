@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BadgePoundSterling, Download, MapPinned, Users, Wrench, type LucideIcon } from "lucide-react";
 import { leadStages } from "@/lib/data";
 import { getAdminDashboardData } from "@/lib/repositories/admin";
+import AuthUserProvisionForm from "./auth-user-provision-form";
 
 export default async function AdminPage() {
   const summary = await getAdminDashboardData();
@@ -55,6 +56,8 @@ export default async function AdminPage() {
           </div>
         ))}
       </div>
+
+      <AuthUserProvisionForm />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="surface-card p-5">

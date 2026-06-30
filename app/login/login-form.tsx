@@ -59,7 +59,14 @@ export default function LoginForm() {
         email: resolved.email,
         password
       });
-      if (error) throw new Error(error.message);
+      if (error) {
+        if (error.message.toLowerCase().includes("invalid login credentials")) {
+          throw new Error(
+            "This profile is not linked to a Supabase Auth password yet. Create the matching Auth user first, then sign in again."
+          );
+        }
+        throw new Error(error.message);
+      }
       if (!data.user) throw new Error("Authentication failed");
 
       const { data: profile, error: profileError } = await supabase
