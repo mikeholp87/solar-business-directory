@@ -11,12 +11,10 @@ import {
 } from "lucide-react";
 import { LeadForm } from "@/components/lead-form";
 import {
-  findListingByKey,
   formatScrapedAt,
   formatWebsite,
   getListingKey,
-  readDirectoryData,
-  type McsInstaller,
+  readDirectoryListingData,
 } from "@/lib/mcs-directory";
 import { jsonLd, pageMetadata } from "@/lib/seo";
 import { siteUrl } from "@/lib/runtime";
@@ -24,8 +22,12 @@ import { siteUrl } from "@/lib/runtime";
 export const dynamicParams = true;
 
 export async function generateMetadata({ params }: { params: { listingKey: string } }) {
-  const data = await readDirectoryData();
-  const installer = findListingByKey(data.installers, params.listingKey);
+  let installer;
+  try {
+    installer = (await readDirectoryListingData(params.listingKey)).installer;
+  } catch {
+    notFound();
+  }
   const title = installer?.companyName ?? "MCS installer listing";
   return pageMetadata(
     title,
@@ -35,10 +37,13 @@ export async function generateMetadata({ params }: { params: { listingKey: strin
 }
 
 export default async function DirectoryListingPage({ params }: { params: { listingKey: string } }) {
-  const data = await readDirectoryData();
-  const installer = findListingByKey(data.installers, params.listingKey);
-
-  if (!installer) notFound();
+  let data;
+  try {
+    data = await readDirectoryListingData(params.listingKey);
+  } catch {
+    notFound();
+  }
+  const installer = data.installer;
 
   const website = formatWebsite(installer.website);
   const addressParts = installer.addressParts;
@@ -114,8 +119,6 @@ export default async function DirectoryListingPage({ params }: { params: { listi
                   <div className="mt-4 grid gap-3 text-sm text-navy/72">
                     <MetaLine label="Technology" value={data.query.technology} />
                     <MetaLine label="Region" value={data.query.region} />
-                    <MetaLine label="Total listings" value={data.totalCount.toLocaleString("en-GB")} />
-                    <MetaLine label="Total pages" value={data.totalPages.toLocaleString("en-GB")} />
                   </div>
                 </div>
               </div>

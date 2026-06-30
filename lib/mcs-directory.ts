@@ -40,6 +40,16 @@ export type McsDirectoryData = {
   installers: McsInstaller[];
 };
 
+export type McsDirectoryListingData = {
+  sourceUrl: string;
+  query: {
+    technology: string;
+    region: string;
+  };
+  scrapedAt: string;
+  installer: McsInstaller;
+};
+
 export const DEFAULT_PER_PAGE = 15;
 export const PER_PAGE_OPTIONS = [15, 30, 45, 60, 75, 90] as const;
 
@@ -291,6 +301,18 @@ async function fetchInstallers(supabase: ReturnType<typeof createClient>) {
   return { data: allRows, error: null };
 }
 
+async function fetchInstallerByListingKey(supabase: ReturnType<typeof createClient>, listingKey: string) {
+  const selectColumns =
+    "company_name, slug, email, phone, website, description, mcs_installer_id, mcs_number, certification_body, bus_registered, services, areas_covered, address_line1, address_line2, address_line3, address_county, address_postcode, address_country, source_page, type";
+  const query = supabase.from("installers").select(selectColumns);
+
+  if (/^\d+$/.test(listingKey)) {
+    return query.eq("mcs_installer_id", Number(listingKey)).maybeSingle();
+  }
+
+  return query.eq("slug", listingKey).maybeSingle();
+}
+
 async function loadDirectoryData(): Promise<McsDirectoryData> {
   const supabase = getSupabase();
   if (!supabase) {
@@ -328,6 +350,44 @@ const getCachedDirectoryData = unstable_cache(loadDirectoryData, ["mcs-directory
 
 export async function readDirectoryData(): Promise<McsDirectoryData> {
   return getCachedDirectoryData();
+}
+
+async function loadDirectoryListingData(listingKey: string): Promise<McsDirectoryListingData> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    const installer = findListingByKey(fallbackDirectoryInstallers(), listingKey);
+    if (!installer) throw new Error("Listing not found");
+    return {
+      sourceUrl: "https://mcscertified.com/find-an-installer/",
+      query: { technology: "Air Source Heat Pump", region: "England" },
+      scrapedAt: new Date().toISOString(),
+      installer,
+    };
+  }
+
+  const { data: installerRow, error: installerError } = await fetchInstallerByListingKey(supabase, listingKey);
+
+  if (installerError) throw installerError;
+
+  if (installerRow) {
+    const installer = mapInstallerRows([installerRow as InstallerRow])[0];
+    return {
+      sourceUrl: "https://mcscertified.com/find-an-installer/",
+      query: { technology: "Air Source Heat Pump", region: "England" },
+      scrapedAt: new Date().toISOString(),
+      installer,
+    };
+  }
+
+  throw new Error("Listing not found");
+}
+
+const getCachedDirectoryListingData = unstable_cache(loadDirectoryListingData, ["mcs-directory-listing"], {
+  revalidate: 300
+});
+
+export async function readDirectoryListingData(listingKey: string): Promise<McsDirectoryListingData> {
+  return getCachedDirectoryListingData(listingKey);
 }
 
 async function loadDirectorySearchData(filters: DirectorySearchFilters): Promise<McsDirectoryData> {
