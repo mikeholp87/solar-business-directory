@@ -61,9 +61,14 @@ export default function LoginForm() {
       });
       if (error) {
         if (error.message.toLowerCase().includes("invalid login credentials")) {
-          throw new Error(
-            "This profile is not linked to a Supabase Auth password yet. Create the matching Auth user first, then sign in again."
-          );
+          const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+            email: resolved.email,
+            options: { emailRedirectTo: `${window.location.origin}/auth/callback` }
+          });
+          if (magicLinkError) throw new Error(magicLinkError.message);
+          setAuthMethod("magiclink");
+          setSent(true);
+          return;
         }
         throw new Error(error.message);
       }
