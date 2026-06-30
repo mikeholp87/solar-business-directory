@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 
 const navLinks = [
@@ -9,6 +13,13 @@ const navLinks = [
 ];
 
 export function Header() {
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/88">
       <div className="container-page flex min-h-16 items-center justify-between gap-3 py-3">
@@ -33,14 +44,18 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link className="button-primary hidden text-sm sm:inline-flex" href="/apply">
+          <Link className="button-primary hidden text-sm md:inline-flex" href="/apply">
             Apply Now
           </Link>
 
-          <details className="group relative md:hidden">
+          <details className="group relative md:hidden" open={menuOpen} onToggle={(event) => setMenuOpen(event.currentTarget.open)}>
             <summary
               className="flex size-11 cursor-pointer list-none items-center justify-center rounded-lg border border-border bg-white text-navy transition-colors hover:bg-surface [&::-webkit-details-marker]:hidden"
               aria-label="Open navigation menu"
+              onClick={(event) => {
+                event.preventDefault();
+                setMenuOpen((current) => !current);
+              }}
             >
               <Menu size={20} aria-hidden="true" />
             </summary>
@@ -57,12 +72,13 @@ export function Header() {
                     key={link.href}
                     className="flex items-center justify-between rounded-xl px-4 py-3 text-navy transition-colors hover:bg-surface"
                     href={link.href}
+                    onClick={() => setMenuOpen(false)}
                   >
                     <span>{link.label}</span>
                     <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted">Open</span>
                   </Link>
                 ))}
-                <Link className="button-primary mt-1 w-full justify-center" href="/apply">
+                <Link className="button-primary mt-1 w-full justify-center" href="/apply" onClick={() => setMenuOpen(false)}>
                   Apply Now
                 </Link>
               </nav>
