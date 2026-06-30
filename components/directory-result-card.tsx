@@ -8,16 +8,16 @@ type DirectoryResultCardProps = {
 
 export function DirectoryResultCard({ installer }: DirectoryResultCardProps) {
   return (
-    <article className="index-card index-card--hover p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <article className="index-card index-card--hover p-4 sm:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div className="min-w-0 max-w-3xl">
           <p className="eyebrow">Installer record</p>
-          <h3 className="mt-3 text-2xl font-black">
+          <h3 className="mt-2 text-xl font-black sm:mt-3 sm:text-2xl">
             <Link href={`/directory/${getListingKey(installer)}`} className="hover:text-accent">
               {installer.companyName ?? "Unknown company"}
             </Link>
           </h3>
-          <p className="mt-3 text-base leading-7 text-navy/72">{installer.address ?? "No address listed"}</p>
+          <p className="mt-3 text-sm leading-6 text-navy/72 sm:text-base sm:leading-7">{installer.address ?? "No address listed"}</p>
           {installer.category.length > 0 ? (
             <div className="mt-4 flex flex-wrap gap-2">
               {installer.category.slice(0, 4).map((item) => (
@@ -29,7 +29,7 @@ export function DirectoryResultCard({ installer }: DirectoryResultCardProps) {
           ) : null}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           {installer.boilerUpgradeSchemeRegistered ? (
             <span className="chip chip-success">BUS registered</span>
           ) : (
@@ -40,7 +40,7 @@ export function DirectoryResultCard({ installer }: DirectoryResultCardProps) {
         </div>
       </div>
 
-      <dl className="mt-6 grid gap-4 border-t border-navy/10 pt-5 sm:grid-cols-2 xl:grid-cols-3">
+      <dl className="mt-5 grid gap-4 border-t border-navy/10 pt-4 sm:mt-6 sm:pt-5 sm:grid-cols-2 xl:grid-cols-3">
         <Field label="Certification number" value={installer.certificationNumber} />
         <Field
           label="Website"
@@ -58,12 +58,12 @@ export function DirectoryResultCard({ installer }: DirectoryResultCardProps) {
         <Field label="Regions covered" value={installer.regionsCovered.length > 0 ? installer.regionsCovered.join(", ") : null} />
       </dl>
 
-      <div className="mt-6 flex flex-wrap gap-3 border-t border-navy/10 pt-5">
-        <Link className="button-primary" href={`/directory/${getListingKey(installer)}`}>
+      <div className="mt-5 flex flex-col gap-3 border-t border-navy/10 pt-4 sm:mt-6 sm:flex-row sm:flex-wrap sm:pt-5">
+        <Link className="button-primary w-full justify-center sm:w-auto" href={`/directory/${getListingKey(installer)}`}>
           View details
         </Link>
         {installer.website ? (
-          <a className="button-secondary" href={formatWebsite(installer.website) ?? installer.website} target="_blank" rel="noreferrer">
+          <a className="button-secondary w-full justify-center sm:w-auto" href={formatWebsite(installer.website) ?? installer.website} target="_blank" rel="noreferrer">
             Open website
           </a>
         ) : null}
@@ -75,7 +75,7 @@ export function DirectoryResultCard({ installer }: DirectoryResultCardProps) {
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
-      <dt className="text-xs font-black uppercase tracking-[0.18em] text-navy/48">{label}</dt>
+      <dt className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-navy/48">{label}</dt>
       <dd className="mt-2 text-sm leading-6 text-navy/82">{value ?? "Not listed"}</dd>
     </div>
   );

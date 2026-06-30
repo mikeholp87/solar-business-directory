@@ -23,8 +23,8 @@ const legalLinks = [
 export function Footer() {
   return (
     <footer className="bg-navy text-white" role="contentinfo">
-      <div className="container-page py-12 lg:py-16">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+      <div className="container-page py-10 sm:py-12 lg:py-16">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           {/* Brand */}
           <div className="max-w-xs">
             <Link href="/" className="flex items-center gap-3">
@@ -41,12 +41,12 @@ export function Footer() {
           </div>
 
           {/* Find Installers */}
-          <div>
+          <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 sm:border-0 sm:bg-transparent sm:p-0">
             <h2 className="text-xs font-bold uppercase tracking-widest text-white/80">Find Installers</h2>
-            <ul className="mt-4 grid gap-2.5">
+            <ul className="mt-4 grid gap-1.5">
               {installerLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-white/55 transition-colors hover:text-white">
+                  <Link href={link.href} className="block rounded-xl px-2 py-2 text-sm text-white/65 transition-colors hover:bg-white/10 hover:text-white">
                     {link.label}
                   </Link>
                 </li>
@@ -55,12 +55,12 @@ export function Footer() {
           </div>
 
           {/* For Installers */}
-          <div>
+          <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 sm:border-0 sm:bg-transparent sm:p-0">
             <h2 className="text-xs font-bold uppercase tracking-widest text-white/80">For Installers</h2>
-            <ul className="mt-4 grid gap-2.5">
+            <ul className="mt-4 grid gap-1.5">
               {forInstallers.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-white/55 transition-colors hover:text-white">
+                  <Link href={link.href} className="block rounded-xl px-2 py-2 text-sm text-white/65 transition-colors hover:bg-white/10 hover:text-white">
                     {link.label}
                   </Link>
                 </li>
@@ -69,12 +69,12 @@ export function Footer() {
           </div>
 
           {/* Legal */}
-          <div>
+          <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 sm:border-0 sm:bg-transparent sm:p-0">
             <h2 className="text-xs font-bold uppercase tracking-widest text-white/80">Legal</h2>
-            <ul className="mt-4 grid gap-2.5">
+            <ul className="mt-4 grid gap-1.5">
               {legalLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-white/55 transition-colors hover:text-white">
+                  <Link href={link.href} className="block rounded-xl px-2 py-2 text-sm text-white/65 transition-colors hover:bg-white/10 hover:text-white">
                     {link.label}
                   </Link>
                 </li>
@@ -86,16 +86,16 @@ export function Footer() {
 
       {/* Bottom bar */}
       <div className="border-t border-white/10">
-        <div className="container-page flex flex-wrap items-center justify-between gap-4 py-5">
+        <div className="container-page flex flex-col gap-4 py-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <p className="text-xs text-white/40">
             &copy; {new Date().getFullYear()} The Renewable Directory. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <a
               href="https://facebook.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white/40 transition-colors hover:text-white"
+              className="inline-flex size-10 items-center justify-center rounded-full border border-white/10 text-white/40 transition-colors hover:bg-white/10 hover:text-white"
               aria-label="Follow us on Facebook"
             >
               <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -106,7 +106,7 @@ export function Footer() {
               href="https://linkedin.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white/40 transition-colors hover:text-white"
+              className="inline-flex size-10 items-center justify-center rounded-full border border-white/10 text-white/40 transition-colors hover:bg-white/10 hover:text-white"
               aria-label="Follow us on LinkedIn"
             >
               <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
