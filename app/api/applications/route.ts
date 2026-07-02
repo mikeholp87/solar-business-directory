@@ -10,7 +10,7 @@ const applicationSchema = z.object({
   website: z.string().optional(),
   company_number: z.string().optional(),
   vat_number: z.string().optional(),
-  mcs_number: z.string().min(3).max(80),
+  mcs_number: z.string().max(80).optional(),
   recc_number: z.string().optional(),
   hies_number: z.string().optional(),
   trustmark_number: z.string().optional(),

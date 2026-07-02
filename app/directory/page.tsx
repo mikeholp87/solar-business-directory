@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { DirectoryResultCard } from "@/components/directory-result-card";
 import { DirectoryToolbar, type DirectorySortOption } from "@/components/directory-toolbar";
+import { LeadForm } from "@/components/lead-form";
 import {
   DEFAULT_PER_PAGE,
   normalizeServiceType,
@@ -11,7 +12,7 @@ import {
   readDirectoryPageData,
 } from "@/lib/mcs-directory";
 import { pageMetadata } from "@/lib/seo";
-import { SERVICE_TYPES } from "@/lib/service-types";
+import { SERVICE_TYPES, getServiceDisplayLabel } from "@/lib/service-types";
 
 export const metadata = pageMetadata(
   "Search for an MCS certified installer for your renewable installation",
@@ -158,7 +159,7 @@ function buildDirectoryHref({
 export default async function DirectoryPage({
   searchParams,
 }: {
-  searchParams: { page?: string | string[]; q?: string | string[]; type?: string | string[]; category?: string | string[]; sort?: string | string[]; perPage?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[] };
+  searchParams: { page?: string | string[]; q?: string | string[]; type?: string | string[]; category?: string | string[]; sort?: string | string[]; perPage?: string | string[]; bus?: string | string[]; website?: string | string[]; email?: string | string[]; postcode?: string | string[] };
 }) {
   const currentPage = parsePage(searchParams.page);
   const searchInput = normalizeSearchParam(searchParams.q);
@@ -168,6 +169,7 @@ export default async function DirectoryPage({
   const bus = parseFlag(searchParams.bus);
   const website = parseFlag(searchParams.website);
   const email = parseFlag(searchParams.email);
+  const postcode = normalizeSearchParam(searchParams.postcode).toUpperCase();
   const types = [...SERVICE_TYPES];
   const data = await readDirectoryPageData({
     query: searchInput,
@@ -183,27 +185,37 @@ export default async function DirectoryPage({
   const safePage = Math.min(currentPage, totalPages);
   const results = data.installers;
 
+  const searchSummary = type
+    ? postcode
+      ? `${getServiceDisplayLabel(type)} installers near ${postcode}`
+      : `${getServiceDisplayLabel(type)} installers`
+    : postcode
+      ? `Installers near ${postcode}`
+      : null;
+
   return (
     <main className="section-band">
       <div className="container-page grid gap-8">
         <section className="surface-card surface-card-cream p-8 sm:p-10">
           <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
             <div>
-              <p className="eyebrow">Renewable Directory index</p>
-              <h1 className="mt-4 text-4xl font-black leading-[0.96] sm:text-5xl">Search the installer index by territory, type, and record detail</h1>
+              <p className="eyebrow">Find installers</p>
+              <h1 className="mt-4 text-4xl font-bold leading-[0.96] sm:text-5xl">
+                {searchSummary ? searchSummary : "Search the installer directory"}
+              </h1>
               <p className="mt-4 max-w-3xl text-lg leading-8 text-navy/72">
-                Browse the current MCS directory for {data.query.technology.toLowerCase()} installers in {data.query.region}. Filter by the details that matter: company, coverage, certification, and contact information.
+                Browse MCS certified installers across the UK. Filter by service type, location and certification.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <Stat label="Matching installers" value={data.totalCount.toLocaleString("en-GB")} />
-              <Stat label="Types in view" value={types.length.toLocaleString("en-GB")} />
-              <Stat label="Rows per page" value={String(perPage)} />
+              <Stat label="Service types" value={types.length.toLocaleString("en-GB")} />
+              <Stat label="Per page" value={String(perPage)} />
             </div>
           </div>
           <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold text-navy/64">
-            <span className="chip chip-soft">{data.query.technology}</span>
-            <span className="chip chip-soft">{data.query.region}</span>
+            {type && <span className="chip chip-soft">{getServiceDisplayLabel(type)}</span>}
+            {postcode && <span className="chip chip-soft">{postcode}</span>}
             <span className="chip">{data.totalCount.toLocaleString("en-GB")} matching installers</span>
           </div>
         </section>
@@ -217,6 +229,7 @@ export default async function DirectoryPage({
           bus={bus}
           website={website}
           email={email}
+          postcode={postcode || undefined}
           totalResults={data.totalCount}
           showingCount={results.length}
         />
@@ -228,6 +241,21 @@ export default async function DirectoryPage({
         </div>
 
         <Pagination currentPage={safePage} totalPages={totalPages} query={searchInput} type={type} sort={sort} perPage={perPage} bus={bus} website={website} email={email} />
+
+        <section className="mx-auto mt-8 max-w-lg">
+          <div className="text-center">
+            <p className="eyebrow">Get free quotes</p>
+            <h2 className="mt-3 text-2xl font-bold text-navy">
+              Get Free Quotes From Local Installers
+            </h2>
+            <p className="mt-2 text-sm text-muted">
+              Fill in your details and we&rsquo;ll match you with MCS certified installers in your area.
+            </p>
+          </div>
+          <div className="mt-6">
+            <LeadForm compact />
+          </div>
+        </section>
       </div>
     </main>
   );

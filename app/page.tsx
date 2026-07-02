@@ -4,6 +4,7 @@ import { CheckCircle, type LucideIcon } from "lucide-react";
 import { HeroSearchForm } from "@/components/hero-search-form";
 import { DirectoryResultCard } from "@/components/directory-result-card";
 import { TerritoryList } from "@/components/territory-list";
+import { LeadForm } from "@/components/lead-form";
 import { listTerritories } from "@/lib/repositories/territories";
 import { readHomepageData } from "@/lib/mcs-directory";
 import { serviceFacets } from "@/lib/seo/service-facets";
@@ -24,20 +25,17 @@ export default async function HomePage() {
 
   return (
     <main>
-      {/* Hero */}
-      <section className="bg-surface">
-        <div className="container-page grid items-center gap-6 py-10 sm:gap-8 sm:py-12 lg:grid-cols-[1.1fr_0.9fr] lg:py-16">
+      {/* Hero - Postcode-first search */}
+      <section className="bg-white">
+        <div className="container-page grid items-center gap-8 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
           <div>
-            <h1 className="max-w-3xl text-3xl font-bold leading-[1.06] tracking-tight text-navy sm:text-5xl lg:text-[3.25rem]">
-              Find Trusted Solar &amp; Heat Pump Installers Across The UK
+            <h1 className="max-w-3xl text-3xl font-bold leading-[1.06] tracking-tight text-navy sm:text-4xl lg:text-[3.25rem]">
+              Find Trusted MCS Certified Renewable Installers Near You
             </h1>
             <p className="mt-4 max-w-lg text-sm leading-7 text-muted sm:mt-5 sm:text-base sm:leading-relaxed">
-              Compare local MCS-certified installers, request quotes and connect with trusted renewable energy specialists in your area.
+              Compare local Solar PV, Battery Storage and Heat Pump installers. Free to use. No obligation.
             </p>
             <HeroSearchForm />
-            <p className="mt-4 max-w-lg text-xs leading-6 text-navy/55 sm:text-sm">
-              Start with your postcode. You can refine by service before you leave the homepage.
-            </p>
           </div>
           <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] shadow-card-hover sm:aspect-[16/10] lg:aspect-auto lg:h-[320px]">
             <Image
@@ -48,31 +46,18 @@ export default async function HomePage() {
               sizes="(min-width: 1024px) 38vw, 100vw"
               className="object-cover"
             />
-            <div className="absolute inset-x-4 bottom-4 rounded-2xl border border-white/20 bg-navy/72 p-3 text-white backdrop-blur-sm">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-white/60">Quick start</p>
-              <p className="mt-1 text-sm leading-6 text-white/86">Find installers near you, then compare services, coverage, and contact details.</p>
-            </div>
           </div>
-        </div>
-      </section>
-
-      {/* Trust badges */}
-      <section className="border-b border-border bg-white py-5">
-        <div className="container-page grid gap-3 sm:grid-cols-3 sm:gap-4">
-          {["MCS Certified Installers", "Free to Use", "No Obligation Quotes"].map((badge) => (
-            <div key={badge} className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface px-4 py-3 text-center">
-              <CheckCircle size={18} className="shrink-0 text-accent" />
-              <span className="text-sm font-medium text-navy">{badge}</span>
-            </div>
-          ))}
         </div>
       </section>
 
       {/* Categories */}
       <section className="section-band bg-surface">
-          <div className="container-page">
-            <p className="eyebrow">Directory Categories</p>
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
+        <div className="container-page">
+          <p className="eyebrow">Directory Categories</p>
+          <h2 className="mt-3 text-2xl font-bold text-navy sm:mt-4 sm:text-3xl">
+            Find trusted installers for your renewable project
+          </h2>
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
             {serviceFacets.map((facet) => (
               <Link
                 key={facet.slug}
@@ -85,6 +70,11 @@ export default async function HomePage() {
                 <span className="text-sm font-semibold leading-tight text-navy">{facet.label}</span>
               </Link>
             ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Link href="/directory" className="button-secondary text-sm">
+              Browse all installer categories
+            </Link>
           </div>
         </div>
       </section>
@@ -104,15 +94,37 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Homeowner lead capture */}
+      <section className="section-band">
+        <div className="container-page">
+          <div className="mx-auto max-w-lg">
+            <div className="text-center">
+              <p className="eyebrow">Get free quotes</p>
+              <h2 className="mt-3 text-2xl font-bold text-navy sm:text-3xl">
+                Get Free Quotes From Local Installers
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-muted">
+                Fill in your details and we&apos;ll match you with MCS certified installers in your area. No obligation.
+              </p>
+            </div>
+            <div className="mt-6">
+              <LeadForm compact />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Featured listings */}
       {featuredInstallers.length > 0 && (
-        <section className="section-band">
+        <section className="section-band bg-surface">
           <div className="container-page">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-4 sm:mb-8">
-              <p className="eyebrow">Directory index</p>
-              <h2 className="mt-3 text-2xl font-bold text-navy sm:mt-4 sm:text-3xl">Browse the MCS installer index</h2>
-              <Link className="button-secondary text-sm sm:hidden" href="/directory">
-                View all results
+              <div>
+                <p className="eyebrow">Directory index</p>
+                <h2 className="mt-3 text-2xl font-bold text-navy sm:mt-4 sm:text-3xl">Browse MCS certified installers</h2>
+              </div>
+              <Link className="button-secondary text-sm" href="/directory">
+                View all listings
               </Link>
             </div>
             <div className="grid gap-5">
@@ -123,6 +135,29 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Installer CTA */}
+      <section className="section-band border-t border-border">
+        <div className="container-page">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow">For installers</p>
+            <h2 className="mt-3 text-2xl font-bold text-navy sm:text-3xl">
+              Claim your free listing on The Renewable Directory
+            </h2>
+            <p className="mt-4 text-sm leading-7 text-muted">
+              We&apos;ve already created a free listing for your company. You can claim it free, update your details, add your website and logo, and choose whether you want homeowner quote enquiries for Solar PV, Battery Storage or Heat Pumps in your area.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <Link className="button-primary text-sm" href="/apply">
+                Claim Your Free Listing
+              </Link>
+              <Link className="button-secondary text-sm" href="/pricing">
+                View pricing
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Territories */}
       {territories.length > 0 && (
@@ -150,7 +185,7 @@ export default async function HomePage() {
           "@type": "Organization",
           name: "The Renewable Directory",
           url: siteUrl(),
-          description: "Find trusted solar PV, battery storage, heat pump, and EV charger installers across the UK.",
+          description: "Find trusted MCS certified solar PV, battery storage and heat pump installers across the UK.",
         })}
       />
     </main>

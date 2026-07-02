@@ -1,18 +1,18 @@
 import Link from "next/link";
 
 const installerLinks = [
-  { label: "Installer services", href: "/services" },
-  { label: "Solar PV installers", href: "/directory?type=Solar%20PV" },
-  { label: "Battery storage installers", href: "/directory?type=Battery%20Storage" },
-  { label: "Heat pump installers", href: "/directory?type=Air%20Source%20Heat%20Pump" },
-  { label: "Ground source heat pump installers", href: "/directory?type=Ground%2FWater%20Source%20Heat%20Pump" },
-  { label: "Biomass installers", href: "/directory?type=Biomass" },
+  { label: "All services", href: "/services" },
+  { label: "Solar PV Installers", href: "/directory?type=Solar%20PV" },
+  { label: "Battery Storage Installers", href: "/directory?type=Battery%20Storage" },
+  { label: "Heat Pump Installers", href: "/directory?type=Air%20Source%20Heat%20Pump" },
+  { label: "Ground & Water Source Heat Pump Installers", href: "/directory?type=Ground%2FWater%20Source%20Heat%20Pump" },
+  { label: "Biomass Installers", href: "/directory?type=Biomass" },
 ];
 
 const forInstallers = [
-  { label: "Join the directory", href: "/apply" },
+  { label: "Claim your free listing", href: "/apply" },
   { label: "Installer dashboard", href: "/installer-dashboard" },
-  { label: "MCS certification guide", href: "/heat-pump-installers/wales" },
+  { label: "Pricing", href: "/pricing" },
 ];
 
 const legalLinks = [

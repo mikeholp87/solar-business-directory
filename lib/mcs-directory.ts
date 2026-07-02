@@ -94,11 +94,13 @@ const SERVICE_TYPE_ALIASES: Record<string, string[]> = {
     "water source heat pumps",
     "ground/water source heat pump",
     "ground/water source heat pumps",
+    "ground & water source heat pump",
+    "ground & water source heat pumps",
   ],
   "Solar PV": ["solar pv"],
   "Battery Storage": ["battery storage"],
   Biomass: ["biomass"],
-  "Technical surveys": ["technical surveys", "technical survey"],
+  "Technical surveys": ["technical surveys", "technical survey", "technical surveyors"],
   "Heat loss calculations": ["heat loss calculations", "heat loss calculation"],
 };
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { territories } from "@/lib/data";
+import { SERVICE_TYPES, getServiceDisplayLabel } from "@/lib/service-types";
 
 export function ApplicationForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -32,8 +33,8 @@ export function ApplicationForm() {
   if (submitted) {
     return (
       <div className="surface-card surface-card-success p-6">
-        <h2 className="text-2xl font-black">Application received</h2>
-        <p className="mt-2 text-navy/70">The team can now review your accreditations, territory fit, and commercial terms.</p>
+        <h2 className="text-2xl font-bold">Thanks. We&rsquo;ll review your claim and contact you shortly.</h2>
+        <p className="mt-2 text-navy/70">The team will verify your details and confirm territory availability.</p>
       </div>
     );
   }
@@ -41,11 +42,11 @@ export function ApplicationForm() {
   return (
     <form onSubmit={onSubmit} className="editorial-rail grid gap-5 p-6 sm:p-8">
       <div>
-        <p className="eyebrow">Installer application</p>
-        <h2 className="mt-3 text-3xl font-black">Apply to join</h2>
-        <p className="mt-2 text-sm leading-6 text-navy/65">Share your accreditations, commercial model, and preferred territories.</p>
+        <p className="eyebrow">Claim your free listing</p>
+        <h2 className="mt-3 text-3xl font-bold">Claim This Listing</h2>
+        <p className="mt-2 text-sm leading-6 text-navy/65">Update your company details, services, and coverage areas.</p>
       </div>
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="field-grid">
         <label>Company name<input name="company_name" required /></label>
         <label>Contact name<input name="contact_name" required /></label>
@@ -54,7 +55,7 @@ export function ApplicationForm() {
         <label>Website<input name="website" type="url" /></label>
         <label>Company registration number<input name="company_number" /></label>
         <label>VAT number<input name="vat_number" /></label>
-        <label>MCS number<input name="mcs_number" required /></label>
+        <label>MCS number<input name="mcs_number" /></label>
         <label>RECC details<input name="recc_number" /></label>
         <label>HIES details<input name="hies_number" /></label>
         <label>TrustMark details<input name="trustmark_number" /></label>
@@ -62,7 +63,7 @@ export function ApplicationForm() {
         <label>Survey turnaround days<input name="survey_turnaround_days" type="number" min="0" defaultValue="7" /></label>
       </div>
       <fieldset className="grid gap-2">
-        <legend className="font-bold">Preferred territories</legend>
+        <legend className="font-bold">Regions covered</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {territories.map((territory) => (
             <label key={territory.id} className="flex grid-cols-none flex-row items-center gap-2 text-sm font-medium">
@@ -73,18 +74,18 @@ export function ApplicationForm() {
         </div>
       </fieldset>
       <fieldset className="grid gap-2">
-        <legend className="font-bold">Services</legend>
+        <legend className="font-bold">Services offered</legend>
         <div className="grid gap-2 sm:grid-cols-2">
-          {["Air source heat pumps", "Ground source heat pumps", "Solar PV", "Battery storage", "Technical surveys", "Heat loss calculations"].map((service) => (
-            <label key={service} className="flex grid-cols-none flex-row items-center gap-2 text-sm font-medium">
-              <input className="size-4 w-auto" type="checkbox" name="services" value={service} /> {service}
+          {SERVICE_TYPES.map((type) => (
+            <label key={type} className="flex grid-cols-none flex-row items-center gap-2 text-sm font-medium">
+              <input className="size-4 w-auto" type="checkbox" name="services" value={type} /> {getServiceDisplayLabel(type)}
             </label>
           ))}
         </div>
       </fieldset>
       <div className="field-grid">
         <label>Areas covered<textarea name="areas_covered" rows={3} placeholder="Towns, counties or postcode areas" /></label>
-        <label>Notes<textarea name="notes" rows={3} placeholder="Commercial preferences, availability or onboarding notes" /></label>
+        <label>Notes<textarea name="notes" rows={3} placeholder="Anything else we should know" /></label>
       </div>
       <div className="grid gap-2">
         {[
@@ -102,7 +103,7 @@ export function ApplicationForm() {
         ))}
       </div>
       <button className="button-primary" type="submit" disabled={loading}>
-        {loading ? "Submitting..." : "Apply as Installer"}
+        {loading ? "Submitting..." : "Claim This Listing"}
       </button>
     </form>
   );

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CoverageRibbon } from "@/components/coverage-ribbon";
 import { InstallerCard } from "@/components/installer-card";
 import { LeadForm } from "@/components/lead-form";
+import { ClaimForm } from "@/components/claim-form";
 import { listInstallers } from "@/lib/repositories/installers";
 import { listTerritories } from "@/lib/repositories/territories";
 import { getLocationPageKeys, locationPages } from "@/lib/seo/location-pages";
@@ -38,8 +39,8 @@ export default async function LocationPage({ params }: { params: { location: str
           </nav>
 
           <section className="surface-card surface-card-cream p-8 sm:p-10">
-            <p className="eyebrow">Location index</p>
-            <h1 className="mt-3 text-4xl font-black leading-[0.96] sm:text-5xl">Renewable installers in {page.label}</h1>
+            <p className="eyebrow">Location</p>
+            <h1 className="mt-3 text-4xl font-bold leading-[0.96] sm:text-5xl">MCS certified installers in {page.label}</h1>
             <p className="mt-4 max-w-3xl text-lg leading-8 text-navy/72">{page.intro}</p>
             <div className="mt-6 flex flex-wrap gap-2">
               {matchedTerritories.map((territory) => (
@@ -51,15 +52,15 @@ export default async function LocationPage({ params }: { params: { location: str
           </section>
 
           <CoverageRibbon
-            eyebrow="Coverage ribbon"
+            eyebrow="Coverage"
             title={`Installer coverage in ${page.label}`}
-            description="This location page uses the same editorial system as the homepage and directory, so area, coverage, and records stay visible in one place."
+            description="Find MCS certified installers covering your area."
             items={[
               { value: page.label, label: "location" },
               { value: `${results.length}`, label: "active installers" },
               { value: `${matchedTerritories.length}`, label: "territories" },
             ]}
-            footnote="Use the directory record to compare coverage, certification, contact details, and the technology tags attached to each listing."
+            footnote="Use the directory to compare coverage, certifications, and services."
           />
 
           <div className="grid gap-5">
@@ -70,7 +71,7 @@ export default async function LocationPage({ params }: { params: { location: str
 
           <section className="surface-card p-6">
             <p className="eyebrow">FAQs</p>
-            <h2 className="mt-3 text-2xl font-black">Questions people ask before they enquire</h2>
+            <h2 className="mt-3 text-2xl font-bold">Questions people ask before they enquire</h2>
             <div className="mt-4 grid gap-4">
               {faqs.map(([question, answer]) => (
                 <details key={question} className="rounded-[20px] border border-border bg-white p-4">
@@ -80,6 +81,8 @@ export default async function LocationPage({ params }: { params: { location: str
               ))}
             </div>
           </section>
+
+          <ClaimForm />
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">

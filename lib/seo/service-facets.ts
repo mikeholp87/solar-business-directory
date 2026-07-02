@@ -1,4 +1,4 @@
-import { SERVICE_TYPES } from "@/lib/service-types";
+import { SERVICE_TYPES, getServiceFacetLabel } from "@/lib/service-types";
 
 function slugifyFacet(value: string) {
   return value
@@ -18,20 +18,21 @@ export type ServiceFacet = {
 };
 
 const facetDescriptions: Record<string, string> = {
-  "Air Source Heat Pump": "Find installers that support air source heat pump surveys, design, installation and BUS-ready projects.",
-  "Ground/Water Source Heat Pump": "Compare installers with ground and water source heat pump experience for larger or more complex sites.",
-  "Solar PV": "Browse solar PV installers with roof-mounted array, battery-ready and retrofit experience.",
-  "Battery Storage": "Find battery storage installers that can add storage to solar or standalone retrofit projects.",
-  Biomass: "Compare biomass installers for rural homes and larger properties that need a specialist heating solution.",
-  "Technical surveys": "Find installers that offer technical surveys before design, quote and installation.",
-  "Heat loss calculations": "Compare installers that can complete heat loss calculations for accurate low-carbon heating design."
+  "Air Source Heat Pump": "Find MCS certified installers for air source heat pump surveys, design, installation and BUS-ready projects.",
+  "Ground/Water Source Heat Pump": "Compare MCS certified ground and water source heat pump installers for larger or more complex sites.",
+  "Solar PV": "Browse MCS certified solar PV installers with roof-mounted array, battery-ready and retrofit experience.",
+  "Battery Storage": "Find MCS certified battery storage installers that can add storage to solar or standalone retrofit projects.",
+  Biomass: "Compare MCS certified biomass installers for rural homes and larger properties that need a specialist heating solution.",
+  "Technical surveys": "Find qualified technical surveyors for renewable energy assessments before design, quote and installation.",
+  "Heat loss calculations": "Compare specialists that can complete heat loss calculations for accurate low-carbon heating design."
 };
 
 export const serviceFacets: ServiceFacet[] = SERVICE_TYPES.map((type) => {
   const slug = `${slugifyFacet(type)}-installers`;
+  const label = getServiceFacetLabel(type);
   return {
-    label: `${type} installers`,
-    title: `${type} installers`,
+    label,
+    title: label,
     slug,
     type,
     description: facetDescriptions[type] ?? `Compare ${type.toLowerCase()} installers across the UK.`

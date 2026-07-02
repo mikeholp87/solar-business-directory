@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import { PER_PAGE_OPTIONS } from "@/lib/mcs-directory";
+import { getServiceDisplayLabel } from "@/lib/service-types";
 
 export type DirectorySortOption = "relevance" | "name" | "type";
 
@@ -12,6 +13,7 @@ type DirectoryToolbarProps = {
   bus: boolean;
   website: boolean;
   email: boolean;
+  postcode?: string;
   totalResults: number;
   showingCount: number;
 };
@@ -25,12 +27,14 @@ export function DirectoryToolbar({
   bus,
   website,
   email,
+  postcode,
   totalResults,
   showingCount,
 }: DirectoryToolbarProps) {
   return (
     <form method="get" className="editorial-rail p-5 sm:p-6">
       <input type="hidden" name="page" value="1" />
+      {postcode && <input type="hidden" name="postcode" value={postcode} />}
 
       <div className="editorial-rail__header grid gap-3 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
         <div>
@@ -77,7 +81,7 @@ export function DirectoryToolbar({
               <option value="">All types</option>
               {types.map((item) => (
                 <option key={item} value={item}>
-                  {item}
+                  {getServiceDisplayLabel(item)}
                 </option>
               ))}
             </select>

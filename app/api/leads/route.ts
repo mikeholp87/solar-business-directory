@@ -3,10 +3,10 @@ import { z } from "zod";
 import { createLeadFromForm } from "@/lib/repositories/leads";
 
 const leadSchema = z.object({
-  first_name: z.string().min(1).max(80),
-  last_name: z.string().min(1).max(80),
+  first_name: z.string().min(1).max(120),
+  last_name: z.string().max(120).optional().default(""),
   email: z.string().email(),
-  phone: z.string().min(6).max(40),
+  phone: z.string().max(40).optional().default(""),
   postcode: z.string().min(3).max(12),
   address: z.string().max(240).optional(),
   homeowner_status: z.string().optional(),
@@ -15,8 +15,9 @@ const leadSchema = z.object({
   property_type: z.string().optional(),
   bedrooms: z.coerce.number().min(0).max(20).optional(),
   best_time_to_contact: z.string().optional(),
+  service_required: z.string().optional(),
   consent_contact: z.literal("true"),
-  gdpr_acceptance: z.literal("true"),
+  gdpr_acceptance: z.string().optional(),
   preferred_installer_id: z.string().optional()
 });
 
@@ -26,9 +27,9 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid lead details" }, { status: 400 });
   const result = await createLeadFromForm({
     first_name: parsed.data.first_name,
-    last_name: parsed.data.last_name,
+    last_name: parsed.data.last_name || "",
     email: parsed.data.email,
-    phone: parsed.data.phone,
+    phone: parsed.data.phone || "",
     postcode: parsed.data.postcode,
     address: parsed.data.address,
     homeowner_status: parsed.data.homeowner_status,
@@ -37,10 +38,11 @@ export async function POST(request: Request) {
     property_type: parsed.data.property_type,
     bedrooms: parsed.data.bedrooms,
     best_time_to_contact: parsed.data.best_time_to_contact,
+    service_required: parsed.data.service_required,
     interests: formData.getAll("interests").map(String),
     consent_contact: true,
     consent_marketing: formData.get("consent_marketing") === "true",
-    gdpr_acceptance: true,
+    gdpr_acceptance: parsed.data.gdpr_acceptance === "true",
     preferred_installer_id: parsed.data.preferred_installer_id || null,
     source: parsed.data.preferred_installer_id ? "installer_profile" : "directory"
   });

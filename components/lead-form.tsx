@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { SERVICE_TYPES, getServiceDisplayLabel } from "@/lib/service-types";
 
 type LeadFormProps = {
   preferredInstallerId?: string;
@@ -10,23 +10,24 @@ type LeadFormProps = {
 
 export function LeadForm({ preferredInstallerId, compact }: LeadFormProps) {
   const [submitted, setSubmitted] = useState(false);
-  const router = useRouter();
+  const [sending, setSending] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setSending(true);
     const formData = new FormData(event.currentTarget);
     const response = await fetch("/api/leads", { method: "POST", body: formData });
+    setSending(false);
     if (response.ok) {
       setSubmitted(true);
-      router.push("/enquiry/success");
     }
   }
 
   if (submitted) {
     return (
-      <div className="surface-card surface-card-success p-5">
-        <h3 className="text-xl font-black">Thanks, your enquiry has been received.</h3>
-        <p className="mt-2 text-sm text-navy/70">Renewable Directory will review your details and match the enquiry to the relevant territory or installer.</p>
+      <div className="surface-card surface-card-success p-5 text-center sm:p-6">
+        <h3 className="text-xl font-bold text-navy">Thanks. We&rsquo;ll match you with suitable local installers.</h3>
+        <p className="mt-2 text-sm text-navy/60">Your enquiry has been received and we&rsquo;ll be in touch shortly.</p>
       </div>
     );
   }
@@ -34,38 +35,76 @@ export function LeadForm({ preferredInstallerId, compact }: LeadFormProps) {
   return (
     <form onSubmit={onSubmit} className="surface-card grid gap-4 p-5 sm:p-6">
       <input type="hidden" name="preferred_installer_id" value={preferredInstallerId ?? ""} />
+
       <div>
-        <p className="eyebrow">Homeowner enquiry</p>
-        <h2 className={compact ? "mt-3 text-2xl font-black" : "mt-3 text-3xl font-black"}>Request a survey</h2>
-        <p className="mt-2 text-sm leading-6 text-navy/65">Check installer availability and whether the Boiler Upgrade Scheme may be relevant for your home.</p>
+        <h2 className={compact ? "text-xl font-bold" : "text-2xl font-bold"}>
+          {preferredInstallerId ? "Request A Quote From This Installer" : "Get Free Quotes From Local Installers"}
+        </h2>
+        <p className="mt-1 text-sm leading-6 text-navy/60">
+          Fill in your details and we&rsquo;ll connect you with MCS certified installers in your area.
+        </p>
       </div>
+
       <div className="field-grid">
-        <label>First name<input name="first_name" required /></label>
-        <label>Last name<input name="last_name" required /></label>
-        <label>Email<input name="email" type="email" required /></label>
-        <label>Phone<input name="phone" required /></label>
-        <label>Postcode<input name="postcode" required /></label>
-        <label>Address<input name="address" /></label>
-        <label>Current heating source<select name="current_heating_source"><option>Gas</option><option>Oil</option><option>LPG</option><option>Electric</option><option>Coal</option><option>Biomass</option><option>Other</option></select></label>
-        <label>Property type<select name="property_type"><option>Detached</option><option>Semi-detached</option><option>Terraced</option><option>Bungalow</option><option>Flat</option></select></label>
-        <label>Bedrooms<input name="bedrooms" type="number" min="0" defaultValue="3" /></label>
-        <label>Monthly energy bill<input name="monthly_bill" placeholder="e.g. £180" /></label>
-        <label>Best time to contact<input name="best_time_to_contact" placeholder="Weekday mornings" /></label>
+        <label>
+          Full name <span className="text-accent">*</span>
+          <input name="first_name" required placeholder="Your name" />
+        </label>
+        <label>
+          Postcode <span className="text-accent">*</span>
+          <input name="postcode" required placeholder="e.g. SW1A 1AA" />
+        </label>
+        <label>
+          Email <span className="text-accent">*</span>
+          <input name="email" type="email" required placeholder="you@example.com" />
+        </label>
+        <label>
+          Phone
+          <input name="phone" type="tel" placeholder="07123 456789" />
+        </label>
       </div>
-      <fieldset className="grid gap-2">
-        <legend className="text-sm font-bold">Interested in</legend>
-        {["Air source heat pump", "Solar", "Battery storage", "Boiler Upgrade Scheme", "Unsure"].map((interest) => (
-          <label key={interest} className="flex grid-cols-none flex-row items-center gap-2 text-sm font-medium">
-            <input className="size-4 w-auto" type="checkbox" name="interests" value={interest} /> {interest}
-          </label>
-        ))}
-      </fieldset>
-      <label className="flex grid-cols-none flex-row items-start gap-2 text-sm font-medium"><input className="mt-1 size-4 w-auto" type="checkbox" name="homeowner_status" value="yes" required /> I am the homeowner or authorised to enquire.</label>
-      <label className="flex grid-cols-none flex-row items-start gap-2 text-sm font-medium"><input className="mt-1 size-4 w-auto" type="checkbox" name="consent_contact" value="true" required /> I consent to being contacted about my enquiry.</label>
-      <label className="flex grid-cols-none flex-row items-start gap-2 text-sm font-medium"><input className="mt-1 size-4 w-auto" type="checkbox" name="consent_marketing" value="true" /> I agree to receive relevant renewable energy updates.</label>
-      <label className="flex grid-cols-none flex-row items-start gap-2 text-sm font-medium"><input className="mt-1 size-4 w-auto" type="checkbox" name="gdpr_acceptance" value="true" required /> I accept the privacy notice and understand installers are independent businesses.</label>
-      <button className="button-primary" type="submit">Check BUS eligibility</button>
-      <p className="text-xs leading-5 text-navy/55">Funding eligibility is subject to survey, property suitability, and current scheme criteria. Renewable Directory may receive a referral or marketing fee.</p>
+
+      <label>
+        Service required <span className="text-accent">*</span>
+        <select name="service_required" required defaultValue="">
+          <option value="" disabled>Select a service</option>
+          {SERVICE_TYPES.map((type) => (
+            <option key={type} value={type}>{getServiceDisplayLabel(type)}</option>
+          ))}
+        </select>
+      </label>
+
+      <div className="field-grid">
+        <label>
+          Property type
+          <select name="property_type">
+            <option value="">Select property type</option>
+            <option>Detached</option>
+            <option>Semi-detached</option>
+            <option>Terraced</option>
+            <option>Bungalow</option>
+            <option>Flat</option>
+          </select>
+        </label>
+        <label>
+          Monthly energy bill
+          <input name="monthly_bill" placeholder="e.g. £180" />
+        </label>
+      </div>
+
+      <label className="flex grid-cols-none flex-row items-start gap-2 text-sm font-medium">
+        <input className="mt-0.5 size-4 w-auto" type="checkbox" name="consent_contact" value="true" required />
+        I agree to be contacted about my enquiry. <span className="text-accent">*</span>
+      </label>
+
+      <button className="button-primary" type="submit" disabled={sending}>
+        {sending ? "Sending..." : "Get Free Quotes"}
+      </button>
+
+      <p className="text-xs leading-5 text-navy/45">
+        Your details will only be shared with relevant installers. No obligation. See our{" "}
+        <a href="/privacy" className="underline">privacy policy</a>.
+      </p>
     </form>
   );
 }

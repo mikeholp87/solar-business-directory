@@ -48,7 +48,7 @@ export function InstallerCard({ installer }: { installer: Installer }) {
       </div>
       <div className="mt-5 flex flex-wrap gap-3 border-t border-navy/10 pt-4">
         <Link className="button-primary" href={`/installers/${installer.slug}`}>
-          Request Survey
+          Request Quote
         </Link>
         <Link className="button-secondary" href={`/installers/${installer.slug}`}>
           View Profile

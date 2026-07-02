@@ -61,9 +61,9 @@ export async function getLeadDashboardSummary() {
 
 export async function createLeadFromForm(params: {
   first_name: string;
-  last_name: string;
+  last_name?: string;
   email: string;
-  phone: string;
+  phone?: string;
   postcode: string;
   address?: string;
   homeowner_status?: string;
@@ -72,6 +72,7 @@ export async function createLeadFromForm(params: {
   property_type?: string;
   bedrooms?: number;
   best_time_to_contact?: string;
+  service_required?: string;
   interests: string[];
   consent_contact: boolean;
   consent_marketing: boolean;
@@ -88,11 +89,14 @@ export async function createLeadFromForm(params: {
     installers
   });
 
+  const fullName = [params.first_name, params.last_name].filter(Boolean).join(" ") || params.first_name;
+  const interests = params.service_required ? [...params.interests, params.service_required] : params.interests;
+
   const payload = {
-    first_name: params.first_name,
-    last_name: params.last_name,
+    first_name: fullName,
+    last_name: "",
     email: params.email,
-    phone: params.phone,
+    phone: params.phone ?? "",
     postcode: params.postcode.toUpperCase(),
     address: params.address,
     homeowner_status: params.homeowner_status === "yes",
@@ -101,7 +105,7 @@ export async function createLeadFromForm(params: {
     property_type: params.property_type,
     bedrooms: params.bedrooms,
     best_time_to_contact: params.best_time_to_contact,
-    interests: params.interests,
+    interests,
     consent_contact: params.consent_contact,
     consent_marketing: params.consent_marketing,
     gdpr_acceptance: params.gdpr_acceptance,
@@ -122,8 +126,8 @@ export async function createLeadFromForm(params: {
 
   const assignedInstaller = installers.find((installer) => installer.id === assignment.assignedInstallerId);
   const notification = leadReceivedTemplate({
-    firstName: params.first_name,
-    lastName: params.last_name,
+    firstName: fullName,
+    lastName: "",
     postcode: params.postcode.toUpperCase(),
     stage: "new_enquiry",
     source: params.source ?? "directory"
@@ -149,7 +153,7 @@ export async function createLeadFromForm(params: {
           eventType: "lead.assigned",
           recipientEmail: assignedInstaller.email,
           recipientRole: "installer",
-          subject: `New lead assigned: ${params.first_name} ${params.last_name}`,
+          subject: `New lead assigned: ${fullName}`,
           body: `${notification.body}\n\nAssigned installer: ${assignedInstaller.companyName}`,
           payload
         })

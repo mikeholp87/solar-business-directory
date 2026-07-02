@@ -2,6 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { BadgeCheck, MapPin, Timer, Wrench } from "lucide-react";
 import { LeadForm } from "@/components/lead-form";
+import { ClaimForm } from "@/components/claim-form";
 import { listInstallers } from "@/lib/repositories/installers";
 import { listReviewsForInstaller } from "@/lib/repositories/reviews";
 import { listTerritories } from "@/lib/repositories/territories";
@@ -16,7 +17,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const installers = await listInstallers();
   const installer = installers.find((item) => item.slug === params.slug);
-  return pageMetadata(installer?.companyName ?? "Installer profile", `View ${installer?.companyName ?? "installer"} BUS and MCS heat pump profile.`, `/installers/${params.slug}`);
+  return pageMetadata(installer?.companyName ?? "Installer profile", `View ${installer?.companyName ?? "installer"}'s renewable energy installer profile.`, `/installers/${params.slug}`);
 }
 
 export default async function InstallerProfilePage({ params }: { params: { slug: string } }) {
@@ -36,7 +37,7 @@ export default async function InstallerProfilePage({ params }: { params: { slug:
             <div className="flex flex-wrap items-start gap-5">
               <div className="grid size-16 place-items-center rounded-2xl bg-white text-2xl font-black text-accent shadow-soft">{installer.logoUrl}</div>
               <div className="min-w-0 flex-1">
-                <p className="eyebrow border-white/20 bg-white/10 text-white/70">Installer profile</p>
+                <p className="eyebrow border-white/20 bg-white/10 text-white/70">Verified Installer</p>
                 <h1 className="mt-3 text-4xl font-black sm:text-5xl">{installer.companyName}</h1>
                 <p className="mt-4 text-lg leading-8 text-white/86">{installer.description}</p>
               </div>
@@ -49,36 +50,42 @@ export default async function InstallerProfilePage({ params }: { params: { slug:
         <div className="container-page grid gap-8 lg:grid-cols-[0.64fr_0.36fr]">
           <div className="grid gap-6">
             <div className="surface-card p-6">
-              <h2 className="text-2xl font-black">Accreditations</h2>
+              <h2 className="text-2xl font-bold">Certifications</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <p className="flex items-center gap-2"><BadgeCheck className="text-accent" size={18} /> MCS: {installer.accreditations.verified ? installer.accreditations.mcsNumber : "Verification pending"}</p>
-                <p className="flex items-center gap-2"><BadgeCheck className="text-accent" size={18} /> BUS registered: {installer.accreditations.busRegistered ? "Yes" : "Pending"}</p>
-                {installer.accreditations.reccNumber ? <p>RECC: {installer.accreditations.reccNumber}</p> : null}
-                {installer.accreditations.trustMarkNumber ? <p>TrustMark: {installer.accreditations.trustMarkNumber}</p> : null}
-                {installer.accreditations.hiesNumber ? <p>HIES: {installer.accreditations.hiesNumber}</p> : null}
+                {installer.accreditations.verified && installer.accreditations.mcsNumber && (
+                  <p className="flex items-center gap-2"><BadgeCheck className="text-accent" size={18} /> MCS: {installer.accreditations.mcsNumber}</p>
+                )}
+                <p className="flex items-center gap-2"><BadgeCheck className={installer.accreditations.busRegistered ? "text-accent" : "text-muted"} size={18} /> BUS registered: {installer.accreditations.busRegistered ? "Yes" : "No"}</p>
+                {installer.accreditations.reccNumber && <p className="flex items-center gap-2"><BadgeCheck className="text-accent" size={18} /> RECC: {installer.accreditations.reccNumber}</p>}
+                {installer.accreditations.trustMarkNumber && <p className="flex items-center gap-2"><BadgeCheck className="text-accent" size={18} /> TrustMark: {installer.accreditations.trustMarkNumber}</p>}
+                {installer.accreditations.hiesNumber && <p className="flex items-center gap-2"><BadgeCheck className="text-accent" size={18} /> HIES: {installer.accreditations.hiesNumber}</p>}
               </div>
             </div>
 
             <div className="surface-card p-6">
-              <h2 className="text-2xl font-black">Services and capacity</h2>
+              <h2 className="text-2xl font-bold">Services</h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                <p className="flex items-center gap-2"><MapPin className="text-accent" size={18} /> {coveredTerritories.map((item) => item.name).join(", ")}</p>
+                {coveredTerritories.length > 0 && (
+                  <p className="flex items-center gap-2"><MapPin className="text-accent" size={18} /> {coveredTerritories.map((item) => item.name).join(", ")}</p>
+                )}
                 <p className="flex items-center gap-2"><Timer className="text-accent" size={18} /> {installer.surveyTurnaroundDays} day survey turnaround</p>
                 <p className="flex items-center gap-2"><Wrench className="text-accent" size={18} /> {installer.monthlyInstallCapacity} installs per month</p>
               </div>
               <div className="mt-5 flex flex-wrap gap-2">
-                {installer.services.map((service) => <span key={service} className="chip">{service}</span>)}
+                {installer.services.filter((s) => s && s.trim() !== "" && s.toLowerCase() !== "n/a").map((service) => <span key={service} className="chip">{service}</span>)}
               </div>
-              <p className="mt-5 text-navy/70">Warranty: {installer.warranty}</p>
+              {installer.warranty && installer.warranty !== "n/a" && (
+                <p className="mt-5 text-navy/70">Warranty: {installer.warranty}</p>
+              )}
             </div>
 
             <div className="surface-card p-6">
-              <h2 className="text-2xl font-black">Areas covered</h2>
+              <h2 className="text-2xl font-bold">Areas covered</h2>
               <p className="mt-3 leading-7 text-navy/70">{installer.areasCovered.join(", ")}</p>
             </div>
 
             <div className="surface-card p-6">
-              <h2 className="text-2xl font-black">Reviews</h2>
+              <h2 className="text-2xl font-bold">Reviews</h2>
               <div className="mt-4 grid gap-4">
                 {installerReviews.length > 0 ? installerReviews.map((review) => (
                   <blockquote key={review.customerName} className="border-l-4 border-accent pl-4">
@@ -88,6 +95,8 @@ export default async function InstallerProfilePage({ params }: { params: { slug:
                 )) : <p className="text-navy/65">Reviews are awaiting approval.</p>}
               </div>
             </div>
+
+            <ClaimForm companyName={installer.companyName} />
           </div>
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <LeadForm preferredInstallerId={installer.id} compact />

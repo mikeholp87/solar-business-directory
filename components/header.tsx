@@ -44,8 +44,11 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <Link className="button-secondary hidden text-sm md:inline-flex" href="/directory">
+            Find Installers
+          </Link>
           <Link className="button-primary hidden text-sm md:inline-flex" href="/apply">
-            Apply Now
+            Claim Your Free Listing
           </Link>
 
           <details className="group relative md:hidden" open={menuOpen} onToggle={(event) => setMenuOpen(event.currentTarget.open)}>
@@ -78,8 +81,11 @@ export function Header() {
                     <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted">Open</span>
                   </Link>
                 ))}
+                <Link className="button-secondary mt-1 w-full justify-center" href="/directory" onClick={() => setMenuOpen(false)}>
+                  Find Installers
+                </Link>
                 <Link className="button-primary mt-1 w-full justify-center" href="/apply" onClick={() => setMenuOpen(false)}>
-                  Apply Now
+                  Claim Your Free Listing
                 </Link>
               </nav>
             </div>
