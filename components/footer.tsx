@@ -10,6 +10,7 @@ const installerLinks = [
 ];
 
 const forInstallers = [
+  { label: "For installers", href: "/for-installers" },
   { label: "Claim your free listing", href: "/apply" },
   { label: "Installer dashboard", href: "/installer-dashboard" },
   { label: "Pricing", href: "/pricing" },

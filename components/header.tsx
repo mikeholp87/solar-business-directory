@@ -8,6 +8,7 @@ import { Menu } from "lucide-react";
 const navLinks = [
   { href: "/directory", label: "Directory" },
   { href: "/services", label: "Services" },
+  { href: "/for-installers", label: "For Installers" },
   { href: "/pricing", label: "Pricing" },
   { href: "/installer-dashboard", label: "Installer login" },
 ];
