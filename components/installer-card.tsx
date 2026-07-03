@@ -9,7 +9,7 @@ export function InstallerCard({ installer }: { installer: Installer }) {
   return (
     <article className="index-card p-5 sm:p-6">
       <div className="flex items-start gap-4">
-        <div className="grid size-14 shrink-0 place-items-center rounded-[18px] border border-navy/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(245,239,228,0.92))] text-lg font-black text-accent shadow-[0_10px_26px_rgba(23,33,29,0.08)]">
+        <div className="grid size-16 shrink-0 place-items-center rounded-xl border border-navy/10 bg-surface-alt text-lg font-black text-accent">
           {installer.logoUrl}
         </div>
         <div className="min-w-0 flex-1">
@@ -35,7 +35,7 @@ export function InstallerCard({ installer }: { installer: Installer }) {
           Survey in {installer.surveyTurnaroundDays} days
         </span>
         <span className="flex items-center gap-2">
-          <Star className="text-amber-600" size={16} />
+          <Star className="text-accent" size={16} fill="currentColor" />
           {installer.rating.toFixed(1)} rating
         </span>
       </div>

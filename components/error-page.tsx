@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Home, MapPinned, Search } from "lucide-react";
+import { ArrowLeft, Home, MapPin, Search } from "lucide-react";
 
 const quickLinks = [
   { href: "/", label: "Home", description: "Return to the homepage" },
@@ -44,7 +44,7 @@ export function ErrorPage({
         <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
           <section className="surface-card overflow-hidden border border-navy/10 bg-navy text-white shadow-[0_20px_60px_rgba(16,42,67,0.22)]">
             <div className="relative h-full p-6 sm:p-8 lg:p-10">
-              <div className="absolute right-0 top-0 h-44 w-44 rounded-full bg-[#00A651]/15 blur-3xl" />
+              <div className="absolute right-0 top-0 h-44 w-44 rounded-full bg-accent/15 blur-3xl" />
               <div className="absolute -bottom-16 left-8 h-32 w-32 rounded-full bg-white/8 blur-3xl" />
 
               <p className="eyebrow border-white/10 bg-white/6 text-white/75">{eyebrow}</p>
@@ -68,7 +68,7 @@ export function ErrorPage({
                     <p className="text-xs font-black uppercase tracking-[0.24em] text-white/45">{schemeLabel}</p>
                     <p className="mt-1 text-sm text-white/70">{schemeDescription}</p>
                   </div>
-                  <MapPinned className="text-[#00A651]" size={22} />
+                  <MapPin className="text-accent" size={22} />
                 </div>
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -88,7 +88,7 @@ export function ErrorPage({
                 </div>
 
                 <svg
-                  className="pointer-events-none absolute right-6 top-[8.25rem] hidden h-28 w-40 text-[#00A651]/70 sm:block"
+                  className="pointer-events-none absolute right-6 top-[8.25rem] hidden h-28 w-40 text-accent/70 sm:block"
                   viewBox="0 0 160 112"
                   fill="none"
                   aria-hidden="true"
@@ -118,13 +118,13 @@ export function ErrorPage({
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="group flex items-center justify-between rounded-2xl border border-navy/10 bg-slate-50 px-4 py-4 transition-all hover:-translate-y-0.5 hover:border-[#00A651]/30 hover:bg-white"
+                  className="group flex items-center justify-between rounded-2xl border border-navy/10 bg-slate-50 px-4 py-4 transition-all hover:-translate-y-0.5 hover:border-accent/30 hover:bg-white"
                 >
                   <span>
                     <span className="block text-sm font-black uppercase tracking-[0.18em] text-navy/48">{link.label}</span>
                     <span className="mt-1 block text-sm leading-6 text-navy/66">{link.description}</span>
                   </span>
-                  <ArrowLeft className="rotate-180 text-navy/30 transition-transform group-hover:translate-x-1 group-hover:text-[#00A651]" size={18} />
+                  <ArrowLeft className="rotate-180 text-navy/30 transition-transform group-hover:translate-x-1 group-hover:text-accent" size={18} />
                 </Link>
               ))}
             </div>

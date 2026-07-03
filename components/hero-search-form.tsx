@@ -31,7 +31,7 @@ export function HeroSearchForm() {
 
   return (
     <form onSubmit={handleSubmit} className="mt-6 space-y-3 sm:mt-8">
-      <div className="grid gap-2 rounded-2xl border border-border bg-white p-2 shadow-card sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0 sm:p-1.5 sm:pr-1.5">
+      <div className="grid gap-2 rounded-card border border-border bg-white p-2 shadow-hero sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0 sm:p-1.5 sm:pr-1.5">
         <input
           type="text"
           name="postcode"

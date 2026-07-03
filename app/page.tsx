@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CheckCircle, type LucideIcon } from "lucide-react";
+import { CheckCircle, Sun, BatteryCharging, Fan, Leaf, FileText, Building2, type LucideIcon } from "lucide-react";
 import { HeroSearchForm } from "@/components/hero-search-form";
 import { DirectoryResultCard } from "@/components/directory-result-card";
 import { TerritoryList } from "@/components/territory-list";
@@ -37,7 +37,7 @@ export default async function HomePage() {
             </p>
             <HeroSearchForm />
           </div>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] shadow-card-hover sm:aspect-[16/10] lg:aspect-auto lg:h-[320px]">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-card shadow-hero sm:aspect-[16/10] lg:aspect-auto lg:h-[320px]">
             <Image
               src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&h=400&fit=crop&crop=center"
               alt="UK home with solar panels installed on roof"
@@ -62,9 +62,9 @@ export default async function HomePage() {
               <Link
                 key={facet.slug}
                 href={`/services/${facet.slug}`}
-                className="flex min-h-[140px] flex-col items-center justify-between gap-3 rounded-2xl border border-border bg-white p-4 text-center transition-all hover:border-accent hover:shadow-card sm:min-h-[166px] sm:p-6"
+                className="flex min-h-[140px] flex-col items-center justify-between gap-3 rounded-card border border-border bg-white p-4 text-center transition-all hover:border-accent hover:shadow-card-hover sm:min-h-[166px] sm:p-6"
               >
-                <div className="flex h-12 w-12 items-center justify-center sm:h-16 sm:w-16">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-light sm:h-14 sm:w-14">
                   <CategoryIcon type={facet.type} />
                 </div>
                 <span className="text-sm font-semibold leading-tight text-navy">{facet.label}</span>
@@ -192,69 +192,17 @@ export default async function HomePage() {
   );
 }
 
+const categoryIcons: Record<string, LucideIcon> = {
+  "Solar PV": Sun,
+  "Battery Storage": BatteryCharging,
+  "Air Source Heat Pump": Fan,
+  "Ground/Water Source Heat Pump": Fan,
+  Biomass: Leaf,
+  "Technical surveys": FileText,
+  "Heat loss calculations": FileText,
+};
+
 function CategoryIcon({ type }: { type: string }) {
-  const color = "#102A43";
-  const accent = "#00A651";
-  switch (type) {
-    case "Solar PV":
-      return (
-        <svg viewBox="0 0 48 48" width="44" height="44" fill="none" stroke={color} strokeWidth="1.5" aria-hidden="true">
-          <rect x="8" y="18" width="32" height="20" rx="2" />
-          <line x1="8" y1="26" x2="40" y2="26" />
-          <line x1="8" y1="34" x2="40" y2="34" />
-          <line x1="18" y1="18" x2="18" y2="38" />
-          <line x1="28" y1="18" x2="28" y2="38" />
-          <circle cx="36" cy="12" r="4" stroke={accent} fill="none" />
-        </svg>
-      );
-    case "Battery Storage":
-      return (
-        <svg viewBox="0 0 48 48" width="44" height="44" fill="none" stroke={color} strokeWidth="1.5" aria-hidden="true">
-          <rect x="12" y="12" width="24" height="28" rx="3" />
-          <rect x="18" y="8" width="12" height="4" rx="1" />
-          <path d="M20 26l4-6 4 6" stroke={accent} />
-          <line x1="24" y1="20" x2="24" y2="32" stroke={accent} />
-        </svg>
-      );
-    case "Air Source Heat Pump":
-      return (
-        <svg viewBox="0 0 48 48" width="44" height="44" fill="none" stroke={color} strokeWidth="1.5" aria-hidden="true">
-          <rect x="8" y="16" width="20" height="24" rx="3" />
-          <circle cx="18" cy="28" r="6" />
-          <path d="M32 20l8-4v20l-8-4" />
-          <path d="M34 18c2 2 2 6 0 8" stroke={accent} />
-          <path d="M37 16c3 3 3 10 0 14" stroke={accent} />
-        </svg>
-      );
-    case "Ground/Water Source Heat Pump":
-      return (
-        <svg viewBox="0 0 48 48" width="44" height="44" fill="none" stroke={color} strokeWidth="1.5" aria-hidden="true">
-          <rect x="8" y="8" width="18" height="18" rx="3" />
-          <circle cx="17" cy="17" r="5" />
-          <path d="M17 26v10" />
-          <path d="M12 36h10" />
-          <path d="M14 30c0 0 2 6 6 6" stroke={accent} />
-          <path d="M30 14l6-4v24l-6-4" />
-          <path d="M32 12c2 2 2 6 0 8" stroke={accent} />
-        </svg>
-      );
-    case "Biomass":
-      return (
-        <svg viewBox="0 0 48 48" width="44" height="44" fill="none" stroke={color} strokeWidth="1.5" aria-hidden="true">
-          <path d="M24 6c0 8-10 12-10 20a10 10 0 0 0 20 0C34 18 24 14 24 6z" />
-          <path d="M24 18c0 4-4 6-4 10a4 4 0 0 0 8 0c0-4-4-6-4-10z" stroke={accent} />
-          <line x1="24" y1="38" x2="24" y2="44" />
-          <line x1="18" y1="44" x2="30" y2="44" />
-        </svg>
-      );
-    default:
-      return (
-        <svg viewBox="0 0 48 48" width="44" height="44" fill="none" stroke={color} strokeWidth="1.5" aria-hidden="true">
-          <rect x="8" y="14" width="32" height="26" rx="2" />
-          <path d="M8 14l16-6 16 6" stroke={accent} />
-          <rect x="12" y="18" width="8" height="8" rx="1" />
-          <rect x="24" y="18" width="8" height="8" rx="1" />
-        </svg>
-      );
-  }
+  const Icon = categoryIcons[type] ?? Building2;
+  return <Icon size={28} strokeWidth={2} className="text-accent" aria-hidden="true" />;
 }

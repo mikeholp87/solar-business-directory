@@ -16,8 +16,9 @@
   --mist: #E6F7EE;
   --line: rgba(16, 42, 67, 0.1);
   --line-strong: rgba(16, 42, 67, 0.18);
-  --surface-shadow: 0 1px 3px rgba(16, 42, 67, 0.06);
-  --surface-shadow-strong: 0 4px 12px rgba(16, 42, 67, 0.08);
+  --surface-shadow: 0 2px 10px rgba(16, 42, 67, 0.05);
+  --surface-shadow-strong: 0 10px 24px rgba(0, 166, 81, 0.12);
+  --shadow-hero: 0 8px 24px rgba(16, 42, 67, 0.08);
   --focus-ring: rgba(0, 166, 81, 0.28);
 }
 
@@ -62,8 +63,8 @@ input,
 select,
 textarea {
   width: 100%;
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
+  border: 1px solid #E3E8EF;
+  border-radius: 10px;
   background: #ffffff;
   padding: 0.75rem 0.9rem;
   color: #102A43;
@@ -73,7 +74,7 @@ textarea {
 
 input::placeholder,
 textarea::placeholder {
-  color: #6B7280;
+  color: #486581;
 }
 
 input:focus-visible,
@@ -98,8 +99,8 @@ label {
 }
 
 .surface-card {
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
+  border: 1px solid #E3E8EF;
+  border-radius: 16px;
   background: #ffffff;
   box-shadow: var(--surface-shadow);
 }
@@ -129,7 +130,7 @@ label {
   align-items: center;
   gap: 0.35rem;
   border-radius: 9999px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #E3E8EF;
   background: #ffffff;
   padding: 0.32rem 0.6rem;
   font-size: 0.72rem;
@@ -157,15 +158,15 @@ label {
 }
 
 .coverage-ribbon {
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
+  border: 1px solid #E3E8EF;
+  border-radius: 16px;
   background: #F5F7FA;
   overflow: hidden;
 }
 
 .coverage-ribbon__bar {
   height: 0.45rem;
-  background: linear-gradient(90deg, #00A651 0%, #008C44 50%, #102A43 100%);
+  background: linear-gradient(90deg, #00A651 0%, #008F46 50%, #102A43 100%);
 }
 
 .coverage-ribbon__grid {
@@ -175,8 +176,8 @@ label {
 }
 
 .coverage-ribbon__item {
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
+  border: 1px solid #E3E8EF;
+  border-radius: 10px;
   background: #ffffff;
   padding: 0.85rem 0.95rem;
 }
@@ -195,12 +196,12 @@ label {
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #6B7280;
+  color: #486581;
   font-weight: 600;
 }
 
 .data-table td {
-  border-top: 1px solid #E5E7EB;
+  border-top: 1px solid #E3E8EF;
   padding-right: 1rem;
   padding-bottom: 0.95rem;
   padding-top: 0.95rem;
@@ -216,10 +217,10 @@ label {
   align-items: center;
   gap: 0.55rem;
   border-radius: 9999px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #E3E8EF;
   background: #F5F7FA;
   padding: 0.45rem 0.8rem;
-  color: #6B7280;
+  color: #486581;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -232,12 +233,12 @@ label {
   justify-content: center;
   gap: 0.5rem;
   min-height: 44px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #00A651;
   background: #00A651;
   color: white;
   padding: 0.75rem 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.875rem;
   box-shadow: 0 2px 4px rgba(0, 166, 81, 0.2);
 }
@@ -248,12 +249,12 @@ label {
   justify-content: center;
   gap: 0.5rem;
   min-height: 44px;
-  border-radius: 8px;
-  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  border: 1.5px solid #E3E8EF;
   background: #ffffff;
   color: #102A43;
   padding: 0.75rem 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.875rem;
 }
 
@@ -269,8 +270,8 @@ header a:hover {
 }
 
 .button-primary:hover {
-  background: #008C44;
-  border-color: #008C44;
+  background: #008F46;
+  border-color: #008F46;
   box-shadow: 0 4px 8px rgba(0, 166, 81, 0.25);
 }
 
@@ -285,27 +286,27 @@ header a:hover {
 }
 
 .editorial-rail {
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
+  border: 1px solid #E3E8EF;
+  border-radius: 16px;
   background: #ffffff;
   box-shadow: var(--surface-shadow);
 }
 
 .editorial-rail__header {
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid #E3E8EF;
   padding-bottom: 0.95rem;
   margin-bottom: 1rem;
 }
 
 .index-card {
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
+  border: 1px solid #E3E8EF;
+  border-radius: 16px;
   background: #ffffff;
   box-shadow: var(--surface-shadow);
 }
 
 .index-card--hover:hover {
-  border-color: #D1D5DB;
+  border-color: #00A651;
   box-shadow: var(--surface-shadow-strong);
 }
 

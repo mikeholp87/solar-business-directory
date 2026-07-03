@@ -7,9 +7,9 @@ import {
   Globe,
   ShieldCheck,
   BadgeCheck,
-  Zap,
+  PlugZap,
   Sun,
-  Battery,
+  BatteryCharging,
   Thermometer,
   Wrench,
   Building2,
@@ -55,7 +55,6 @@ export default function ForInstallersPage() {
               <Link
                 href="#claim-form"
                 className="button-primary text-sm"
-                style={{ background: "#00A651", borderColor: "#00A651" }}
                 data-event="installer_claim_cta_click"
               >
                 Claim Your Free Listing
@@ -386,7 +385,7 @@ export default function ForInstallersPage() {
       </section>
 
       {/* Section 6: Priority Lead Partner Focus */}
-      <section className="section-band" style={{ background: "#102A43" }}>
+      <section className="section-band bg-navy">
         <div className="container-page">
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div>
@@ -682,9 +681,9 @@ function InstallerProfileMockup() {
       <div className="mt-4 flex flex-wrap gap-1.5">
         {[
           { icon: Sun, label: "Solar PV" },
-          { icon: Battery, label: "Battery" },
+          { icon: BatteryCharging, label: "Battery" },
           { icon: Thermometer, label: "Heat Pumps" },
-          { icon: Zap, label: "EV Chargers" },
+          { icon: PlugZap, label: "EV Chargers" },
         ].map(({ icon: Icon, label }) => (
           <span
             key={label}
