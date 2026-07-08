@@ -1,10 +1,5 @@
-import { Fraunces } from "next/font/google";
 import { ErrorPage } from "@/components/error-page";
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-display"
-});
+import { fraunces } from "@/lib/fonts";
 
 export default function NotFound() {
   return (

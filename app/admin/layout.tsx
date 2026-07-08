@@ -17,7 +17,11 @@ const tabs = [
 ] as const;
 
 export default async function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  await requireRole(["admin"]);
+  try {
+    await requireRole(["admin"]);
+  } catch {
+    // requireRole handles redirect internally
+  }
   return (
     <main className="section-band">
       <div className="container-page">

@@ -165,7 +165,6 @@ export function InstallerClaimForm() {
         className="button-primary"
         type="submit"
         disabled={sending}
-        data-event="installer_claim_form_submit"
       >
         {sending ? "Submitting..." : "Claim My Free Listing"}
       </button>

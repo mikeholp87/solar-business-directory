@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { createLeadFromForm } from "@/lib/repositories/leads";
+import { rateLimit } from "@/lib/rate-limit";
 
 const leadSchema = z.object({
   first_name: z.string().min(1).max(120),
@@ -22,9 +24,14 @@ const leadSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const headersList = await headers();
+  const ip = headersList.get("x-forwarded-for") ?? "unknown";
+  if (!rateLimit(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
   const formData = await request.formData();
   const parsed = leadSchema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) return NextResponse.json({ error: "Invalid lead details" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Invalid lead details", fields: parsed.error.flatten().fieldErrors }, { status: 400 });
   const result = await createLeadFromForm({
     first_name: parsed.data.first_name,
     last_name: parsed.data.last_name || "",

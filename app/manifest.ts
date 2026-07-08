@@ -5,7 +5,7 @@ export default function manifest() {
     description: "Directory for renewable installers across UK territories.",
     start_url: "/",
     display: "standalone",
-    background_color: "#f8f4ea",
-    theme_color: "#0e5b47"
+    background_color: "#ffffff",
+    theme_color: "#102A43"
   };
 }

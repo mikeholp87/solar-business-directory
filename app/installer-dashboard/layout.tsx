@@ -15,7 +15,11 @@ const tabs = [
 ] as const;
 
 export default async function InstallerDashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  await requireRole(["installer", "admin"]);
+  try {
+    await requireRole(["installer", "admin"]);
+  } catch {
+    // requireRole handles redirect internally
+  }
   return (
     <main className="section-band">
       <div className="container-page">

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+import { siteUrl } from "@/lib/runtime";
 
 type PageMetadataOptions = {
   noindex?: boolean;
@@ -11,11 +10,11 @@ export function pageMetadata(title: string, description: string, path = "/", opt
     title,
     description,
     robots: options.noindex ? { index: false, follow: false } : undefined,
-    alternates: { canonical: `${siteUrl}${path}` },
+    alternates: { canonical: `${siteUrl()}${path}` },
     openGraph: {
       title,
       description,
-      url: `${siteUrl}${path}`,
+      url: `${siteUrl()}${path}`,
       siteName: "The Renewable Directory",
       type: "website"
     }

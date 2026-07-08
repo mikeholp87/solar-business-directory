@@ -15,7 +15,7 @@ const SERVICE_OPTIONS = [
   "Not Sure Yet",
 ] as const;
 
-export function ExampleProfileForm() {
+export function ExampleProfileForm({ companyName = "GreenVolt Renewables" }: { companyName?: string }) {
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
 
@@ -56,7 +56,7 @@ export function ExampleProfileForm() {
       <div>
         <h2 className="text-2xl font-bold">Request a Free Quote</h2>
         <p className="mt-1 text-sm leading-6 text-navy/60">
-          Fill in your details and GreenVolt Renewables or The Renewable
+          Fill in your details and {companyName} or The Renewable
           Directory team will be in touch.
         </p>
       </div>

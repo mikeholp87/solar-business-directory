@@ -486,7 +486,7 @@ export default function ExampleInstallerProfilePage() {
               Directory team will be in touch.
             </p>
           </div>
-          <ExampleProfileForm />
+          <ExampleProfileForm companyName={C.name} />
         </div>
       </Section>
 

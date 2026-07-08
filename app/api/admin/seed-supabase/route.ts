@@ -19,13 +19,7 @@ export async function POST(request: NextRequest) {
   const adminEnv = getSupabaseAdminEnv();
   if (!adminEnv) {
     return NextResponse.json(
-      {
-        error: "Supabase admin env is not configured",
-        debug: {
-          hasUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()),
-          hasAdminToken: Boolean(process.env.ADMIN_SEED_TOKEN?.trim())
-        }
-      },
+      { error: "Supabase admin env is not configured" },
       { status: 500 }
     );
   }

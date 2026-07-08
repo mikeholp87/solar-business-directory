@@ -13,7 +13,6 @@ export function InstallerStickyCta() {
       <button
         onClick={scrollToForm}
         className="button-primary w-full text-sm"
-        data-event="installer_claim_cta_click"
       >
         Claim Your Free Listing
       </button>

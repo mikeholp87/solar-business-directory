@@ -55,14 +55,14 @@ export default function ForInstallersPage() {
               <Link
                 href="#claim-form"
                 className="button-primary text-sm"
-                data-event="installer_claim_cta_click"
+
               >
                 Claim Your Free Listing
               </Link>
               <Link
                 href="#pricing-ladder"
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/30 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-                data-event="installer_packages_click"
+
               >
                 View Installer Packages
               </Link>
@@ -188,7 +188,7 @@ export default function ForInstallersPage() {
                 <Link
                   href="#claim-form"
                   className="button-primary text-sm"
-                  data-event="installer_claim_cta_click"
+
                 >
                   Check My Free Listing
                 </Link>
@@ -342,7 +342,7 @@ export default function ForInstallersPage() {
                   <Link
                     href="#claim-form"
                     className="button-primary text-sm"
-                    data-event="featured_installer_click"
+
                   >
                     Secure Featured Installer Position
                   </Link>
@@ -425,7 +425,7 @@ export default function ForInstallersPage() {
                 <Link
                   href="#claim-form"
                   className="button-primary text-sm"
-                  data-event="priority_partner_click"
+
                 >
                   Reserve Priority Lead Partner Position
                 </Link>
@@ -584,7 +584,7 @@ export default function ForInstallersPage() {
                 <Link
                   href="#claim-form"
                   className="button-primary text-sm"
-                  data-event="installer_claim_cta_click"
+
                 >
                   Claim My Free Listing
                   <ArrowRight size={16} />
@@ -592,7 +592,7 @@ export default function ForInstallersPage() {
                 <Link
                   href="/apply"
                   className="button-secondary text-sm"
-                  data-event="installer_call_click"
+
                 >
                   Book A 10-Minute Installer Call
                 </Link>

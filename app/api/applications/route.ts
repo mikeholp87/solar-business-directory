@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { createInstallerApplication } from "@/lib/repositories/applications";
+import { rateLimit } from "@/lib/rate-limit";
 
 const applicationSchema = z.object({
   company_name: z.string().min(2).max(140),
@@ -21,9 +23,14 @@ const applicationSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const headersList = await headers();
+  const ip = headersList.get("x-forwarded-for") ?? "unknown";
+  if (!rateLimit(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
   const formData = await request.formData();
   const parsed = applicationSchema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) return NextResponse.json({ error: "Invalid application details" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Invalid application details", fields: parsed.error.flatten().fieldErrors }, { status: 400 });
 
   const payload = {
     ...parsed.data,

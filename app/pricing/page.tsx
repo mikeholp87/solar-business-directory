@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     title: "Pricing",
     description: "Compare listing, visibility, and lead packages for renewable energy installers on The Renewable Directory.",
     url: `${siteUrl()}/pricing`,
-    siteName: "Renewable Directory",
+    siteName: "The Renewable Directory",
     type: "website"
   }
 };

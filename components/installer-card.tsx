@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { BadgeCheck, CalendarDays, MapPin, Star } from "lucide-react";
 import { territories } from "@/lib/data";
@@ -9,8 +10,18 @@ export function InstallerCard({ installer }: { installer: Installer }) {
   return (
     <article className="index-card p-5 sm:p-6">
       <div className="flex items-start gap-4">
-        <div className="grid size-16 shrink-0 place-items-center rounded-xl border border-navy/10 bg-surface-alt text-lg font-black text-accent">
-          {installer.logoUrl}
+        <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl border border-navy/10 bg-surface-alt text-lg font-black text-accent">
+          {installer.logoUrl && (installer.logoUrl.startsWith("http") ? (
+            <Image
+              src={installer.logoUrl}
+              alt={`${installer.companyName} logo`}
+              width={64}
+              height={64}
+              className="size-full object-contain"
+            />
+          ) : (
+            installer.logoUrl
+          ))}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">

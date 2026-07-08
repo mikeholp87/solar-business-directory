@@ -183,4 +183,3 @@ export const leadStages = [
   "Not eligible"
 ];
 
-export const serviceFilters = ["MCS accredited", "BUS registered", "Air source heat pumps", "Solar available", "Battery storage available", "Finance available", "Survey availability"];
