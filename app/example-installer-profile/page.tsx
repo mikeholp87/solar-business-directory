@@ -153,7 +153,7 @@ export default function ExampleInstallerProfilePage() {
 
               {/* Services badges */}
               <div className="flex flex-wrap gap-2">
-                {C.services.map((service) => (
+                {C.mainServices.map((service) => (
                   <span
                     key={service}
                     className="chip chip-soft !bg-white/10 !border-white/15 !text-white"

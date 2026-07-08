@@ -8,6 +8,12 @@ export const EXAMPLE_COMPANY = {
   location: "Chester",
   coverage:
     "North Wales, Chester, Cheshire, Wirral, Liverpool and surrounding areas",
+  mainServices: [
+    "Solar PV",
+    "Battery Storage",
+    "Air Source Heat Pumps",
+    "EV Chargers",
+  ],
   tagline:
     "Approved solar, battery and heat pump installer covering North Wales, Chester and the Wirral.",
   trustStatement:
