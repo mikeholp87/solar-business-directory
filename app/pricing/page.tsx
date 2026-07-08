@@ -1,6 +1,5 @@
 import Link from "next/link";
-import type { Metadata } from "next";
-import { jsonLd } from "@/lib/seo";
+import { jsonLd, pageMetadata } from "@/lib/seo";
 import { siteUrl } from "@/lib/runtime";
 
 const plans = [
@@ -66,17 +65,7 @@ const addOns = [
   }
 ];
 
-export const metadata: Metadata = {
-  title: "Pricing",
-  description: "Compare listing, visibility, and lead packages for renewable energy installers on The Renewable Directory.",
-  openGraph: {
-    title: "Pricing",
-    description: "Compare listing, visibility, and lead packages for renewable energy installers on The Renewable Directory.",
-    url: `${siteUrl()}/pricing`,
-    siteName: "The Renewable Directory",
-    type: "website"
-  }
-};
+export const metadata = pageMetadata("Pricing", "Compare listing, visibility, and lead packages for renewable energy installers on The Renewable Directory.", "/pricing");
 
 export default function PricingPage() {
   return (

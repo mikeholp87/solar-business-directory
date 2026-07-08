@@ -33,6 +33,9 @@ export const metadata: Metadata = {
     description:
       "Find trusted solar PV, battery storage, heat pump, and EV charger installers across the UK.",
   },
+  openGraph: {
+    images: [`${baseUrl}/opengraph-image`],
+  },
   alternates: {
     languages: {
       "en-GB": `${baseUrl}/`,
@@ -45,9 +48,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en-GB">
       <body className={`${montserrat.variable} flex min-h-screen flex-col`}>
         <Header />
-        <main className="flex-1">
+        <div className="flex-1">
           <RootErrorBoundary>{children}</RootErrorBoundary>
-        </main>
+        </div>
         <Footer />
       </body>
     </html>

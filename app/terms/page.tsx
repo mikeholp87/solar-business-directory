@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms and Disclaimers",
+  description: "Terms of use, disclaimers, and legal notices for The Renewable Directory.",
+};
+
 export default function TermsPage() {
   return (
     <main className="section-band">

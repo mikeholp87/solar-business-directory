@@ -26,6 +26,8 @@ export default async function sitemap() {
     { url: `${base}/directory`, lastModified: new Date() },
     { url: `${base}/apply`, lastModified: new Date() },
     { url: `${base}/services`, lastModified: new Date() },
+    { url: `${base}/for-installers`, lastModified: new Date() },
+    { url: `${base}/pricing`, lastModified: new Date() },
     { url: `${base}/example-installer-profile`, lastModified: new Date() },
     ...getLocationPageKeys().map((location) => ({
       url: `${base}/heat-pump-installers/${location}`,

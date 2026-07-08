@@ -27,7 +27,7 @@ import { pageMetadata, jsonLd } from "@/lib/seo";
 import { siteUrl } from "@/lib/runtime";
 
 export const metadata = pageMetadata(
-  "For Installers | Claim Your Free Listing | The Renewable Directory",
+  "For Installers | Claim Your Free Listing",
   "Claim your free renewable installer listing. Verify your details, get found by homeowners, and upgrade for featured visibility and priority leads. Solar, battery, heat pump and EV installers.",
   "/for-installers"
 );
@@ -624,6 +624,13 @@ export default function ForInstallersPage() {
             </div>
 
             <InstallerClaimForm />
+
+            <p className="mt-4 text-center text-sm text-muted-subtle">
+              <Link href="/example-installer-profile" className="underline hover:text-navy">
+                View an example premium installer profile
+              </Link>{" "}
+              to see what your upgraded listing could look like.
+            </p>
           </div>
         </div>
       </section>
