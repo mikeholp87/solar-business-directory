@@ -5,7 +5,11 @@ import { createClient } from "@/lib/supabase-client";
 
 const roleDashboardPath = (role: "installer" | "admin") => (role === "admin" ? "/admin" : "/installer-dashboard");
 
-export default function LoginForm() {
+type LoginFormProps = {
+  adminEmail: string | null;
+};
+
+export default function LoginForm({ adminEmail }: LoginFormProps) {
   const supabase = createClient();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -81,7 +85,9 @@ export default function LoginForm() {
         .maybeSingle();
       if (profileError) throw new Error(profileError.message);
 
-      const role = profile?.role === "admin" ? "admin" : "installer";
+      const isConfiguredAdminEmail =
+        adminEmail && resolved.email.trim().toLowerCase() === adminEmail.toLowerCase();
+      const role = isConfiguredAdminEmail || profile?.role === "admin" ? "admin" : "installer";
       window.location.assign(roleDashboardPath(role));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");

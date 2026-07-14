@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import LoginForm from "./login-form";
 import { pageMetadata } from "@/lib/seo";
-import { getSignupEnv } from "@/lib/env";
+import { getAdminEmail, getSignupEnv } from "@/lib/env";
 
 export const metadata = pageMetadata("Sign in", "Sign in to the installer portal.", "/login", { noindex: true });
 
 export default function LoginPage() {
   const { adminInviteCode } = getSignupEnv();
+  const adminEmail = getAdminEmail();
   return (
     <main className="section-band">
       <div className="container-page max-w-lg">
@@ -26,7 +27,7 @@ export default function LoginPage() {
             </div>
           }
         >
-          <LoginForm />
+          <LoginForm adminEmail={adminEmail} />
         </Suspense>
       </div>
     </main>

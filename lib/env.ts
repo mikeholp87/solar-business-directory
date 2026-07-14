@@ -50,3 +50,7 @@ export function getSignupEnv(): SignupEnv {
     adminInviteCode: readEnv("ADMIN_SIGNUP_INVITE_CODE")
   };
 }
+
+export function getAdminEmail() {
+  return readEnv("ADMIN_EMAIL") ?? "admin@example.com";
+}

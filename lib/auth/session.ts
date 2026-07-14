@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { getAdminEmail } from "@/lib/env";
 import { getSupabaseOrNull } from "@/lib/repositories/shared";
 
 export type SessionUser = {
@@ -25,10 +26,22 @@ export async function getCurrentSessionUser(): Promise<SessionUser | null> {
   if (!user?.email) return null;
 
   const { data } = await supabase.from("users").select("id,email,role").eq("id", user.id).maybeSingle();
-  if (!data) return null;
+  const adminEmail = getAdminEmail();
+  const isConfiguredAdminEmail = adminEmail && user.email.trim().toLowerCase() === adminEmail.toLowerCase();
+
+  if (!data) {
+    if (isConfiguredAdminEmail) {
+      return {
+        id: user.id,
+        email: user.email,
+        role: "admin"
+      };
+    }
+    return null;
+  }
   return {
     id: data.id,
     email: data.email,
-    role: data.role as SessionUser["role"]
+    role: isConfiguredAdminEmail ? "admin" : (data.role as SessionUser["role"])
   };
 }

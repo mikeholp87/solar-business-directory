@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { finalizeResponse } from "@/lib/supabase/proxy";
+import { getAdminEmail } from "@/lib/env";
 import { createRouteSupabaseClient } from "@/lib/supabase/route-client";
 
 export async function GET(request: Request) {
@@ -14,12 +15,15 @@ export async function GET(request: Request) {
     if (!error) {
       const { data: authData } = await supabase.auth.getUser();
       if (authData.user?.id) {
+        const adminEmail = getAdminEmail();
+        const isConfiguredAdminEmail =
+          adminEmail && authData.user.email?.trim().toLowerCase() === adminEmail.toLowerCase();
         const { data: profile } = await supabase
           .from("users")
           .select("role")
           .eq("id", authData.user.id)
           .maybeSingle();
-        const rolePath = profile?.role === "admin" ? "/admin" : "/installer-dashboard";
+        const rolePath = isConfiguredAdminEmail || profile?.role === "admin" ? "/admin" : "/installer-dashboard";
         return finalizeResponse(response, NextResponse.redirect(`${origin}${rolePath}`));
       }
       callbackUrl.searchParams.set("error", "missing_user_profile");
