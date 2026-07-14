@@ -18,12 +18,17 @@ export async function GET(request: Request) {
         const adminEmail = getAdminEmail();
         const isConfiguredAdminEmail =
           adminEmail && authData.user.email?.trim().toLowerCase() === adminEmail.toLowerCase();
+        const isAuthMetadataAdmin =
+          authData.user.user_metadata?.role === "admin" || authData.user.app_metadata?.role === "admin";
         const { data: profile } = await supabase
           .from("users")
           .select("role")
           .eq("id", authData.user.id)
           .maybeSingle();
-        const rolePath = isConfiguredAdminEmail || profile?.role === "admin" ? "/admin" : "/installer-dashboard";
+        const rolePath =
+          isConfiguredAdminEmail || isAuthMetadataAdmin || profile?.role === "admin"
+            ? "/admin"
+            : "/installer-dashboard";
         return finalizeResponse(response, NextResponse.redirect(`${origin}${rolePath}`));
       }
       callbackUrl.searchParams.set("error", "missing_user_profile");

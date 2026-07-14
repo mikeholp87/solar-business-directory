@@ -87,7 +87,9 @@ export default function LoginForm({ adminEmail }: LoginFormProps) {
 
       const isConfiguredAdminEmail =
         adminEmail && resolved.email.trim().toLowerCase() === adminEmail.toLowerCase();
-      const role = isConfiguredAdminEmail || profile?.role === "admin" ? "admin" : "installer";
+      const isAuthMetadataAdmin =
+        data.user.user_metadata?.role === "admin" || data.user.app_metadata?.role === "admin";
+      const role = isConfiguredAdminEmail || isAuthMetadataAdmin || profile?.role === "admin" ? "admin" : "installer";
       window.location.assign(roleDashboardPath(role));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
