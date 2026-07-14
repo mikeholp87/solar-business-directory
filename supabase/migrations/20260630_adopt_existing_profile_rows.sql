@@ -5,9 +5,9 @@ security definer
 set search_path = public
 as $$
 declare
-  user_role_value user_role := coalesce((new.raw_user_meta_data->>'role')::user_role, 'installer');
-  company_name_value text := nullif(new.raw_user_meta_data->>'company_name', '');
-  installer_slug_value text := nullif(new.raw_user_meta_data->>'installer_slug', '');
+  user_role_value user_role := coalesce((new.raw_app_meta_data->>'role')::user_role, 'installer');
+  company_name_value text := nullif(new.raw_app_meta_data->>'company_name', '');
+  installer_slug_value text := nullif(new.raw_app_meta_data->>'installer_slug', '');
   existing_user_id uuid;
   existing_user_role user_role;
   existing_company_name text;

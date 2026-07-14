@@ -8,12 +8,9 @@ export type SessionUser = {
   role: "admin" | "installer";
 };
 
-function getAuthMetadataRole(user: { user_metadata?: unknown; app_metadata?: unknown }) {
-  const metadata = [
-    user.user_metadata as Record<string, unknown> | undefined,
-    user.app_metadata as Record<string, unknown> | undefined
-  ];
-  const rawRole = metadata.map((item) => item?.role).find((value) => typeof value === "string");
+function getAuthMetadataRole(user: { app_metadata?: unknown }) {
+  const metadata = user.app_metadata as Record<string, unknown> | undefined;
+  const rawRole = metadata?.role;
   return rawRole === "admin" ? "admin" : rawRole === "installer" ? "installer" : null;
 }
 
@@ -35,12 +32,15 @@ export async function getCurrentSessionUser(): Promise<SessionUser | null> {
   if (!user?.email) return null;
 
   const { data } = await supabase.from("users").select("id,email,role").eq("id", user.id).maybeSingle();
+  const { data: emailMatch } = !data
+    ? await supabase.from("users").select("id,email,role").ilike("email", user.email.trim()).maybeSingle()
+    : { data: null };
+  const profile = data ?? emailMatch;
   const adminEmail = getAdminEmail();
   const isConfiguredAdminEmail = adminEmail && user.email.trim().toLowerCase() === adminEmail.toLowerCase();
-  const metadataRole = getAuthMetadataRole(user);
-  const isAuthMetadataAdmin = metadataRole === "admin";
+  const isAuthMetadataAdmin = getAuthMetadataRole(user) === "admin";
 
-  if (!data) {
+  if (!profile) {
     if (isConfiguredAdminEmail || isAuthMetadataAdmin) {
       return {
         id: user.id,
@@ -51,8 +51,8 @@ export async function getCurrentSessionUser(): Promise<SessionUser | null> {
     return null;
   }
   return {
-    id: data.id,
-    email: data.email,
-    role: isConfiguredAdminEmail || isAuthMetadataAdmin ? "admin" : (data.role as SessionUser["role"])
+    id: profile.id,
+    email: profile.email,
+    role: isConfiguredAdminEmail || isAuthMetadataAdmin ? "admin" : (profile.role as SessionUser["role"])
   };
 }

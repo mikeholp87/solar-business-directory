@@ -18,8 +18,7 @@ export async function GET(request: Request) {
         const adminEmail = getAdminEmail();
         const isConfiguredAdminEmail =
           adminEmail && authData.user.email?.trim().toLowerCase() === adminEmail.toLowerCase();
-        const isAuthMetadataAdmin =
-          authData.user.user_metadata?.role === "admin" || authData.user.app_metadata?.role === "admin";
+        const isAuthMetadataAdmin = authData.user.app_metadata?.role === "admin";
         const { data: profile } = await supabase
           .from("users")
           .select("role")

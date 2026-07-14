@@ -75,20 +75,19 @@ export async function createSignupAccount(response: NextResponse, input: CreateS
   const userMetadata =
     role === "installer"
       ? {
-          role,
           company_name: companyName,
           installer_slug: `${slugifyCompanyName(companyName)}-${crypto.randomUUID().slice(0, 8)}`
         }
       : {
-          role,
           company_name: companyName || undefined
         };
+  const appMetadata = { role, ...userMetadata };
 
   const { data, error } = await adminSupabase.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
-    user_metadata: userMetadata
+    app_metadata: appMetadata
   });
   if (error) return { ok: false, error: error.message };
   if (!data.user) return { ok: false, error: "Failed to create the auth user." };

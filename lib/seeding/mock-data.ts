@@ -6,7 +6,7 @@ type SeedUser = {
   email: string;
   role: "admin" | "installer";
   password?: string;
-  userMetadata?: Record<string, unknown>;
+  appMetadata?: Record<string, unknown>;
 };
 
 const seedApplications = [
@@ -160,7 +160,7 @@ async function ensureAuthUser(supabase: SupabaseClient, seedUser: SeedUser) {
     email: seedUser.email,
     password: seedUser.password ?? randomUUID(),
     email_confirm: true,
-    user_metadata: seedUser.userMetadata
+    app_metadata: seedUser.appMetadata
   });
   if (createError) throw createError;
   if (!created.user) throw new Error(`Failed to create auth user for ${seedUser.email}`);
@@ -170,12 +170,12 @@ async function ensureAuthUser(supabase: SupabaseClient, seedUser: SeedUser) {
 async function ensureAuthUsers(supabase: SupabaseClient) {
   const adminEmail = process.env.ADMIN_EMAIL?.trim() || "admin@example.com";
   const targets: SeedUser[] = [
-    { email: adminEmail, role: "admin", password: randomUUID(), userMetadata: { role: "admin" } },
+    { email: adminEmail, role: "admin", password: randomUUID(), appMetadata: { role: "admin" } },
     ...mockInstallers.map((installer) => ({
       email: installer.email ?? `${installer.slug}@example.com`,
       role: "installer" as const,
       password: randomUUID(),
-      userMetadata: { role: "installer", installer_slug: installer.slug }
+      appMetadata: { role: "installer", installer_slug: installer.slug }
     }))
   ];
 

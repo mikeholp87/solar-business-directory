@@ -76,7 +76,7 @@ export async function provisionAuthUserForProfile(emailInput: string, password: 
   }
 
   const existingAuthUser = await findAuthUserByEmail(email);
-  const userMetadata = {
+  const appMetadata = {
     role: profile.role,
     company_name: profile.company_name ?? undefined
   };
@@ -85,7 +85,7 @@ export async function provisionAuthUserForProfile(emailInput: string, password: 
     const { data, error } = await supabase.auth.admin.updateUserById(existingAuthUser.id, {
       password,
       email_confirm: true,
-      user_metadata: userMetadata
+      app_metadata: appMetadata
     });
     if (error) return { ok: false, error: error.message };
     const adoption = await adoptProfileToAuthUser(email, existingAuthUser.id);
@@ -97,7 +97,7 @@ export async function provisionAuthUserForProfile(emailInput: string, password: 
     email,
     password,
     email_confirm: true,
-    user_metadata: userMetadata
+    app_metadata: appMetadata
   });
   if (error) return { ok: false, error: error.message };
   if (!data.user) return { ok: false, error: "Failed to create the auth user." };
