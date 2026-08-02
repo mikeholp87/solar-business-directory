@@ -1,6 +1,11 @@
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { sendNotificationEmailViaEmailJs } from "@/lib/notifications/emailjs";
 
+export type NotificationAttachment = {
+  filename: string;
+  content: Uint8Array;
+};
+
 export type NotificationInput = {
   eventType: string;
   recipientEmail?: string;
@@ -8,12 +13,13 @@ export type NotificationInput = {
   subject: string;
   body: string;
   payload?: Record<string, unknown>;
+  attachments?: NotificationAttachment[];
   channel?: "email" | "sms" | "in_app";
 };
 
 type QueueNotificationDependencies = {
   supabase?: NonNullable<ReturnType<typeof createAdminSupabaseClient>>;
-  sendEmail?: typeof sendNotificationEmailViaEmailJs;
+  sendEmail?: (input: Parameters<typeof sendNotificationEmailViaEmailJs>[0] & { attachments?: NotificationAttachment[] }) => ReturnType<typeof sendNotificationEmailViaEmailJs>;
 };
 
 export async function queueEmailNotification(input: NotificationInput, deps: QueueNotificationDependencies = {}) {
@@ -47,7 +53,8 @@ export async function queueEmailNotification(input: NotificationInput, deps: Que
       body: input.body,
       eventType: input.eventType,
       payload: input.payload,
-      recipientRole: input.recipientRole
+      recipientRole: input.recipientRole,
+      attachments: input.attachments
     });
 
     if (delivery.ok) {

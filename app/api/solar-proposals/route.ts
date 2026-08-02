@@ -6,6 +6,9 @@ import { createLeadFromForm } from "@/lib/repositories/leads";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { calculateSolarProposal, type SolarProposalInput } from "@/lib/solar-proposal";
 import { queueEmailNotification } from "@/lib/notifications/email";
+import { sendNotificationEmail } from "@/lib/notifications/resend";
+import { createSolarProposalPdf } from "@/lib/solar-proposal-pdf";
+import { siteUrl } from "@/lib/runtime";
 
 const schema = z.object({
   postcode: z.string().min(3).max(12), address: z.string().min(2).max(240), propertyType: z.string().min(1), ownership: z.string().min(1),
@@ -24,6 +27,8 @@ export async function POST(request: Request) {
   const input = parsed.data as SolarProposalInput;
   const proposal = calculateSolarProposal(input);
   const reference = `SD-${new Date().getFullYear()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+  const pdf = await createSolarProposalPdf(input as SolarProposalInput & { firstName: string; lastName: string; email: string }, proposal, reference);
+  const pdfUrl = `${siteUrl()}/api/solar-proposals/${encodeURIComponent(reference)}/pdf`;
   const lead = await createLeadFromForm({
     first_name: input.firstName!, last_name: input.lastName!, email: input.email!, phone: input.phone!, postcode: input.postcode,
     address: input.address, property_type: input.propertyType, monthly_bill: input.monthlySpend ? `£${input.monthlySpend}` : undefined,
@@ -36,7 +41,7 @@ export async function POST(request: Request) {
   if (supabase) {
     await supabase.from("solar_proposals").insert({
       proposal_reference: reference, lead_id: lead.leadId ?? null, postcode: input.postcode.toUpperCase(), address: input.address,
-      input_json: input, calculation_json: proposal, status: "generated"
+      input_json: input, calculation_json: proposal, status: "generated", pdf_url: pdfUrl
     });
   }
 
@@ -55,10 +60,12 @@ export async function POST(request: Request) {
       "",
       "The next step is a complimentary remote survey to confirm the roof, specification and fixed quotation.",
       "",
-      `Proposal reference: ${reference}`
+      `Proposal reference: ${reference}`,
+      `View your proposal online: ${pdfUrl}`
     ].join("\n"),
-    payload: { reference, address: input.address, postcode: input.postcode, ...proposal }
-  });
+    payload: { reference, address: input.address, postcode: input.postcode, pdfUrl, ...proposal },
+    attachments: [{ filename: `Solar-Proposal-${input.lastName}-${input.postcode.replaceAll(" ", "-")}.pdf`, content: pdf }]
+  }, { sendEmail: sendNotificationEmail });
 
-  return NextResponse.json({ ok: true, reference, proposal, email: input.email });
+  return NextResponse.json({ ok: true, reference, proposal, email: input.email, pdfUrl });
 }
