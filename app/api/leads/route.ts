@@ -19,7 +19,7 @@ const leadSchema = z.object({
   best_time_to_contact: z.string().optional(),
   service_required: z.string().optional(),
   consent_contact: z.literal("true"),
-  gdpr_acceptance: z.string().optional(),
+  gdpr_acceptance: z.literal("true"),
   preferred_installer_id: z.string().optional()
 });
 

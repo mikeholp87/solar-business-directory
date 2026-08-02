@@ -116,7 +116,7 @@ export async function createLeadFromForm(params: {
     stage: "new_enquiry"
   };
 
-  const supabase = await getSupabaseOrNull();
+  const supabase = createAdminSupabaseClient() ?? await getSupabaseOrNull();
   let leadId: string | null = null;
   if (supabase) {
     const { data: inserted, error } = await supabase.from("leads").insert(payload).select("id").single();
