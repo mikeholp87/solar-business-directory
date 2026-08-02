@@ -117,11 +117,13 @@ export async function createLeadFromForm(params: {
   };
 
   const supabase = await getSupabaseOrNull();
+  let leadId: string | null = null;
   if (supabase) {
-    const { error } = await supabase.from("leads").insert(payload);
+    const { data: inserted, error } = await supabase.from("leads").insert(payload).select("id").single();
     if (error) {
       return { ok: false as const, error: error.message, assignment };
     }
+    leadId = inserted?.id ?? null;
   }
 
   const assignedInstaller = installers.find((installer) => installer.id === assignment.assignedInstallerId);
@@ -165,5 +167,5 @@ export async function createLeadFromForm(params: {
     })
   ]);
 
-  return { ok: true as const, assignment, payload };
+  return { ok: true as const, assignment, payload, leadId };
 }
