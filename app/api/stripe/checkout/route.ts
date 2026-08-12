@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { getCurrentSessionUser } from "@/lib/auth/session";
+import { deriveInstallerIdFromSession } from "@/lib/repositories/installer-dashboard";
 import { siteUrl } from "@/lib/runtime";
 
 const tierPriceEnv: Record<string, string | undefined> = {
@@ -9,7 +11,15 @@ const tierPriceEnv: Record<string, string | undefined> = {
 };
 
 export async function POST(request: Request) {
-  const { tier = "territory", installerId } = await request.json().catch(() => ({}));
+  const user = await getCurrentSessionUser();
+  const installerId = await deriveInstallerIdFromSession();
+  if (!user || !installerId) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+
+  const body = await request.json().catch(() => ({}));
+  const tier = body && typeof body === "object" && "tier" in body && typeof body.tier === "string" ? body.tier : "territory";
+  if (!(tier in tierPriceEnv) || !["starter", "territory", "regional"].includes(tier)) {
+    return NextResponse.json({ error: "Invalid billing tier" }, { status: 400 });
+  }
   const price = tierPriceEnv[tier];
   if (!process.env.STRIPE_SECRET_KEY || !price) return NextResponse.json({ error: "Stripe is not configured" }, { status: 500 });
 
@@ -19,7 +29,10 @@ export async function POST(request: Request) {
     line_items: [{ price, quantity: 1 }],
     success_url: `${siteUrl()}/billing/success`,
     cancel_url: `${siteUrl()}/billing/cancel`,
-    metadata: { installer_id: installerId ?? "" }
+    customer_email: user.email,
+    metadata: { installer_id: installerId },
+    subscription_data: { metadata: { installer_id: installerId } },
+    integration_identifier: `renewable-directory-${Array.from({ length: 8 }, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join("")}`
   });
 
   return NextResponse.json({ url: session.url });

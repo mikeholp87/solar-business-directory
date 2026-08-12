@@ -24,7 +24,9 @@ export async function POST(request: Request) {
       const metadata = "metadata" in subscription ? subscription.metadata : {};
       const installerId = metadata?.installer_id;
       const customerId = "customer" in subscription && subscription.customer ? String(subscription.customer) : undefined;
-      const subscriptionId = "id" in subscription ? String(subscription.id) : undefined;
+      const subscriptionId = event.type === "checkout.session.completed" && "subscription" in subscription && subscription.subscription
+        ? String(subscription.subscription)
+        : "id" in subscription ? String(subscription.id) : undefined;
       const status = event.type === "customer.subscription.deleted" ? "cancelled" : "active";
       const subscriptionStatusRaw = event.type === "customer.subscription.updated" && "status" in subscription ? String(subscription.status) : status;
       const subscriptionStatus = ["trialing", "active", "past_due", "offline_active", "cancelled"].includes(subscriptionStatusRaw)
